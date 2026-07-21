@@ -1,4 +1,4 @@
-export type AlertMode = "silent" | "vibrate";
+export type AlertMode = "silent" | "gentle" | "clear" | "strong";
 
 export interface Settings {
   /** 업무 시작, 자정 기준 분 (예: 540 = 09:00) */

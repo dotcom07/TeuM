@@ -11,15 +11,16 @@ import {
   StatusBar as RNStatusBar,
   StyleSheet,
   Text,
-  Vibration,
   View
 } from "react-native";
 import {
-  ACTION_NOW,
   ACTION_SKIP,
   ACTION_SNOOZE,
+  canUseFullScreenReminder,
   clearDelivered,
+  consumeFullScreenBreakRequest,
   hasPermission,
+  openFullScreenReminderSettings,
   requestPermission,
   scheduleDebugNotification,
   scheduleTick,
@@ -27,7 +28,14 @@ import {
   setupChannels
 } from "./src/lib/notifications";
 import { loadPersisted, savePersisted } from "./src/lib/storage";
-import { fmtIntervalKorean, intervalMs, isWithinWork, nextTickFrom, SNOOZE_MS } from "./src/lib/time";
+import {
+  fmtIntervalKorean,
+  fmtKoreanDayTime,
+  intervalMs,
+  isWithinWork,
+  nextTickFrom,
+  SNOOZE_MS
+} from "./src/lib/time";
 import Break from "./src/screens/Break";
 import Home from "./src/screens/Home";
 import Onboarding from "./src/screens/Onboarding";
@@ -65,12 +73,19 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("home");
   const [now, setNow] = useState(Date.now());
   const [permissionOk, setPermissionOk] = useState(false);
+  const [fullScreenAllowed, setFullScreenAllowed] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const persistedRef = useRef<Persisted | null>(null);
   const screenRef = useRef<Screen>("home");
   const wasSuggestingRef = useRef(false);
   screenRef.current = screen;
+
+  const openBreakFromUrl = useCallback((url: string | null) => {
+    if (!url?.startsWith("teum://break")) return;
+    void clearDelivered();
+    setScreen("break");
+  }, []);
 
   /** 상태를 저장하고 예약 알림을 다시 잡는 단일 진입점 */
   const commit = useCallback((next: Persisted) => {
@@ -95,26 +110,45 @@ export default function App() {
       await setupChannels();
       await setupCategories();
       setPermissionOk(await hasPermission());
+      setFullScreenAllowed(await canUseFullScreenReminder());
       const loaded = await loadPersisted();
       const rolled = { ...loaded, rhythm: rollForward(loaded.rhythm, loaded.settings, Date.now()) };
       persistedRef.current = rolled;
       setPersisted(rolled);
       void scheduleTick(rolled.rhythm.nextTickAt, rolled.settings);
 
-      // 앱이 종료된 사이 사용자가 알림의 `지금 1분`을 눌러 열었을 수 있다.
-      const last = await Notifications.getLastNotificationResponseAsync();
-      if (last?.actionIdentifier === ACTION_NOW) {
+      openBreakFromUrl(await Linking.getInitialURL());
+      if (await consumeFullScreenBreakRequest()) {
         void clearDelivered();
         setScreen("break");
       }
+
+      // Expo Go 폴백 알림의 본문을 눌러 앱이 열린 경우에도 1분 화면을 연다.
+      const last = await Notifications.getLastNotificationResponseAsync();
+      if (last?.notification.request.content.data?.teumOpenBreak === true) {
+        void clearDelivered();
+        setScreen("break");
+        await Notifications.clearLastNotificationResponseAsync();
+      }
     })();
-  }, []);
+  }, [openBreakFromUrl]);
+
+  // 실행 중인 앱에 전체 화면 알림 인텐트가 전달되는 경우.
+  useEffect(() => {
+    const sub = Linking.addEventListener("url", ({ url }) => openBreakFromUrl(url));
+    return () => sub.remove();
+  }, [openBreakFromUrl]);
 
   // ── 1초 시계 + 일시정지 해제/놓친 틱 정리 ─────────────────
   useEffect(() => {
     const id = setInterval(() => {
       const t = Date.now();
       setNow(t);
+      void consumeFullScreenBreakRequest().then((requested) => {
+        if (!requested) return;
+        void clearDelivered();
+        setScreen("break");
+      });
       const current = persistedRef.current;
       if (!current) return;
       const rolled = rollForward(current.rhythm, current.settings, t);
@@ -140,6 +174,7 @@ export default function App() {
     const sub = AppState.addEventListener("change", async (state) => {
       if (state !== "active") return;
       setPermissionOk(await hasPermission());
+      setFullScreenAllowed(await canUseFullScreenReminder());
     });
     return () => sub.remove();
   }, []);
@@ -148,7 +183,7 @@ export default function App() {
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
       const action = response.actionIdentifier;
-      if (action === ACTION_NOW) {
+      if (action === Notifications.DEFAULT_ACTION_IDENTIFIER) {
         void clearDelivered();
         setScreen("break");
       } else if (action === ACTION_SNOOZE) {
@@ -158,7 +193,6 @@ export default function App() {
         void clearDelivered();
         skipRef.current?.();
       }
-      // 본문 탭(기본 액션)은 앱만 연다. 홈의 제안 플레이트가 이어받는다.
     });
     return () => sub.remove();
   }, []);
@@ -173,11 +207,6 @@ export default function App() {
     const id = setTimeout(() => setToast(null), 3500);
     return () => clearTimeout(id);
   }, [toast]);
-
-  const startBreak = useCallback(() => {
-    void clearDelivered();
-    setScreen("break");
-  }, []);
 
   const finishBreak = useCallback(() => {
     const current = persistedRef.current;
@@ -235,12 +264,14 @@ export default function App() {
   const resume = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
-    patchRhythm({
-      status: "running",
-      pausedUntil: null,
-      nextTickAt: nextTickFrom(Date.now(), current.settings)
-    });
-    showToast(`다시 시작할게요. 다음 틈은 ${fmtIntervalKorean(current.settings.intervalMin)} 뒤예요.`);
+    const now = Date.now();
+    const nextTickAt = nextTickFrom(now, current.settings);
+    patchRhythm({ status: "running", pausedUntil: null, nextTickAt });
+    showToast(
+      nextTickAt != null
+        ? `다시 시작할게요. 다음 틈은 ${fmtKoreanDayTime(nextTickAt, now)}이에요.`
+        : "다시 시작할게요."
+    );
   }, [patchRhythm, showToast]);
 
   const changeSettings = useCallback(
@@ -248,12 +279,16 @@ export default function App() {
       const current = persistedRef.current;
       if (!current) return;
       let rhythm = current.rhythm;
-      // 바뀐 업무 시간 밖에 걸렸거나 간격이 달라진 예약은 다시 계산한다.
+      // 시간 관련 설정이 하나라도 바뀌면 예약을 항상 다시 계산한다.
+      // (예: 간격을 바꿨다 되돌려도 이전 간격으로 잡힌 예약이 남지 않게)
+      const timingChanged =
+        settings.intervalMin !== current.settings.intervalMin ||
+        settings.startMin !== current.settings.startMin ||
+        settings.endMin !== current.settings.endMin ||
+        settings.days.join(",") !== current.settings.days.join(",");
       if (
         rhythm.status === "running" &&
-        (rhythm.nextTickAt == null ||
-          !isWithinWork(rhythm.nextTickAt, settings) ||
-          settings.intervalMin !== current.settings.intervalMin)
+        (rhythm.nextTickAt == null || !isWithinWork(rhythm.nextTickAt, settings) || timingChanged)
       ) {
         rhythm = { ...rhythm, nextTickAt: nextTickFrom(Date.now(), settings) };
       }
@@ -275,6 +310,9 @@ export default function App() {
           nextTickAt: nextTickFrom(Date.now(), settings)
         }
       });
+      const allowed = await canUseFullScreenReminder();
+      setFullScreenAllowed(allowed);
+      if (!allowed) await openFullScreenReminderSettings();
     },
     [commit]
   );
@@ -282,12 +320,6 @@ export default function App() {
   const openSystemSettings = useCallback(() => {
     void Linking.openSettings();
   }, []);
-
-  const testVibration = useCallback(() => {
-    Vibration.cancel();
-    Vibration.vibrate(180);
-    showToast("180ms 진동을 보냈어요.");
-  }, [showToast]);
 
   const testNotification = useCallback(async () => {
     const current = persistedRef.current;
@@ -300,11 +332,15 @@ export default function App() {
     }
     const scheduled = await scheduleDebugNotification(current.settings);
     if (scheduled) {
-      showToast("5초 뒤 테스트 알림을 보내요. 휴대폰 홈 화면으로 나가 확인해 보세요.");
+      showToast(
+        fullScreenAllowed
+          ? "5초 뒤 선택한 방식으로 1분 화면을 열어요. 화면을 끄거나 다른 앱을 열어 보세요."
+          : "5초 뒤 테스트해요. 전체 화면 권한이 꺼져 있으면 알림 배너로 표시돼요."
+      );
     }
-  }, [showToast]);
+  }, [fullScreenAllowed, showToast]);
 
-  // ── 제안 시작 순간, 진동 모드면 짧게 한 번 ──────────────────
+  // ── 예정 시각이 되면 수동 진입 없이 즉시 1분 화면을 연다. ───
   const suggesting =
     persisted != null &&
     persisted.rhythm.status === "running" &&
@@ -313,11 +349,9 @@ export default function App() {
     isWithinWork(now, persisted.settings);
 
   useEffect(() => {
-    if (suggesting && !wasSuggestingRef.current && persisted?.settings.mode === "vibrate") {
-      Vibration.vibrate(180);
-    }
+    if (suggesting && !wasSuggestingRef.current) setScreen("break");
     wasSuggestingRef.current = suggesting;
-  }, [suggesting, persisted?.settings.mode]);
+  }, [suggesting]);
 
   // ── 렌더 ──────────────────────────────────────────────────
   if (!persisted) {
@@ -364,16 +398,24 @@ export default function App() {
             rhythm={persisted.rhythm}
             now={now}
             permissionOk={permissionOk}
-            onStartBreak={startBreak}
-            onSnooze={snooze}
-            onSkip={skip}
             onPause={pause}
             onResume={resume}
             onOpenSystemSettings={openSystemSettings}
           />
         )}
         {screen === "break" && (
-          <Break nextLabel={fmtIntervalKorean(persisted.settings.intervalMin)} onFinish={finishBreak} />
+          <Break
+            nextLabel={fmtIntervalKorean(persisted.settings.intervalMin)}
+            onFinish={finishBreak}
+            onSnooze={() => {
+              snooze();
+              setScreen("home");
+            }}
+            onSkip={() => {
+              skip();
+              setScreen("home");
+            }}
+          />
         )}
         {screen === "settings" && (
           <SettingsScreen
@@ -381,8 +423,9 @@ export default function App() {
             permissionOk={permissionOk}
             onChange={changeSettings}
             onOpenSystemSettings={openSystemSettings}
+            fullScreenAllowed={fullScreenAllowed}
+            onOpenFullScreenSettings={() => void openFullScreenReminderSettings()}
             onBack={() => setScreen("home")}
-            onTestVibration={testVibration}
             onTestNotification={() => void testNotification()}
           />
         )}
@@ -424,7 +467,7 @@ function Header({
 function Footer() {
   return (
     <View style={styles.footer}>
-      <Text style={styles.footerText}>TeuM · A SMALL PAUSE THAT KEEPS YOUR FLOW MOVING</Text>
+      <Text style={styles.footerText}>TeuM · ONE MINUTE FOR A HEALTHIER WORKDAY</Text>
     </View>
   );
 }
@@ -467,19 +510,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.amber
   },
   navAction: { color: colors.carbon, fontSize: 11, fontWeight: "700" },
+  // 패널(양쪽 14px)과 폭·위치가 겹치지 않게, 하단에 좁게 띄우는 떠 있는 칩 형태.
   toast: {
     position: "absolute",
     zIndex: 4,
-    top: 64,
-    right: 14,
-    left: 14,
-    padding: 11,
-    backgroundColor: colors.surface,
-    borderWidth: 3,
-    borderColor: colors.chromeIndigo,
-    elevation: 8
+    bottom: 96,
+    alignSelf: "center",
+    maxWidth: "82%",
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+    backgroundColor: colors.carbon,
+    borderWidth: 2,
+    borderColor: colors.amber,
+    borderRadius: 999,
+    elevation: 10
   },
-  toastText: { color: colors.carbon, fontSize: 12, fontWeight: "700", textAlign: "center" },
+  toastText: { color: colors.surface, fontSize: 12, fontWeight: "700", textAlign: "center" },
   footer: { paddingTop: 11, paddingHorizontal: 11, paddingBottom: 26, backgroundColor: colors.carbon },
   footerText: { color: colors.canvasSoft, fontSize: 8, textAlign: "center", letterSpacing: 0.4 }
 });

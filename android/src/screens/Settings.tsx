@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { DurationSheet, fmtDuration, TimeSheet } from "../components/TimePickerSheet";
 import { Panel, PrimaryButton } from "../components/ui";
+import { modeLabel, previewVibration } from "../lib/notifications";
 import { DAY_LABELS, fmtHM } from "../lib/time";
 import { colors, MIN_TOUCH } from "../theme";
 import { Settings as SettingsType } from "../types";
 import { DayChip, RadioRow } from "./Onboarding";
+
+const PRIVACY_POLICY_URL =
+  "https://aluminum-language-c6a.notion.site/TeuM-3a447d4c6bf180f7a6f6e221089a5012?pvs=73";
 
 /**
  * 설정 화면 (A-10). 변경은 즉시 반영·저장된다.
@@ -16,16 +20,18 @@ export default function SettingsScreen({
   permissionOk,
   onChange,
   onOpenSystemSettings,
+  fullScreenAllowed,
+  onOpenFullScreenSettings,
   onBack,
-  onTestVibration,
   onTestNotification
 }: {
   settings: SettingsType;
   permissionOk: boolean;
   onChange: (next: SettingsType) => void;
   onOpenSystemSettings: () => void;
+  fullScreenAllowed: boolean;
+  onOpenFullScreenSettings: () => void;
   onBack: () => void;
-  onTestVibration: () => void;
   onTestNotification: () => void;
 }) {
   const [picker, setPicker] = useState<"start" | "end" | "interval" | null>(null);
@@ -83,19 +89,29 @@ export default function SettingsScreen({
           onPress={() => patch({ mode: "silent" })}
         />
         <RadioRow
-          label="진동 — 짧은 진동과 함께 알려드려요"
-          active={settings.mode === "vibrate"}
-          onPress={() => patch({ mode: "vibrate" })}
+          label={modeLabel("gentle")}
+          active={settings.mode === "gentle"}
+          onPress={() => {
+            patch({ mode: "gentle" });
+            previewVibration("gentle");
+          }}
         />
-        <View style={styles.switchRow}>
-          <Text style={styles.rowLabel}>화면 상단에 잠깐 표시</Text>
-          <Switch
-            value={settings.headsUp}
-            onValueChange={(v) => patch({ headsUp: v })}
-            trackColor={{ false: colors.mutedIndigo, true: colors.amber }}
-            thumbColor={colors.surface}
-          />
-        </View>
+        <RadioRow
+          label={modeLabel("clear")}
+          active={settings.mode === "clear"}
+          onPress={() => {
+            patch({ mode: "clear" });
+            previewVibration("clear");
+          }}
+        />
+        <RadioRow
+          label={modeLabel("strong")}
+          active={settings.mode === "strong"}
+          onPress={() => {
+            patch({ mode: "strong" });
+            previewVibration("strong");
+          }}
+        />
         {settings.notificationsOn && !permissionOk && (
           <View style={styles.permissionBox}>
             <Text style={styles.permissionCopy}>
@@ -112,36 +128,51 @@ export default function SettingsScreen({
         )}
       </Panel>
 
+      {!fullScreenAllowed && (
+        <Panel title="권한 필요" background={colors.ice}>
+          <Text style={styles.permissionCopy}>
+            잠금 화면에서도 1분의 틈을 바로 열려면 Android의 전체 화면 알림 권한이 필요해요.
+          </Text>
+          <Pressable
+            onPress={onOpenFullScreenSettings}
+            accessibilityRole="button"
+            style={styles.permissionButton}
+          >
+            <Text style={styles.permissionButtonText}>전체 화면 알림 허용</Text>
+          </Pressable>
+        </Panel>
+      )}
+
       <Panel title="개인정보">
         <Text style={styles.privacy}>
           틈새움은 건강·행동 데이터를 수집하거나 외부로 전송하지 않습니다.{"\n"}
           모든 설정은 이 기기에만 저장됩니다.
         </Text>
+        <Pressable
+          onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
+          accessibilityRole="link"
+          accessibilityLabel="개인정보처리방침 열기"
+          style={styles.privacyLink}
+        >
+          <Text style={styles.privacyLinkText}>개인정보처리방침 보기 ↗</Text>
+        </Pressable>
       </Panel>
 
       {__DEV__ && (
         <Panel title="개발 테스트">
           <Text style={styles.debugCopy}>
-            실제 기기에서 알림과 진동을 확인하는 테스트입니다. 배포 빌드에는 포함되지 않습니다.
+            선택한 알림 방식과 전체 화면 타이머를 실제 기기에서 확인합니다. 배포 빌드에는 포함되지 않습니다.
           </Text>
-          <Pressable
-            onPress={onTestVibration}
-            accessibilityRole="button"
-            accessibilityLabel="180밀리초 진동 테스트"
-            style={styles.debugButton}
-          >
-            <Text style={styles.debugButtonText}>진동 테스트 · 180ms</Text>
-          </Pressable>
           <Pressable
             onPress={onTestNotification}
             accessibilityRole="button"
-            accessibilityLabel="5초 뒤 알림 테스트"
+            accessibilityLabel="5초 뒤 전체 화면 알림 테스트"
             style={styles.debugButton}
           >
-            <Text style={styles.debugButtonText}>알림 테스트 · 5초 뒤</Text>
+            <Text style={styles.debugButtonText}>전체 화면 알림 테스트 · 5초 뒤</Text>
           </Pressable>
           <Text style={styles.debugHint}>
-            알림 테스트를 누른 뒤 휴대폰 홈 화면으로 나가면 배너·진동·알림 액션을 함께 확인할 수 있어요.
+            버튼을 누른 뒤 화면을 끄거나 다른 앱을 열어 두세요. 선택한 진동과 1분의 틈 화면을 함께 확인할 수 있어요.
           </Text>
         </Panel>
       )}
@@ -240,6 +271,19 @@ const styles = StyleSheet.create({
   },
   permissionButtonText: { color: colors.carbon, fontSize: 12, fontWeight: "700" },
   privacy: { color: colors.chromeIndigo, fontSize: 12, lineHeight: 19 },
+  privacyLink: {
+    minHeight: MIN_TOUCH,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 12,
+    backgroundColor: colors.carbon,
+    borderWidth: 2,
+    borderTopColor: colors.canvasSoft,
+    borderLeftColor: colors.canvasSoft,
+    borderRightColor: colors.shadowDeep,
+    borderBottomColor: colors.shadowDeep
+  },
+  privacyLinkText: { color: colors.surface, fontSize: 12, fontWeight: "700" },
   debugCopy: { color: colors.carbon, fontSize: 12, lineHeight: 18, marginBottom: 10 },
   debugButton: {
     minHeight: MIN_TOUCH,

@@ -2,13 +2,17 @@
   "expo": {
     "name": "틈새움 TeuM",
     "slug": "teum",
+    "scheme": "teum",
     "version": "0.1.0",
     "icon": "./assets/teum-logo.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "android": {
       "package": "com.teum.app",
-      "permissions": ["android.permission.SCHEDULE_EXACT_ALARM"],
+      "permissions": [
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_FULL_SCREEN_INTENT"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/teum-logo.png",
         "backgroundColor": "#7a8aba"

@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { TimeSheet } from "../components/TimePickerSheet";
 import { Eyebrow, Plate, PrimaryButton } from "../components/ui";
 import { DAY_LABELS, fmtHM } from "../lib/time";
+import { modeLabel, previewVibration } from "../lib/notifications";
 import { colors, MIN_TOUCH, spacing } from "../theme";
 import { AlertMode, DEFAULT_SETTINGS, Settings } from "../types";
 
@@ -79,12 +80,33 @@ export default function Onboarding({
             onPress={() => setMode("silent")}
           />
           <RadioRow
-            label="진동 — 짧은 진동과 함께 알려드려요"
-            active={mode === "vibrate"}
-            onPress={() => setMode("vibrate")}
+            label={modeLabel("gentle")}
+            active={mode === "gentle"}
+            onPress={() => {
+              setMode("gentle");
+              previewVibration("gentle");
+            }}
+          />
+          <RadioRow
+            label={modeLabel("clear")}
+            active={mode === "clear"}
+            onPress={() => {
+              setMode("clear");
+              previewVibration("clear");
+            }}
+          />
+          <RadioRow
+            label={modeLabel("strong")}
+            active={mode === "strong"}
+            onPress={() => {
+              setMode("strong");
+              previewVibration("strong");
+            }}
           />
 
-          <Text style={styles.hint}>정해 둔 업무 시간에만 1시간 간격으로 알려드려요.</Text>
+          <Text style={styles.hint}>
+            정해 둔 업무 시간에만 1시간 간격으로 알려드려요. 시작 후 잠금 화면에서도 바로 열 수 있도록 Android 권한을 한 번 확인해 주세요.
+          </Text>
           <PrimaryButton label="틈새움 시작" onPress={finish} style={styles.cta} />
         </Plate>
       )}

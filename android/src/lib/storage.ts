@@ -8,9 +8,17 @@ export async function loadPersisted(): Promise<Persisted> {
     const raw = await AsyncStorage.getItem(KEY);
     if (!raw) return fresh();
     const parsed = JSON.parse(raw) as Partial<Persisted>;
+    const savedSettings = parsed.settings as
+      | (Omit<Partial<Persisted["settings"]>, "mode"> & { mode?: string })
+      | undefined;
+    const migratedMode = savedSettings?.mode === "vibrate" ? "gentle" : savedSettings?.mode;
     return {
       onboarded: parsed.onboarded ?? false,
-      settings: { ...DEFAULT_SETTINGS, ...parsed.settings },
+      settings: {
+        ...DEFAULT_SETTINGS,
+        ...savedSettings,
+        ...(migratedMode ? { mode: migratedMode } : {})
+      } as Persisted["settings"],
       rhythm: { ...DEFAULT_RHYTHM, ...parsed.rhythm }
     };
   } catch {

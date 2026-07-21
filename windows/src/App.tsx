@@ -133,7 +133,7 @@ export default function App() {
         </section>
       )}
 
-      <footer>TeuM · A SMALL PAUSE THAT KEEPS YOUR FLOW MOVING · NO PERSONAL HEALTH DATA</footer>
+      <footer>TeuM · ONE MINUTE FOR A HEALTHIER WORKDAY · NO PERSONAL HEALTH DATA</footer>
     </main>
   );
 }

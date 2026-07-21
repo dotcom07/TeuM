@@ -1,14 +1,25 @@
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
+import { Linking, NativeModules, Platform } from "react-native";
 import { AlertMode, Settings } from "../types";
 
 export const CATEGORY_ID = "teum-break";
-export const ACTION_NOW = "teum-now";
 export const ACTION_SNOOZE = "teum-snooze";
 export const ACTION_SKIP = "teum-skip";
 
-// 앱이 켜져 있을 때는 배너 대신 홈 화면의 제안 플레이트로 안내한다.
-// 알림 서랍에는 남겨 두어 나중에 확인할 수 있게 한다.
+interface TeumReminderNativeModule {
+  schedule(atMs: number, mode: AlertMode): Promise<void>;
+  scheduleTest(atMs: number, mode: AlertMode): Promise<void>;
+  cancel(): Promise<void>;
+  vibrateNow(mode: AlertMode): Promise<void>;
+  canUseFullScreenIntent(): Promise<boolean>;
+  openFullScreenSettings(): Promise<void>;
+  consumeBreakRequest(): Promise<boolean>;
+}
+
+const nativeReminder = NativeModules.TeumReminder as TeumReminderNativeModule | undefined;
+const CHANNEL_VERSION = "v3";
+
+// 앱이 켜져 있을 때는 JS가 1분 화면을 직접 연다. Expo Go 폴백 알림은 목록에만 남긴다.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: false,
@@ -32,73 +43,59 @@ export async function requestPermission(): Promise<boolean> {
 
 export async function setupCategories() {
   await Notifications.setNotificationCategoryAsync(CATEGORY_ID, [
-    { identifier: ACTION_NOW, buttonTitle: "지금 1분", options: { opensAppToForeground: true } },
     { identifier: ACTION_SNOOZE, buttonTitle: "5분 뒤", options: { opensAppToForeground: false } },
     { identifier: ACTION_SKIP, buttonTitle: "이번엔 넘기기", options: { opensAppToForeground: false } }
   ]);
 }
 
-// 채널 설정은 최초 생성 후 코드로 바꿀 수 없으므로, 설정을 바꿀 때는 버전을 올려
-// 새 채널을 만들고 옛 채널을 지운다.
-const CHANNEL_VERSION = "v2";
-
 function channelId(mode: AlertMode, headsUp: boolean) {
   return `teum-${CHANNEL_VERSION}-${mode}-${headsUp ? "top" : "tray"}`;
 }
 
-/** 무음/진동 × 헤드업 유무 4개 채널을 미리 만든다. 소리는 어떤 채널에도 없다. */
+/** Expo Go 폴백용 채널. 네이티브 빌드는 TeumReminder가 전체 화면 채널을 만든다. */
 export async function setupChannels() {
   if (Platform.OS !== "android") return;
-  const modes: AlertMode[] = ["silent", "vibrate"];
+  const modes: AlertMode[] = ["silent", "gentle", "clear", "strong"];
   for (const mode of modes) {
     for (const headsUp of [true, false]) {
       await Notifications.setNotificationChannelAsync(channelId(mode, headsUp), {
-        name:
-          mode === "vibrate"
-            ? `진동 알림${headsUp ? "" : " (조용히)"}`
-            : `무음 알림${headsUp ? "" : " (조용히)"}`,
+        name: `${modeLabel(mode)}${headsUp ? "" : " (조용히)"}`,
         importance: headsUp
           ? Notifications.AndroidImportance.MAX
           : Notifications.AndroidImportance.DEFAULT,
-        // null이어야 소리가 완전히 꺼진다. undefined는 기본 알림음이 된다.
         sound: null,
-        // 짧은 단일 진동만 사용한다. 연속·강한 진동은 쓰지 않는다.
-        vibrationPattern: mode === "vibrate" ? [0, 180] : undefined,
-        enableVibrate: mode === "vibrate",
+        vibrationPattern: mode === "silent" ? undefined : vibrationPattern(mode),
+        enableVibrate: mode !== "silent",
         lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC
       });
     }
   }
-  // 잘못된 설정(기본 알림음)으로 만들어졌던 v1 채널 정리
-  for (const mode of modes) {
-    for (const suffix of ["top", "tray"]) {
-      await Notifications.deleteNotificationChannelAsync(`teum-${mode}-${suffix}`);
-    }
-  }
 }
 
-/**
- * 알림 content. `sound: false`를 넣으면 expo가 알림을 setSilent(true)로 만들어
- * 진동·헤드업·잠금화면 표시까지 전부 막아 버린다. 소리 없음은 채널(sound: null)이
- * 보장하므로 content에서는 sound를 건드리지 않는다.
- */
 function tickContent(title: string, body: string, mode: AlertMode) {
   return {
     title,
     body,
     categoryIdentifier: CATEGORY_ID,
-    // 안드로이드 8 미만 호환용. 8+에서는 채널 패턴이 우선한다.
-    vibrate: mode === "vibrate" ? [0, 180] : undefined
+    data: { teumOpenBreak: true },
+    vibrate: mode === "silent" ? undefined : vibrationPattern(mode)
   };
 }
 
-/** 예약된 알림을 모두 지우고, atMs에 휴식 제안 알림 하나만 예약한다. */
+/** 정규 알림은 네이티브 전체 화면 알람으로, Expo Go에서는 일반 알림으로 예약한다. */
 export async function scheduleTick(atMs: number | null, settings: Settings) {
   await Notifications.cancelAllScheduledNotificationsAsync();
-  if (atMs == null || !settings.notificationsOn) return;
-  if (atMs <= Date.now()) return;
+
+  if (Platform.OS === "android" && nativeReminder) {
+    await nativeReminder.cancel();
+    if (atMs == null || !settings.notificationsOn || atMs <= Date.now()) return;
+    await nativeReminder.schedule(atMs, settings.mode);
+    return;
+  }
+
+  if (atMs == null || !settings.notificationsOn || atMs <= Date.now()) return;
   await Notifications.scheduleNotificationAsync({
-    content: tickContent("틈새움", "마무리할 틈이 생기면, 1분만 움직여요.", settings.mode),
+    content: tickContent("틈새움", "일하는 나를 위한 1분을 시작해요.", settings.mode),
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: new Date(atMs),
@@ -111,21 +108,36 @@ export async function clearDelivered() {
   await Notifications.dismissAllNotificationsAsync();
 }
 
-/**
- * 개발 빌드 전용 수동 검증용 알림.
- * 정규 휴식 예약은 건드리지 않고, 5초 후 별도의 테스트 알림 하나만 보낸다.
- */
+export async function canUseFullScreenReminder() {
+  if (Platform.OS !== "android" || !nativeReminder) return false;
+  return nativeReminder.canUseFullScreenIntent();
+}
+
+export async function openFullScreenReminderSettings() {
+  if (Platform.OS !== "android" || !nativeReminder) {
+    await Linking.openSettings();
+    return;
+  }
+  await nativeReminder.openFullScreenSettings();
+}
+
+export async function consumeFullScreenBreakRequest() {
+  if (Platform.OS !== "android" || !nativeReminder) return false;
+  return nativeReminder.consumeBreakRequest();
+}
+
+/** 정규 예약을 건드리지 않는 5초 뒤 전체 화면 테스트. */
 export async function scheduleDebugNotification(settings: Settings) {
-  const permission = await hasPermission();
-  if (!permission) return false;
+  if (!(await hasPermission())) return false;
+
+  if (Platform.OS === "android" && nativeReminder) {
+    await nativeReminder.scheduleTest(Date.now() + 5_000, settings.mode);
+    return true;
+  }
 
   await Notifications.scheduleNotificationAsync({
     content: {
-      ...tickContent(
-        "틈새움 테스트",
-        settings.mode === "vibrate" ? "진동과 알림 동작을 확인해 보세요." : "무음 알림 동작을 확인해 보세요.",
-        settings.mode
-      ),
+      ...tickContent("틈새움 테스트", "선택한 알림 방식과 1분 화면을 확인해 보세요.", settings.mode),
       data: { teumDebugNotification: true }
     },
     trigger: {
@@ -135,4 +147,38 @@ export async function scheduleDebugNotification(settings: Settings) {
     }
   });
   return true;
+}
+
+/**
+ * 무음 모드에서도 울리는 즉시 진동 (알람 usage). 모드 선택 미리보기용.
+ * Expo Go 등 네이티브 모듈이 없으면 조용히 무시한다.
+ */
+export function previewVibration(mode: AlertMode) {
+  if (mode === "silent") return;
+  void nativeReminder?.vibrateNow(mode).catch(() => undefined);
+}
+
+export function modeLabel(mode: AlertMode) {
+  switch (mode) {
+    case "gentle":
+      return "가볍게 · 진동 1번";
+    case "clear":
+      return "또렷하게 · 진동 3번";
+    case "strong":
+      return "확실하게 · 진동 5번";
+    default:
+      return "무음 · 화면으로만";
+  }
+}
+
+/** 둥(350ms)·쉼(250ms) 반복 — 네이티브 AlarmVibration.patternFor와 동일 */
+function vibrationPattern(mode: AlertMode): number[] {
+  const pulses = mode === "gentle" ? 1 : mode === "clear" ? 3 : mode === "strong" ? 5 : 0;
+  if (pulses === 0) return [0];
+  const pattern = [0];
+  for (let i = 0; i < pulses; i += 1) {
+    pattern.push(350);
+    if (i < pulses - 1) pattern.push(250);
+  }
+  return pattern;
 }

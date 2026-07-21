@@ -10,18 +10,22 @@ const DONE_MS = 4_000;
 
 /**
  * 1분 루틴 화면 (A-07) + 완료 상태 (A-08).
- * - 사용자가 직접 시작한 60초 동안만 화면을 켜 둔다.
+ * - 알림이 울리면 60초 동안 화면을 켜 둔다.
  * - 60초가 지나면 완료 문구로 바꾸고 4초 뒤 부드럽게 홈으로 돌아간다.
- * - `지금은 그만`도 조용히 홈으로 돌아간다. 부정적 피드백은 없다.
+ * - 사용자는 5분 뒤로 미루거나 이번 회차를 넘길 수 있다.
  */
 export default function Break({
   nextLabel,
-  onFinish
+  onFinish,
+  onSnooze,
+  onSkip
 }: {
   /** 완료 화면에 보여 줄 다음 틈 안내 (예: "약 1시간") */
   nextLabel: string;
   /** 루틴 종료(완료·중단 모두). 이 시점부터 다음 간격을 계산한다. */
   onFinish: () => void;
+  onSnooze: () => void;
+  onSkip: () => void;
 }) {
   useKeepAwake();
   const startedAt = useRef(Date.now());
@@ -43,14 +47,26 @@ export default function Break({
     onFinish();
   };
 
+  const snooze = () => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    onSnooze();
+  };
+
+  const skip = () => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    onSkip();
+  };
+
   useEffect(() => {
     if (elapsed >= ROUTINE_MS + DONE_MS) finish();
   }, [elapsed]);
 
-  // 하드웨어 뒤로 가기 = 지금은 그만 (조용히 홈으로)
+  // 하드웨어 뒤로 가기 = 이번 회차 넘기기
   useEffect(() => {
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      finish();
+      skip();
       return true;
     });
     return () => sub.remove();
@@ -81,9 +97,12 @@ export default function Break({
           {`0${Math.floor(secondsLeft / 60)}:${pad2(secondsLeft % 60)}`}
         </Text>
         <Text style={styles.copy}>
-          물 한 모금 마시고,{"\n"}자리에서 일어나 몸을 가볍게 펴 보세요.
+          물 한 모금 마시고,{"\n"}자리에서 일어나 가볍게 스트레칭해 보세요.
         </Text>
-        <SecondaryButton label="지금은 그만" onPress={finish} style={styles.stop} />
+        <View style={styles.actionRow}>
+          <SecondaryButton label="5분 뒤" onPress={snooze} style={styles.action} />
+          <SecondaryButton label="이번엔 넘기기" onPress={skip} style={styles.action} />
+        </View>
       </Plate>
     </View>
   );
@@ -119,7 +138,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "700"
   },
-  stop: { width: 180, marginTop: 30 },
+  actionRow: { width: "100%", flexDirection: "row", gap: 10, marginTop: 30 },
+  action: { flex: 1 },
   doneTitle: {
     color: colors.surface,
     fontSize: 38,

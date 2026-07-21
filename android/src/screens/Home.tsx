@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { TimeSheet } from "../components/TimePickerSheet";
-import { AmberButton, Eyebrow, InfoRow, Panel, Plate, PrimaryButton, SecondaryButton } from "../components/ui";
+import { AmberButton, Eyebrow, InfoRow, Panel, Plate, PrimaryButton } from "../components/ui";
+import { modeLabel } from "../lib/notifications";
 import {
   endOfWorkToday,
   fmtHM,
@@ -11,7 +12,7 @@ import {
   intervalMs,
   isWithinWork
 } from "../lib/time";
-import { colors, MIN_TOUCH, spacing } from "../theme";
+import { colors, MIN_TOUCH } from "../theme";
 import { Rhythm, Settings } from "../types";
 
 export default function Home({
@@ -19,9 +20,6 @@ export default function Home({
   rhythm,
   now,
   permissionOk,
-  onStartBreak,
-  onSnooze,
-  onSkip,
   onPause,
   onResume,
   onOpenSystemSettings
@@ -30,9 +28,6 @@ export default function Home({
   rhythm: Rhythm;
   now: number;
   permissionOk: boolean;
-  onStartBreak: () => void;
-  onSnooze: () => void;
-  onSkip: () => void;
   onPause: (untilMs: number) => void;
   onResume: () => void;
   onOpenSystemSettings: () => void;
@@ -51,9 +46,6 @@ export default function Home({
       : 0;
 
   const workHours = `${fmtHM(settings.startMin)}–${fmtHM(settings.endMin)}`;
-  const modeLabel =
-    settings.mode === "vibrate" ? "진동 · 짧게 한 번" : `무음 · ${settings.headsUp ? "화면 상단 잠깐" : "알림 영역에만"}`;
-
   return (
     <ScrollView contentContainerStyle={styles.content}>
       {settings.notificationsOn && !permissionOk && (
@@ -77,13 +69,8 @@ export default function Home({
       ) : suggesting ? (
         <Plate background={colors.systemsTeal} style={styles.heroPlate}>
           <Eyebrow>PAUSE SIGNAL</Eyebrow>
-          <Text style={styles.heroTitleLight}>지금 멈추라는{"\n"}뜻은 아니에요.</Text>
-          <Text style={styles.heroCopyLight}>마무리할 틈이 생기면, 1분만 움직여요.</Text>
-          <PrimaryButton label="지금 1분" onPress={onStartBreak} style={styles.heroButton} />
-          <View style={styles.secondaryRow}>
-            <SecondaryButton label="5분 뒤" onPress={onSnooze} style={styles.flex1} />
-            <SecondaryButton label="이번엔 넘기기" onPress={onSkip} style={styles.flex1} />
-          </View>
+          <Text style={styles.heroTitleLight}>1분의 틈을{"\n"}여는 중이에요.</Text>
+          <Text style={styles.heroCopyLight}>물 한 모금과 가벼운 움직임으로 몸을 잠깐 쉬어 주세요.</Text>
         </Plate>
       ) : (
         <Plate background={colors.systemsTeal} style={styles.heroPlate}>
@@ -115,16 +102,9 @@ export default function Home({
         </Plate>
       )}
 
-      {!paused && !suggesting && (
-        <Plate background={colors.periwinkle} style={styles.actionPlate}>
-          <Text style={styles.railLabel}>QUICK ACTION</Text>
-          <PrimaryButton label="지금 1분" onPress={onStartBreak} />
-        </Plate>
-      )}
-
       <Panel title="TODAY'S RHYTHM">
         <InfoRow label="오늘의 업무 시간" value={workHours} />
-        <InfoRow label="알림 방식" value={modeLabel} />
+        <InfoRow label="알림 방식" value={modeLabel(settings.mode)} />
         <InfoRow
           label="현재 상태"
           value={paused ? "잠시 멈춤" : suggesting ? "휴식 제안 중" : offDuty ? "업무 시간 아님" : "알림 대기 중"}
@@ -213,7 +193,7 @@ function SheetOption({
 const styles = StyleSheet.create({
   content: { padding: 14, gap: 14 },
   noticeCopy: { color: colors.carbon, fontSize: 13, fontWeight: "700", marginBottom: 12 },
-  heroPlate: { minHeight: 260, padding: 22 },
+  heroPlate: { padding: 22 },
   heroTitle: {
     color: colors.carbon,
     fontSize: 27,
@@ -253,8 +233,6 @@ const styles = StyleSheet.create({
   heroCopy: { marginTop: 12, color: colors.carbon, fontSize: 13, lineHeight: 20, fontWeight: "700" },
   heroCopyLight: { marginTop: 12, color: colors.surface, fontSize: 13, lineHeight: 20, fontWeight: "700" },
   heroButton: { marginTop: 18 },
-  secondaryRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm },
-  flex1: { flex: 1 },
   meter: {
     height: 14,
     marginTop: 18,
@@ -264,19 +242,6 @@ const styles = StyleSheet.create({
     borderColor: colors.ice
   },
   meterFill: { height: "100%", backgroundColor: colors.signal },
-  actionPlate: { padding: spacing.sm },
-  railLabel: {
-    marginHorizontal: -spacing.sm,
-    marginTop: -spacing.sm,
-    marginBottom: 10,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 7,
-    color: colors.canvasSoft,
-    backgroundColor: colors.carbon,
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 0.8
-  },
   panelCopy: { color: colors.carbon, marginBottom: 12, fontSize: 12 },
   sheetBackdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(17, 19, 26, 0.55)" },
   sheet: {

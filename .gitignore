@@ -9,6 +9,9 @@ android/android/.cxx/
 android/android/build/
 android/android/app/build/
 android/android/local.properties
+android/android/keystore.properties
+android/android/app/*.jks
+android/android/app/*.keystore
 android/android/app/debug.keystore
 windows/src-tauri/target/
 windows/src-tauri/gen/
