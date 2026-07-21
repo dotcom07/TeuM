@@ -20,6 +20,8 @@ export default function Home({
   rhythm,
   now,
   permissionOk,
+  doneToday,
+  onOpenRecords,
   onPause,
   onResume,
   onOpenSystemSettings
@@ -28,6 +30,9 @@ export default function Home({
   rhythm: Rhythm;
   now: number;
   permissionOk: boolean;
+  /** 기록 모드가 꺼져 있으면 null — 홈에 기록 진입을 노출하지 않는다. */
+  doneToday: number | null;
+  onOpenRecords: () => void;
   onPause: (untilMs: number) => void;
   onResume: () => void;
   onOpenSystemSettings: () => void;
@@ -60,7 +65,7 @@ export default function Home({
           <Eyebrow>PAUSED</Eyebrow>
           <Text style={styles.heroTitle}>지금은{"\n"}쉬어 가는 중이에요.</Text>
           <Text style={styles.heroCopy}>
-            알림이 잠시 멈춰 있어요.
+            건강 알람이 잠시 멈춰 있어요.
             {rhythm.pausedUntil != null &&
               `\n${fmtKoreanTime(rhythm.pausedUntil)}에 다시 알려드릴게요.`}
           </Text>
@@ -77,7 +82,7 @@ export default function Home({
           <Eyebrow>NEXT PAUSE SIGNAL</Eyebrow>
           {offDuty ? (
             <>
-              <Text style={styles.heroTitleLight}>다음 틈은</Text>
+              <Text style={styles.heroTitleLight}>다음 건강 알람은</Text>
               <Text style={styles.heroNumberSmall}>
                 {rhythm.nextTickAt != null ? fmtKoreanDayTime(rhythm.nextTickAt, now) : "—"}
               </Text>
@@ -87,7 +92,7 @@ export default function Home({
             </>
           ) : (
             <>
-              <Text style={styles.heroTitleLight}>다음 틈까지</Text>
+              <Text style={styles.heroTitleLight}>다음 건강 알람까지</Text>
               <Text style={styles.heroNumber}>
                 {remainingMs == null ? "—" : fmtRemaining(remainingMs)}
               </Text>
@@ -104,17 +109,26 @@ export default function Home({
 
       <Panel title="TODAY'S RHYTHM">
         <InfoRow label="오늘의 업무 시간" value={workHours} />
-        <InfoRow label="알림 방식" value={modeLabel(settings.mode)} />
+        <InfoRow label="알람 방식" value={modeLabel(settings.mode)} />
         <InfoRow
           label="현재 상태"
-          value={paused ? "잠시 멈춤" : suggesting ? "휴식 제안 중" : offDuty ? "업무 시간 아님" : "알림 대기 중"}
+          value={paused ? "잠시 멈춤" : suggesting ? "1분의 틈 진행 중" : offDuty ? "업무 시간 아님" : "알람 대기 중"}
           last
         />
       </Panel>
 
+      {doneToday != null && (
+        <Panel title="나의 틈 기록">
+          <Text style={styles.panelCopy}>
+            {doneToday > 0 ? `오늘 ${doneToday}번 챙겼어요.` : "오늘의 틈이 아직 남아 있어요."}
+          </Text>
+          <AmberButton label="기록 보기" onPress={onOpenRecords} />
+        </Panel>
+      )}
+
       {!paused && (
         <Panel title="CONTROL PANEL">
-          <Text style={styles.panelCopy}>지금은 알림을 받고 있어요.</Text>
+          <Text style={styles.panelCopy}>건강 알람이 켜져 있어요.</Text>
           <AmberButton label="잠시 멈춤" onPress={() => setSheetOpen(true)} />
         </Panel>
       )}

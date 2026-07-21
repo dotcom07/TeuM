@@ -95,7 +95,7 @@ export async function scheduleTick(atMs: number | null, settings: Settings) {
 
   if (atMs == null || !settings.notificationsOn || atMs <= Date.now()) return;
   await Notifications.scheduleNotificationAsync({
-    content: tickContent("틈새움", "일하는 나를 위한 1분을 시작해요.", settings.mode),
+    content: tickContent("틈새움", "물 한 모금과 가벼운 스트레칭을 챙길 시간이에요.", settings.mode),
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: new Date(atMs),

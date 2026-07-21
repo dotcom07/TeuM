@@ -28,15 +28,37 @@ class ReminderReceiver : BroadcastReceiver() {
       PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
+    // 알림에서 바로 응답할 수 있는 세 가지 액션. Activity PendingIntent라
+    // notification trampoline 제한에 걸리지 않는다.
+    fun respondIntent(action: String, requestCode: Int): PendingIntent {
+      val intent = Intent(
+        Intent.ACTION_VIEW,
+        Uri.parse("teum://respond/$action"),
+        context,
+        MainActivity::class.java
+      ).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+      }
+      return PendingIntent.getActivity(
+        context,
+        requestCode,
+        intent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+      )
+    }
+
     val notification = NotificationCompat.Builder(context, channelId)
       .setSmallIcon(R.drawable.ic_stat_teum)
       .setContentTitle(if (test) "틈새움 테스트" else "틈새움")
-      .setContentText("일하는 나를 위한 1분을 시작해요.")
+      .setContentText("물 한 모금과 가벼운 스트레칭을 챙길 시간이에요.")
       .setContentIntent(openPendingIntent)
       .setFullScreenIntent(openPendingIntent, true)
       .setPriority(NotificationCompat.PRIORITY_MAX)
       .setCategory(NotificationCompat.CATEGORY_ALARM)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+      .addAction(0, "5분 뒤에 다시", respondIntent("snooze", SNOOZE_REQUEST_CODE))
+      .addAction(0, "O 챙겼어요", respondIntent("done", DONE_REQUEST_CODE))
+      .addAction(0, "X 넘길게요", respondIntent("skip", SKIP_REQUEST_CODE))
       .setAutoCancel(true)
       .setOngoing(false)
       .build()
@@ -88,5 +110,8 @@ class ReminderReceiver : BroadcastReceiver() {
     const val EXTRA_TEST = "teum_test"
     private const val NOTIFICATION_ID = 5201
     private const val OPEN_REQUEST_CODE = 5202
+    private const val SNOOZE_REQUEST_CODE = 5203
+    private const val DONE_REQUEST_CODE = 5204
+    private const val SKIP_REQUEST_CODE = 5205
   }
 }

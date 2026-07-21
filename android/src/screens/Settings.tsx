@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { DurationSheet, fmtDuration, TimeSheet } from "../components/TimePickerSheet";
 import { Panel, PrimaryButton } from "../components/ui";
 import { modeLabel, previewVibration } from "../lib/notifications";
@@ -23,7 +23,8 @@ export default function SettingsScreen({
   fullScreenAllowed,
   onOpenFullScreenSettings,
   onBack,
-  onTestNotification
+  onTestNotification,
+  onClearRecords
 }: {
   settings: SettingsType;
   permissionOk: boolean;
@@ -33,6 +34,7 @@ export default function SettingsScreen({
   onOpenFullScreenSettings: () => void;
   onBack: () => void;
   onTestNotification: () => void;
+  onClearRecords: () => void;
 }) {
   const [picker, setPicker] = useState<"start" | "end" | "interval" | null>(null);
 
@@ -54,10 +56,10 @@ export default function SettingsScreen({
         <Pressable
           onPress={() => setPicker("interval")}
           accessibilityRole="button"
-          accessibilityLabel={`알림 간격 ${fmtDuration(settings.intervalMin)}, 눌러서 변경`}
+          accessibilityLabel={`알람 간격 ${fmtDuration(settings.intervalMin)}, 눌러서 변경`}
           style={styles.timeRow}
         >
-          <Text style={styles.rowLabel}>알림 간격</Text>
+          <Text style={styles.rowLabel}>알람 간격</Text>
           <Text style={styles.timeValue}>{fmtDuration(settings.intervalMin)}</Text>
         </Pressable>
         <Text style={[styles.rowLabel, styles.sectionGap]}>반복 요일</Text>
@@ -73,9 +75,9 @@ export default function SettingsScreen({
         </View>
       </Panel>
 
-      <Panel title="알림 방식">
+      <Panel title="알람 방식">
         <View style={styles.switchRow}>
-          <Text style={styles.rowLabel}>알림</Text>
+          <Text style={styles.rowLabel}>건강 알람</Text>
           <Switch
             value={settings.notificationsOn}
             onValueChange={(v) => patch({ notificationsOn: v })}
@@ -143,6 +145,31 @@ export default function SettingsScreen({
         </Panel>
       )}
 
+      <Panel title="기록">
+        <RadioRow
+          label="가볍게 사용 — 응답을 저장하지 않아요"
+          active={!settings.recordMode}
+          onPress={() => patch({ recordMode: false })}
+        />
+        <RadioRow
+          label="기록 남기기 — O/X 결과를 이 기기에 저장해요"
+          active={settings.recordMode}
+          onPress={() => patch({ recordMode: true })}
+        />
+        <Pressable
+          onPress={() =>
+            Alert.alert("기록 모두 삭제", "저장된 O/X 기록을 모두 삭제해요. 되돌릴 수 없어요.", [
+              { text: "취소", style: "cancel" },
+              { text: "삭제", style: "destructive", onPress: onClearRecords }
+            ])
+          }
+          accessibilityRole="button"
+          style={styles.clearButton}
+        >
+          <Text style={styles.clearButtonText}>기록 모두 삭제</Text>
+        </Pressable>
+      </Panel>
+
       <Panel title="개인정보">
         <Text style={styles.privacy}>
           틈새움은 건강·행동 데이터를 수집하거나 외부로 전송하지 않습니다.{"\n"}
@@ -191,7 +218,7 @@ export default function SettingsScreen({
       />
       <DurationSheet
         visible={picker === "interval"}
-        title="알림 간격"
+        title="알람 간격"
         initialMin={settings.intervalMin}
         onCancel={() => setPicker(null)}
         onConfirm={(min) => {
@@ -271,6 +298,19 @@ const styles = StyleSheet.create({
   },
   permissionButtonText: { color: colors.carbon, fontSize: 12, fontWeight: "700" },
   privacy: { color: colors.chromeIndigo, fontSize: 12, lineHeight: 19 },
+  clearButton: {
+    minHeight: MIN_TOUCH,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderTopColor: colors.highlight,
+    borderLeftColor: colors.highlight,
+    borderRightColor: colors.hairline,
+    borderBottomColor: colors.hairline
+  },
+  clearButtonText: { color: colors.mutedIndigo, fontSize: 12, fontWeight: "700" },
   privacyLink: {
     minHeight: MIN_TOUCH,
     justifyContent: "center",

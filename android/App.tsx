@@ -27,6 +27,7 @@ import {
   setupCategories,
   setupChannels
 } from "./src/lib/notifications";
+import { appendRecord, clearRecords, doneCountToday, loadRecords } from "./src/lib/records";
 import { loadPersisted, savePersisted } from "./src/lib/storage";
 import {
   fmtIntervalKorean,
@@ -39,11 +40,12 @@ import {
 import Break from "./src/screens/Break";
 import Home from "./src/screens/Home";
 import Onboarding from "./src/screens/Onboarding";
+import Records from "./src/screens/Records";
 import SettingsScreen from "./src/screens/Settings";
 import { colors } from "./src/theme";
-import { Persisted, Rhythm, Settings } from "./src/types";
+import { BreakRecord, BreakResult, Persisted, Rhythm, Settings } from "./src/types";
 
-type Screen = "home" | "break" | "settings";
+type Screen = "home" | "break" | "settings" | "records";
 
 /** 놓친 알림 시각을 다음 정규 슬롯으로 넘긴다. 1시간 안에는 제안 상태를 유지한다. */
 function rollForward(rhythm: Rhythm, settings: Settings, now: number): Rhythm {
@@ -76,16 +78,79 @@ export default function App() {
   const [fullScreenAllowed, setFullScreenAllowed] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
+  const [records, setRecords] = useState<BreakRecord[]>([]);
+
   const persistedRef = useRef<Persisted | null>(null);
   const screenRef = useRef<Screen>("home");
   const wasSuggestingRef = useRef(false);
+  const recordsRef = useRef<BreakRecord[]>([]);
+  // 현재 회차 추적 — 5분 미루기를 써도 같은 회차로 남긴다.
+  const breakScheduledAtRef = useRef<number | null>(null);
+  const breakSnoozedRef = useRef(false);
   screenRef.current = screen;
+  recordsRef.current = records;
 
-  const openBreakFromUrl = useCallback((url: string | null) => {
-    if (!url?.startsWith("teum://break")) return;
+  /** 1분 화면을 여는 단일 진입점. 회차 시각을 기억해 기록에 사용한다. */
+  const openBreak = useCallback(() => {
     void clearDelivered();
+    const rhythm = persistedRef.current?.rhythm;
+    const t = Date.now();
+    const firedTick =
+      rhythm?.nextTickAt != null && rhythm.nextTickAt <= t ? rhythm.nextTickAt : t;
+    const interval = persistedRef.current ? intervalMs(persistedRef.current.settings) : 0;
+    // 5분 미룬 같은 회차면 최초 예정 시각을 유지한다.
+    const keepSame =
+      breakSnoozedRef.current &&
+      breakScheduledAtRef.current != null &&
+      t - breakScheduledAtRef.current < interval;
+    if (!keepSame) {
+      breakScheduledAtRef.current = firedTick;
+      breakSnoozedRef.current = false;
+    }
     setScreen("break");
   }, []);
+
+  /** 기록 모드일 때만 회차 결과를 기기에 남긴다. */
+  const recordResponse = useCallback((result: BreakResult) => {
+    const current = persistedRef.current;
+    const scheduledAt = breakScheduledAtRef.current;
+    const snoozed = breakSnoozedRef.current;
+    breakScheduledAtRef.current = null;
+    breakSnoozedRef.current = false;
+    if (!current?.settings.recordMode || scheduledAt == null) return;
+    const record: BreakRecord = {
+      id: `${scheduledAt}-${Date.now()}`,
+      scheduledAt,
+      resolvedAt: Date.now(),
+      result,
+      snoozed
+    };
+    void appendRecord(recordsRef.current, record).then(setRecords);
+  }, []);
+
+  const openBreakFromUrl = useCallback(
+    (url: string | null) => {
+      if (!url) return;
+      if (url.startsWith("teum://respond/")) {
+        void clearDelivered();
+        const action = url.slice("teum://respond/".length);
+        // 알림 액션으로 바로 응답한 경우 — 1분 화면 없이 처리한다.
+        const rhythm = persistedRef.current?.rhythm;
+        const t = Date.now();
+        if (breakScheduledAtRef.current == null) {
+          breakScheduledAtRef.current =
+            rhythm?.nextTickAt != null && rhythm.nextTickAt <= t ? rhythm.nextTickAt : t;
+        }
+        if (action === "done") respondDoneRef.current?.();
+        else if (action === "skip") respondSkipRef.current?.();
+        else if (action === "snooze") respondSnoozeRef.current?.();
+        setScreen("home");
+        return;
+      }
+      if (url.startsWith("teum://break")) openBreak();
+    },
+    [openBreak]
+  );
 
   /** 상태를 저장하고 예약 알림을 다시 잡는 단일 진입점 */
   const commit = useCallback((next: Persisted) => {
@@ -116,22 +181,21 @@ export default function App() {
       persistedRef.current = rolled;
       setPersisted(rolled);
       void scheduleTick(rolled.rhythm.nextTickAt, rolled.settings);
+      setRecords(await loadRecords());
 
       openBreakFromUrl(await Linking.getInitialURL());
       if (await consumeFullScreenBreakRequest()) {
-        void clearDelivered();
-        setScreen("break");
+        openBreak();
       }
 
       // Expo Go 폴백 알림의 본문을 눌러 앱이 열린 경우에도 1분 화면을 연다.
       const last = await Notifications.getLastNotificationResponseAsync();
       if (last?.notification.request.content.data?.teumOpenBreak === true) {
-        void clearDelivered();
-        setScreen("break");
+        openBreak();
         await Notifications.clearLastNotificationResponseAsync();
       }
     })();
-  }, [openBreakFromUrl]);
+  }, [openBreak, openBreakFromUrl]);
 
   // 실행 중인 앱에 전체 화면 알림 인텐트가 전달되는 경우.
   useEffect(() => {
@@ -145,9 +209,7 @@ export default function App() {
       const t = Date.now();
       setNow(t);
       void consumeFullScreenBreakRequest().then((requested) => {
-        if (!requested) return;
-        void clearDelivered();
-        setScreen("break");
+        if (requested) openBreak();
       });
       const current = persistedRef.current;
       if (!current) return;
@@ -155,12 +217,12 @@ export default function App() {
       if (rolled !== current.rhythm) commit({ ...current, rhythm: rolled });
     }, 1000);
     return () => clearInterval(id);
-  }, [commit]);
+  }, [commit, openBreak]);
 
   // ── 설정 화면에서 뒤로 가기 = 홈으로 (앱 종료 방지) ────────
   useEffect(() => {
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (screenRef.current === "settings") {
+      if (screenRef.current === "settings" || screenRef.current === "records") {
         setScreen("home");
         return true;
       }
@@ -184,8 +246,7 @@ export default function App() {
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
       const action = response.actionIdentifier;
       if (action === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        void clearDelivered();
-        setScreen("break");
+        openBreakRef.current?.();
       } else if (action === ACTION_SNOOZE) {
         void clearDelivered();
         snoozeRef.current?.();
@@ -208,17 +269,61 @@ export default function App() {
     return () => clearTimeout(id);
   }, [toast]);
 
-  const finishBreak = useCallback(() => {
+  // ── 1분 화면 응답 ─────────────────────────────────────────
+  // O: 누른 시점부터 다음 간격을 계산한다.
+  const respondDone = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
-    // 완료 시점부터 다음 60분을 계산한다.
+    recordResponse("done");
     patchRhythm({
       status: "running",
       pausedUntil: null,
       nextTickAt: nextTickFrom(Date.now(), current.settings)
     });
-    setScreen("home");
+  }, [patchRhythm, recordResponse]);
+
+  // X: 기존 정규 주기를 유지한다 (예정 시점 + 간격).
+  const respondSkip = useCallback(() => {
+    const current = persistedRef.current;
+    if (!current) return;
+    const base = breakScheduledAtRef.current ?? current.rhythm.nextTickAt ?? Date.now();
+    recordResponse("skipped");
+    patchRhythm({
+      nextTickAt: nextTickFrom(
+        Math.max(base, Date.now() - intervalMs(current.settings)),
+        current.settings
+      )
+    });
+    showToastRef.current?.("괜찮아요. 다음 틈에 다시 만나요.");
+  }, [patchRhythm, recordResponse]);
+
+  // 5분 뒤에 다시: 같은 회차를 한 번만 미룬다. 기록은 최종 응답 때 남긴다.
+  const respondSnooze = useCallback(() => {
+    const current = persistedRef.current;
+    if (!current) return;
+    breakSnoozedRef.current = true;
+    const t = Date.now();
+    const inFive = t + SNOOZE_MS;
+    const nextTickAt = isWithinWork(inFive, current.settings)
+      ? inFive
+      : nextTickFrom(t, current.settings);
+    patchRhythm({ nextTickAt });
+    showToastRef.current?.("5분 뒤에 한 번만 다시 알려드릴게요.");
   }, [patchRhythm]);
+
+  // 응답 없이 닫힘: X와 구분해 저장하고, 정규 주기는 유지한다.
+  const respondUnanswered = useCallback(() => {
+    const current = persistedRef.current;
+    if (!current) return;
+    const base = breakScheduledAtRef.current ?? current.rhythm.nextTickAt ?? Date.now();
+    recordResponse("unanswered");
+    patchRhythm({
+      nextTickAt: nextTickFrom(
+        Math.max(base, Date.now() - intervalMs(current.settings)),
+        current.settings
+      )
+    });
+  }, [patchRhythm, recordResponse]);
 
   const snooze = useCallback(() => {
     const current = persistedRef.current;
@@ -245,8 +350,18 @@ export default function App() {
 
   const snoozeRef = useRef(snooze);
   const skipRef = useRef(skip);
+  const openBreakRef = useRef(openBreak);
+  const showToastRef = useRef(showToast);
+  const respondDoneRef = useRef(respondDone);
+  const respondSkipRef = useRef(respondSkip);
+  const respondSnoozeRef = useRef(respondSnooze);
   snoozeRef.current = snooze;
   skipRef.current = skip;
+  openBreakRef.current = openBreak;
+  showToastRef.current = showToast;
+  respondDoneRef.current = respondDone;
+  respondSkipRef.current = respondSkip;
+  respondSnoozeRef.current = respondSnooze;
 
   const pause = useCallback(
     (untilMs: number) => {
@@ -269,7 +384,7 @@ export default function App() {
     patchRhythm({ status: "running", pausedUntil: null, nextTickAt });
     showToast(
       nextTickAt != null
-        ? `다시 시작할게요. 다음 틈은 ${fmtKoreanDayTime(nextTickAt, now)}이에요.`
+        ? `다시 시작할게요. 다음 건강 알람은 ${fmtKoreanDayTime(nextTickAt, now)}이에요.`
         : "다시 시작할게요."
     );
   }, [patchRhythm, showToast]);
@@ -349,9 +464,9 @@ export default function App() {
     isWithinWork(now, persisted.settings);
 
   useEffect(() => {
-    if (suggesting && !wasSuggestingRef.current) setScreen("break");
+    if (suggesting && !wasSuggestingRef.current) openBreak();
     wasSuggestingRef.current = suggesting;
-  }, [suggesting]);
+  }, [suggesting, openBreak]);
 
   // ── 렌더 ──────────────────────────────────────────────────
   if (!persisted) {
@@ -398,6 +513,8 @@ export default function App() {
             rhythm={persisted.rhythm}
             now={now}
             permissionOk={permissionOk}
+            doneToday={persisted.settings.recordMode ? doneCountToday(records, now) : null}
+            onOpenRecords={() => setScreen("records")}
             onPause={pause}
             onResume={resume}
             onOpenSystemSettings={openSystemSettings}
@@ -406,16 +523,24 @@ export default function App() {
         {screen === "break" && (
           <Break
             nextLabel={fmtIntervalKorean(persisted.settings.intervalMin)}
-            onFinish={finishBreak}
             onSnooze={() => {
-              snooze();
+              respondSnooze();
               setScreen("home");
             }}
+            onDone={respondDone}
             onSkip={() => {
-              skip();
+              respondSkip();
               setScreen("home");
             }}
+            onUnanswered={() => {
+              respondUnanswered();
+              setScreen("home");
+            }}
+            onClose={() => setScreen("home")}
           />
+        )}
+        {screen === "records" && (
+          <Records records={records} now={now} onBack={() => setScreen("home")} />
         )}
         {screen === "settings" && (
           <SettingsScreen
@@ -427,6 +552,11 @@ export default function App() {
             onOpenFullScreenSettings={() => void openFullScreenReminderSettings()}
             onBack={() => setScreen("home")}
             onTestNotification={() => void testNotification()}
+            onClearRecords={() => {
+              void clearRecords();
+              setRecords([]);
+              showToast("기록을 모두 삭제했어요.");
+            }}
           />
         )}
         <Footer />
