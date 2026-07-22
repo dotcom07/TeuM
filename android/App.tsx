@@ -13,12 +13,14 @@ import {
   Text,
   View
 } from "react-native";
+import { I18nProvider, useI18n } from "./src/i18n";
 import {
   ACTION_SKIP,
   ACTION_SNOOZE,
   canUseFullScreenReminder,
   clearDelivered,
   consumeFullScreenBreakRequest,
+  dismissFullScreenBreak,
   hasPermission,
   openFullScreenReminderSettings,
   requestPermission,
@@ -30,8 +32,7 @@ import {
 import { appendRecord, clearRecords, doneCountToday, loadRecords } from "./src/lib/records";
 import { loadPersisted, savePersisted } from "./src/lib/storage";
 import {
-  fmtIntervalKorean,
-  fmtKoreanDayTime,
+  fmtDayTime,
   intervalMs,
   isWithinWork,
   nextTickFrom,
@@ -71,6 +72,15 @@ function rollForward(rhythm: Rhythm, settings: Settings, now: number): Rhythm {
 }
 
 export default function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
+  );
+}
+
+function AppContent() {
+  const { language, tr } = useI18n();
   const [persisted, setPersisted] = useState<Persisted | null>(null);
   const [screen, setScreen] = useState<Screen>("home");
   const [now, setNow] = useState(Date.now());
@@ -84,11 +94,13 @@ export default function App() {
   const screenRef = useRef<Screen>("home");
   const wasSuggestingRef = useRef(false);
   const recordsRef = useRef<BreakRecord[]>([]);
+  const languageRef = useRef(language);
   // 현재 회차 추적 — 5분 미루기를 써도 같은 회차로 남긴다.
   const breakScheduledAtRef = useRef<number | null>(null);
   const breakSnoozedRef = useRef(false);
   screenRef.current = screen;
   recordsRef.current = records;
+  languageRef.current = language;
 
   /** 1분 화면을 여는 단일 진입점. 회차 시각을 기억해 기록에 사용한다. */
   const openBreak = useCallback(() => {
@@ -110,7 +122,7 @@ export default function App() {
     setScreen("break");
   }, []);
 
-  /** 기록 모드일 때만 회차 결과를 기기에 남긴다. */
+  /** 기록하며 사용 중일 때만 사용자의 선택을 기기에 남긴다. */
   const recordResponse = useCallback((result: BreakResult) => {
     const current = persistedRef.current;
     const scheduledAt = breakScheduledAtRef.current;
@@ -134,7 +146,7 @@ export default function App() {
       if (url.startsWith("teum://respond/")) {
         void clearDelivered();
         const action = url.slice("teum://respond/".length);
-        // 알림 액션으로 바로 응답한 경우 — 1분 화면 없이 처리한다.
+        // 알림 액션에서 바로 선택한 경우 — 1분 화면 없이 처리한다.
         const rhythm = persistedRef.current?.rhythm;
         const t = Date.now();
         if (breakScheduledAtRef.current == null) {
@@ -157,7 +169,7 @@ export default function App() {
     persistedRef.current = next;
     setPersisted(next);
     void savePersisted(next);
-    void scheduleTick(next.rhythm.nextTickAt, next.settings);
+    void scheduleTick(next.rhythm.nextTickAt, next.settings, languageRef.current);
   }, []);
 
   const patchRhythm = useCallback(
@@ -172,15 +184,15 @@ export default function App() {
   // ── 초기화 ────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
-      await setupChannels();
-      await setupCategories();
+      await setupChannels(languageRef.current);
+      await setupCategories(languageRef.current);
       setPermissionOk(await hasPermission());
       setFullScreenAllowed(await canUseFullScreenReminder());
       const loaded = await loadPersisted();
       const rolled = { ...loaded, rhythm: rollForward(loaded.rhythm, loaded.settings, Date.now()) };
       persistedRef.current = rolled;
       setPersisted(rolled);
-      void scheduleTick(rolled.rhythm.nextTickAt, rolled.settings);
+      void scheduleTick(rolled.rhythm.nextTickAt, rolled.settings, languageRef.current);
       setRecords(await loadRecords());
 
       openBreakFromUrl(await Linking.getInitialURL());
@@ -196,6 +208,13 @@ export default function App() {
       }
     })();
   }, [openBreak, openBreakFromUrl]);
+
+  useEffect(() => {
+    void setupChannels(language);
+    void setupCategories(language);
+    const current = persistedRef.current;
+    if (current) void scheduleTick(current.rhythm.nextTickAt, current.settings, language);
+  }, [language]);
 
   // 실행 중인 앱에 전체 화면 알림 인텐트가 전달되는 경우.
   useEffect(() => {
@@ -269,8 +288,8 @@ export default function App() {
     return () => clearTimeout(id);
   }, [toast]);
 
-  // ── 1분 화면 응답 ─────────────────────────────────────────
-  // O: 누른 시점부터 다음 간격을 계산한다.
+  // ── 1분 화면 선택 ─────────────────────────────────────────
+  // 챙김: 누른 시점부터 다음 간격을 계산한다.
   const respondDone = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
@@ -282,7 +301,7 @@ export default function App() {
     });
   }, [patchRhythm, recordResponse]);
 
-  // X: 기존 정규 주기를 유지한다 (예정 시점 + 간격).
+  // 넘김: 기존 정규 주기를 유지한다 (예정 시점 + 간격).
   const respondSkip = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
@@ -294,10 +313,10 @@ export default function App() {
         current.settings
       )
     });
-    showToastRef.current?.("괜찮아요. 다음 틈에 다시 만나요.");
-  }, [patchRhythm, recordResponse]);
+    showToastRef.current?.(tr("괜찮아요. 다음 틈에 다시 만나요.", "That’s okay. We’ll meet at the next break."));
+  }, [patchRhythm, recordResponse, tr]);
 
-  // 5분 뒤에 다시: 같은 회차를 한 번만 미룬다. 기록은 최종 응답 때 남긴다.
+  // 5분 뒤에 다시: 같은 회차를 한 번만 미룬다. 기록은 최종 선택 때 남긴다.
   const respondSnooze = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
@@ -308,10 +327,10 @@ export default function App() {
       ? inFive
       : nextTickFrom(t, current.settings);
     patchRhythm({ nextTickAt });
-    showToastRef.current?.("5분 뒤에 한 번만 다시 알려드릴게요.");
-  }, [patchRhythm]);
+    showToastRef.current?.(tr("5분 뒤에 한 번만 다시 알려드릴게요.", "We’ll remind you once more in 5 minutes."));
+  }, [patchRhythm, tr]);
 
-  // 응답 없이 닫힘: X와 구분해 저장하고, 정규 주기는 유지한다.
+  // 선택 없이 닫힘: 명시적으로 넘긴 경우와 구분해 저장하고, 정규 주기는 유지한다.
   const respondUnanswered = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
@@ -325,6 +344,11 @@ export default function App() {
     });
   }, [patchRhythm, recordResponse]);
 
+  const closeBreak = useCallback(() => {
+    setScreen("home");
+    void dismissFullScreenBreak().catch(() => undefined);
+  }, []);
+
   const snooze = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
@@ -335,8 +359,8 @@ export default function App() {
       ? inFive
       : nextTickFrom(t, current.settings);
     patchRhythm({ nextTickAt });
-    showToast("5분 뒤에 한 번만 다시 알려드릴게요.");
-  }, [patchRhythm, showToast]);
+    showToast(tr("5분 뒤에 한 번만 다시 알려드릴게요.", "We’ll remind you once more in 5 minutes."));
+  }, [patchRhythm, showToast, tr]);
 
   const skip = useCallback(() => {
     const current = persistedRef.current;
@@ -345,8 +369,8 @@ export default function App() {
     patchRhythm({
       nextTickAt: nextTickFrom(Math.max(base, Date.now() - intervalMs(current.settings)), current.settings)
     });
-    showToast("괜찮아요. 다음 틈에 다시 만나요.");
-  }, [patchRhythm, showToast]);
+    showToast(tr("괜찮아요. 다음 틈에 다시 만나요.", "That’s okay. We’ll meet at the next break."));
+  }, [patchRhythm, showToast, tr]);
 
   const snoozeRef = useRef(snooze);
   const skipRef = useRef(skip);
@@ -384,10 +408,12 @@ export default function App() {
     patchRhythm({ status: "running", pausedUntil: null, nextTickAt });
     showToast(
       nextTickAt != null
-        ? `다시 시작할게요. 다음 건강 알람은 ${fmtKoreanDayTime(nextTickAt, now)}이에요.`
-        : "다시 시작할게요."
+        ? language === "ko"
+          ? `다시 시작할게요. 다음 건강 알람은 ${fmtDayTime(nextTickAt, now, language)}이에요.`
+          : `Reminders resumed. Your next health reminder is ${fmtDayTime(nextTickAt, now, language)}.`
+        : tr("다시 시작할게요.", "Reminders resumed.")
     );
-  }, [patchRhythm, showToast]);
+  }, [language, patchRhythm, showToast, tr]);
 
   const changeSettings = useCallback(
     (settings: Settings) => {
@@ -442,18 +468,28 @@ export default function App() {
     const granted = await requestPermission();
     setPermissionOk(granted);
     if (!granted) {
-      showToast("알림 권한을 켠 뒤 다시 테스트해 주세요.");
+      showToast(tr("알림 권한을 켠 뒤 다시 테스트해 주세요.", "Turn on notification permission, then try the test again."));
       return;
     }
-    const scheduled = await scheduleDebugNotification(current.settings);
-    if (scheduled) {
+    try {
+      const scheduled = await scheduleDebugNotification(current.settings, language);
+      if (scheduled) {
+        showToast(
+          fullScreenAllowed
+            ? tr("5초 뒤 선택한 방식으로 1분 화면을 열어요. 화면을 끄거나 다른 앱을 열어 보세요.", "The one-minute screen will open in 5 seconds. Turn off the screen or open another app.")
+            : tr("5초 뒤 테스트해요. 전체 화면 권한이 꺼져 있으면 알림 배너로 표시돼요.", "The test runs in 5 seconds. If full-screen permission is off, it appears as a notification banner.")
+        );
+      }
+    } catch (error) {
+      console.warn("Failed to schedule TeuM debug notification", error);
       showToast(
-        fullScreenAllowed
-          ? "5초 뒤 선택한 방식으로 1분 화면을 열어요. 화면을 끄거나 다른 앱을 열어 보세요."
-          : "5초 뒤 테스트해요. 전체 화면 권한이 꺼져 있으면 알림 배너로 표시돼요."
+        tr(
+          "테스트 알림을 예약하지 못했어요. 앱 빌드와 알림 권한을 확인해 주세요.",
+          "Couldn’t schedule the test reminder. Check the app build and notification permission."
+        )
       );
     }
-  }, [fullScreenAllowed, showToast]);
+  }, [fullScreenAllowed, language, showToast, tr]);
 
   // ── 예정 시각이 되면 수동 진입 없이 즉시 1분 화면을 연다. ───
   const suggesting =
@@ -522,21 +558,22 @@ export default function App() {
         )}
         {screen === "break" && (
           <Break
-            nextLabel={fmtIntervalKorean(persisted.settings.intervalMin)}
             onSnooze={() => {
               respondSnooze();
-              setScreen("home");
+              closeBreak();
             }}
-            onDone={respondDone}
+            onDone={() => {
+              respondDone();
+              closeBreak();
+            }}
             onSkip={() => {
               respondSkip();
-              setScreen("home");
+              closeBreak();
             }}
             onUnanswered={() => {
               respondUnanswered();
-              setScreen("home");
+              closeBreak();
             }}
-            onClose={() => setScreen("home")}
           />
         )}
         {screen === "records" && (
@@ -555,7 +592,7 @@ export default function App() {
             onClearRecords={() => {
               void clearRecords();
               setRecords([]);
-              showToast("기록을 모두 삭제했어요.");
+              showToast(tr("기록을 모두 삭제했어요.", "All records were deleted."));
             }}
           />
         )}
@@ -574,21 +611,22 @@ function Header({
   onSettings: () => void;
   settingsOpen: boolean;
 }) {
+  const { tr } = useI18n();
   return (
     <View style={styles.commandBar}>
-      <Pressable onPress={onLogo} accessibilityRole="button" accessibilityLabel="홈으로" style={styles.logoPill}>
+      <Pressable onPress={onLogo} accessibilityRole="button" accessibilityLabel={tr("홈으로", "Home")} style={styles.logoPill}>
         <Image source={require("./assets/teum-logo.png")} style={styles.logoImage} />
-        <Text style={styles.logoText}>틈새움</Text>
+        <Text style={styles.logoText}>{tr("틈새움", "TeuM")}</Text>
       </Pressable>
       <View style={styles.commandSpacer} />
       <Pressable
         onPress={onSettings}
         accessibilityRole="button"
-        accessibilityLabel={settingsOpen ? "설정 닫기" : "설정 열기"}
+        accessibilityLabel={settingsOpen ? tr("설정 닫기", "Close settings") : tr("설정 열기", "Open settings")}
         hitSlop={10}
         style={styles.navActionWrap}
       >
-        <Text style={styles.navAction}>{settingsOpen ? "닫기" : "설정"}</Text>
+        <Text style={styles.navAction}>{settingsOpen ? tr("닫기", "Close") : tr("설정", "Settings")}</Text>
       </Pressable>
     </View>
   );

@@ -1,20 +1,20 @@
 {
   "expo": {
-    "name": "틈새움 TeuM",
+    "name": "TeuM",
     "slug": "teum",
     "scheme": "teum",
     "version": "0.1.0",
-    "icon": "./assets/teum-logo.png",
+    "icon": "./assets/teum-app-icon-512.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "android": {
       "package": "com.teum.app",
       "permissions": [
-        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_EXACT_ALARM",
         "android.permission.USE_FULL_SCREEN_INTENT"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/teum-logo.png",
+        "foregroundImage": "./assets/teum-adaptive-foreground-1024.png",
         "backgroundColor": "#7a8aba"
       }
     },

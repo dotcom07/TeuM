@@ -1,5 +1,16 @@
 <resources>
-  <string name="app_name">틈새움 TeuM</string>
+  <string name="app_name">TeuM</string>
+  <string name="notification_test_title">틈새움 테스트</string>
+  <string name="notification_title">틈새움</string>
+  <string name="notification_body">물 한 모금과 가벼운 스트레칭을 챙길 시간이에요.</string>
+  <string name="notification_snooze">5분 뒤에 다시</string>
+  <string name="notification_done">네, 챙겼어요</string>
+  <string name="notification_skip">이번엔 넘길게요</string>
+  <string name="notification_channel_description">1분의 틈 전체 화면 알림</string>
+  <string name="mode_gentle">가볍게 · 진동 1번</string>
+  <string name="mode_clear">또렷하게 · 진동 3번</string>
+  <string name="mode_strong">확실하게 · 진동 5번</string>
+  <string name="mode_silent">무음 · 화면으로만</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
   <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
 </resources>

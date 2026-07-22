@@ -1,4 +1,5 @@
 import { Settings } from "../types";
+import type { AppLanguage } from "../i18n";
 
 export const SNOOZE_MS = 5 * 60 * 1000;
 
@@ -81,45 +82,55 @@ export function fmtHM(min: number) {
   return `${pad2(Math.floor(min / 60))}:${pad2(min % 60)}`;
 }
 
-/** epoch ms → "오후 2:30" */
-export function fmtKoreanTime(ms: number) {
+export function fmtTime(ms: number, language: AppLanguage) {
   const d = new Date(ms);
   const h = d.getHours();
-  const meridiem = h < 12 ? "오전" : "오후";
   const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return `${meridiem} ${hour12}:${pad2(d.getMinutes())}`;
+  const meridiem = language === "ko" ? (h < 12 ? "오전" : "오후") : h < 12 ? "AM" : "PM";
+  return language === "ko"
+    ? `${meridiem} ${hour12}:${pad2(d.getMinutes())}`
+    : `${hour12}:${pad2(d.getMinutes())} ${meridiem}`;
 }
 
-/** epoch ms → "오후 2:30" / "내일 오전 10:00" / "월요일 오전 10:00" */
-export function fmtKoreanDayTime(ms: number, nowMs: number) {
+export function fmtDayTime(ms: number, nowMs: number, language: AppLanguage) {
   const d = new Date(ms);
   const n = new Date(nowMs);
-  const time = fmtKoreanTime(ms);
+  const time = fmtTime(ms, language);
   if (d.toDateString() === n.toDateString()) return time;
   const tomorrow = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1);
-  if (d.toDateString() === tomorrow.toDateString()) return `내일 ${time}`;
-  return `${DAY_LABELS[d.getDay()]}요일 ${time}`;
+  if (d.toDateString() === tomorrow.toDateString()) {
+    return language === "ko" ? `내일 ${time}` : `Tomorrow ${time}`;
+  }
+  return language === "ko"
+    ? `${DAY_LABELS_KO[d.getDay()]}요일 ${time}`
+    : `${DAY_NAMES_EN[d.getDay()]} ${time}`;
 }
 
-/** 남은 시간을 "24분" / "1시간 2분" 형태로 */
-export function fmtRemaining(ms: number) {
+export function fmtRemaining(ms: number, language: AppLanguage) {
   const totalMin = Math.max(0, Math.ceil(ms / 60000));
   if (totalMin >= 60) {
     const h = Math.floor(totalMin / 60);
     const m = totalMin % 60;
-    return m === 0 ? `${h}시간` : `${h}시간 ${m}분`;
+    if (language === "ko") return m === 0 ? `${h}시간` : `${h}시간 ${m}분`;
+    return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
   }
-  return `${totalMin}분`;
+  return language === "ko" ? `${totalMin}분` : `${totalMin} min`;
 }
 
-/** 간격(분) → "약 1시간" / "약 1시간 30분" / "약 45분" */
-export function fmtIntervalKorean(min: number) {
+export function fmtInterval(min: number, language: AppLanguage) {
   if (min >= 60) {
     const h = Math.floor(min / 60);
     const m = min % 60;
-    return m === 0 ? `약 ${h}시간` : `약 ${h}시간 ${m}분`;
+    if (language === "ko") return m === 0 ? `약 ${h}시간` : `약 ${h}시간 ${m}분`;
+    return m === 0 ? `about ${h} hr` : `about ${h} hr ${m} min`;
   }
-  return `약 ${min}분`;
+  return language === "ko" ? `약 ${min}분` : `about ${min} min`;
 }
 
-export const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"] as const;
+export const DAY_LABELS_KO = ["일", "월", "화", "수", "목", "금", "토"] as const;
+export const DAY_LABELS_EN = ["S", "M", "T", "W", "T", "F", "S"] as const;
+export const DAY_NAMES_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
+
+export function dayLabels(language: AppLanguage) {
+  return language === "ko" ? DAY_LABELS_KO : DAY_LABELS_EN;
+}

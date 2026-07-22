@@ -39,7 +39,7 @@ function sameDay(ms: number, y: number, m: number, d: number) {
   return t.getFullYear() === y && t.getMonth() === m && t.getDate() === d;
 }
 
-/** 해당 월의 날짜별 O(done) 횟수. 0인 날은 포함하지 않는다. */
+/** 해당 월의 날짜별 챙긴 횟수. 0인 날은 포함하지 않는다. */
 export function doneCountsByDay(records: BreakRecord[], year: number, month: number): Map<number, number> {
   const counts = new Map<number, number>();
   for (const r of records) {
@@ -58,7 +58,7 @@ export function recordsForDate(records: BreakRecord[], year: number, month: numb
     .sort((a, b) => a.resolvedAt - b.resolvedAt);
 }
 
-/** 오늘 O(done) 횟수 */
+/** 오늘 챙긴 횟수 */
 export function doneCountToday(records: BreakRecord[], nowMs: number): number {
   const t = new Date(nowMs);
   return recordsForDate(records, t.getFullYear(), t.getMonth(), t.getDate()).filter(

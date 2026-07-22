@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { TimeSheet } from "../components/TimePickerSheet";
 import { AmberButton, Eyebrow, InfoRow, Panel, Plate, PrimaryButton } from "../components/ui";
+import { useI18n } from "../i18n";
 import { modeLabel } from "../lib/notifications";
 import {
   endOfWorkToday,
   fmtHM,
-  fmtKoreanDayTime,
-  fmtKoreanTime,
+  fmtDayTime,
+  fmtTime,
   fmtRemaining,
   intervalMs,
   isWithinWork
@@ -37,6 +38,7 @@ export default function Home({
   onResume: () => void;
   onOpenSystemSettings: () => void;
 }) {
+  const { language, tr } = useI18n();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [customPicker, setCustomPicker] = useState(false);
 
@@ -55,49 +57,51 @@ export default function Home({
     <ScrollView contentContainerStyle={styles.content}>
       {settings.notificationsOn && !permissionOk && (
         <Panel title="NOTICE" background={colors.ice}>
-          <Text style={styles.noticeCopy}>알림을 켜면 틈새움을 시작할 수 있어요.</Text>
-          <AmberButton label="시스템 설정 열기" onPress={onOpenSystemSettings} />
+          <Text style={styles.noticeCopy}>{tr("알림을 켜면 틈새움을 시작할 수 있어요.", "Turn on notifications to start TeuM.")}</Text>
+          <AmberButton label={tr("시스템 설정 열기", "Open system settings")} onPress={onOpenSystemSettings} />
         </Panel>
       )}
 
       {paused ? (
         <Plate background={colors.canvasSoft} style={styles.heroPlate}>
           <Eyebrow>PAUSED</Eyebrow>
-          <Text style={styles.heroTitle}>지금은{"\n"}쉬어 가는 중이에요.</Text>
+          <Text style={styles.heroTitle}>{tr("지금은\n쉬어 가는 중이에요.", "Reminders are\npaused for now.")}</Text>
           <Text style={styles.heroCopy}>
-            건강 알람이 잠시 멈춰 있어요.
+            {tr("건강 알람이 잠시 멈춰 있어요.", "Your health reminders are paused.")}
             {rhythm.pausedUntil != null &&
-              `\n${fmtKoreanTime(rhythm.pausedUntil)}에 다시 알려드릴게요.`}
+              (language === "ko"
+                ? `\n${fmtTime(rhythm.pausedUntil, language)}에 다시 알려드릴게요.`
+                : `\nWe’ll remind you again at ${fmtTime(rhythm.pausedUntil, language)}.`)}
           </Text>
-          <PrimaryButton label="다시 시작" onPress={onResume} style={styles.heroButton} />
+          <PrimaryButton label={tr("다시 시작", "Resume")} onPress={onResume} style={styles.heroButton} />
         </Plate>
       ) : suggesting ? (
         <Plate background={colors.systemsTeal} style={styles.heroPlate}>
           <Eyebrow>PAUSE SIGNAL</Eyebrow>
-          <Text style={styles.heroTitleLight}>1분의 틈을{"\n"}여는 중이에요.</Text>
-          <Text style={styles.heroCopyLight}>물 한 모금과 가벼운 움직임으로 몸을 잠깐 쉬어 주세요.</Text>
+          <Text style={styles.heroTitleLight}>{tr("1분의 틈을\n여는 중이에요.", "Your one-minute\nbreak is starting.")}</Text>
+          <Text style={styles.heroCopyLight}>{tr("물 한 모금과 가벼운 움직임으로 몸을 잠깐 쉬어 주세요.", "Take a sip of water and gently move your body.")}</Text>
         </Plate>
       ) : (
         <Plate background={colors.systemsTeal} style={styles.heroPlate}>
           <Eyebrow>NEXT PAUSE SIGNAL</Eyebrow>
           {offDuty ? (
             <>
-              <Text style={styles.heroTitleLight}>다음 건강 알람은</Text>
+              <Text style={styles.heroTitleLight}>{tr("다음 건강 알람은", "Your next health reminder")}</Text>
               <Text style={styles.heroNumberSmall}>
-                {rhythm.nextTickAt != null ? fmtKoreanDayTime(rhythm.nextTickAt, now) : "—"}
+                {rhythm.nextTickAt != null ? fmtDayTime(rhythm.nextTickAt, now, language) : "—"}
               </Text>
               <Text style={styles.heroCopyLight}>
-                지금은 업무 시간이 아니에요.{"\n"}그때 다시 만나요.
+                {tr("지금은 업무 시간이 아니에요.\n그때 다시 만나요.", "You’re outside work hours.\nWe’ll see you then.")}
               </Text>
             </>
           ) : (
             <>
-              <Text style={styles.heroTitleLight}>다음 건강 알람까지</Text>
+              <Text style={styles.heroTitleLight}>{tr("다음 건강 알람까지", "Until your next health reminder")}</Text>
               <Text style={styles.heroNumber}>
-                {remainingMs == null ? "—" : fmtRemaining(remainingMs)}
+                {remainingMs == null ? "—" : fmtRemaining(remainingMs, language)}
               </Text>
               <Text style={styles.heroCopyLight}>
-                물 한 모금과 1분의 움직임,{"\n"}흐름을 해치지 않을 때 해요.
+                {tr("물 한 모금과 1분의 움직임,\n가능한 순간에 가볍게 챙겨요.", "A sip of water and one minute to move,\nwhenever the moment works for you.")}
               </Text>
               <View style={styles.meter} accessibilityElementsHidden>
                 <View style={[styles.meterFill, { width: `${Math.round(progress * 100)}%` }]} />
@@ -108,64 +112,72 @@ export default function Home({
       )}
 
       <Panel title="TODAY'S RHYTHM">
-        <InfoRow label="오늘의 업무 시간" value={workHours} />
-        <InfoRow label="알람 방식" value={modeLabel(settings.mode)} />
+        <InfoRow label={tr("오늘의 업무 시간", "Today’s work hours")} value={workHours} />
+        <InfoRow label={tr("알람 방식", "Alert style")} value={modeLabel(settings.mode, language)} />
         <InfoRow
-          label="현재 상태"
-          value={paused ? "잠시 멈춤" : suggesting ? "1분의 틈 진행 중" : offDuty ? "업무 시간 아님" : "알람 대기 중"}
+          label={tr("현재 상태", "Status")}
+          value={paused
+            ? tr("잠시 멈춤", "Paused")
+            : suggesting
+              ? tr("1분의 틈 진행 중", "One-minute break in progress")
+              : offDuty
+                ? tr("업무 시간 아님", "Outside work hours")
+                : tr("알람 대기 중", "Waiting for next reminder")}
           last
         />
       </Panel>
 
       {doneToday != null && (
-        <Panel title="나의 틈 기록">
+        <Panel title={tr("나의 틈 기록", "My breaks")}>
           <Text style={styles.panelCopy}>
-            {doneToday > 0 ? `오늘 ${doneToday}번 챙겼어요.` : "오늘의 틈이 아직 남아 있어요."}
+            {doneToday > 0
+              ? language === "ko" ? `오늘 ${doneToday}번 챙겼어요.` : `You took ${doneToday} break${doneToday === 1 ? "" : "s"} today.`
+              : tr("오늘의 틈이 아직 남아 있어요.", "Your first break of the day is still waiting.")}
           </Text>
-          <AmberButton label="기록 보기" onPress={onOpenRecords} />
+          <AmberButton label={tr("기록 보기", "View record")} onPress={onOpenRecords} />
         </Panel>
       )}
 
       {!paused && (
         <Panel title="CONTROL PANEL">
-          <Text style={styles.panelCopy}>건강 알람이 켜져 있어요.</Text>
-          <AmberButton label="잠시 멈춤" onPress={() => setSheetOpen(true)} />
+          <Text style={styles.panelCopy}>{tr("건강 알람이 켜져 있어요.", "Health reminders are on.")}</Text>
+          <AmberButton label={tr("잠시 멈춤", "Pause")} onPress={() => setSheetOpen(true)} />
         </Panel>
       )}
 
       <Modal transparent visible={sheetOpen} animationType="slide" onRequestClose={() => setSheetOpen(false)}>
         <Pressable style={styles.sheetBackdrop} onPress={() => setSheetOpen(false)}>
           <Pressable style={styles.sheet} onPress={() => undefined}>
-            <Text style={styles.sheetTitle}>언제 다시 시작할까요?</Text>
+            <Text style={styles.sheetTitle}>{tr("언제 다시 시작할까요?", "When should reminders resume?")}</Text>
             <SheetOption
-              label="30분 뒤"
+              label={tr("30분 뒤", "In 30 minutes")}
               onPress={() => {
                 setSheetOpen(false);
                 onPause(now + 30 * 60000);
               }}
             />
             <SheetOption
-              label="오늘 업무 종료까지"
+              label={tr("오늘 업무 종료까지", "Until the end of today’s work")}
               onPress={() => {
                 setSheetOpen(false);
                 onPause(Math.max(now + 60000, endOfWorkToday(now, settings)));
               }}
             />
             <SheetOption
-              label="직접 선택"
+              label={tr("직접 선택", "Choose a time")}
               onPress={() => {
                 setSheetOpen(false);
                 setCustomPicker(true);
               }}
             />
-            <SheetOption label="닫기" muted onPress={() => setSheetOpen(false)} />
+            <SheetOption label={tr("닫기", "Close")} muted onPress={() => setSheetOpen(false)} />
           </Pressable>
         </Pressable>
       </Modal>
 
       <TimeSheet
         visible={customPicker}
-        title="언제 다시 시작할까요?"
+        title={tr("언제 다시 시작할까요?", "When should reminders resume?")}
         initialMin={(() => {
           const d = new Date(now + 30 * 60000);
           return d.getHours() * 60 + d.getMinutes();

@@ -1,0 +1,14 @@
+<resources>
+  <string name="app_name">TeuM</string>
+  <string name="notification_test_title">TeuM test</string>
+  <string name="notification_title">TeuM</string>
+  <string name="notification_body">Time for a sip of water and a gentle stretch.</string>
+  <string name="notification_snooze">Remind me in 5 min</string>
+  <string name="notification_done">Yes, I did</string>
+  <string name="notification_skip">I’ll skip this one</string>
+  <string name="notification_channel_description">Full-screen one-minute break reminder</string>
+  <string name="mode_gentle">Gentle · 1 vibration</string>
+  <string name="mode_clear">Clear · 3 vibrations</string>
+  <string name="mode_strong">Strong · 5 vibrations</string>
+  <string name="mode_silent">Silent · screen only</string>
+</resources>

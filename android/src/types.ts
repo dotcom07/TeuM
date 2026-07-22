@@ -13,18 +13,18 @@ export interface Settings {
   /** 화면 상단 헤드업 노출 여부 */
   headsUp: boolean;
   notificationsOn: boolean;
-  /** 기록 남기기 (기본 꺼짐 — 가볍게 사용) */
+  /** 기록하며 사용 (기본 켜짐) */
   recordMode: boolean;
 }
 
 export type BreakResult = "done" | "skipped" | "unanswered";
 
-/** 기록 모드에서 기기 안에만 저장하는 회차별 자기 보고 */
+/** 기록하며 사용 중 기기 안에만 저장하는 회차별 선택 */
 export interface BreakRecord {
   id: string;
   /** 최초 알림 예정 시각 */
   scheduledAt: number;
-  /** O/X 선택 또는 응답 없이 닫힌 실제 시각 */
+  /** 챙김·넘김 선택 또는 선택 없이 닫힌 실제 시각 */
   resolvedAt: number;
   result: BreakResult;
   /** 같은 회차에서 5분 미루기를 썼는지 */
@@ -53,7 +53,7 @@ export const DEFAULT_SETTINGS: Settings = {
   mode: "silent",
   headsUp: true,
   notificationsOn: true,
-  recordMode: false
+  recordMode: true
 };
 
 export const DEFAULT_RHYTHM: Rhythm = {

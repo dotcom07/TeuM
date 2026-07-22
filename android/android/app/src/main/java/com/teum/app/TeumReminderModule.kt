@@ -1,17 +1,21 @@
 package com.teum.app
 
 import android.app.AlarmManager
+import android.app.LocaleManager
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.LocaleList
 import android.provider.Settings
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import java.util.Locale
 
 class TeumReminderModule(
   private val reactContext: ReactApplicationContext
@@ -19,14 +23,14 @@ class TeumReminderModule(
   override fun getName() = "TeumReminder"
 
   @ReactMethod
-  fun schedule(atMs: Double, mode: String, promise: Promise) {
-    scheduleAlarm(atMs.toLong(), mode, false)
+  fun schedule(atMs: Double, mode: String, language: String, promise: Promise) {
+    scheduleAlarm(atMs.toLong(), mode, language, false)
     promise.resolve(null)
   }
 
   @ReactMethod
-  fun scheduleTest(atMs: Double, mode: String, promise: Promise) {
-    scheduleAlarm(atMs.toLong(), mode, true)
+  fun scheduleTest(atMs: Double, mode: String, language: String, promise: Promise) {
+    scheduleAlarm(atMs.toLong(), mode, language, true)
     promise.resolve(null)
   }
 
@@ -69,14 +73,68 @@ class TeumReminderModule(
   }
 
   @ReactMethod
+  fun getLanguageState(promise: Promise) {
+    val result = Arguments.createMap()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      val manager = reactContext.getSystemService(LocaleManager::class.java)
+      val appLocales = manager.applicationLocales
+      val systemLocales = manager.systemLocales
+      result.putString("overrideLanguage", if (appLocales.isEmpty) "" else appLocales[0].toLanguageTag())
+      result.putString("systemLanguage", if (systemLocales.isEmpty) "en" else systemLocales[0].toLanguageTag())
+      result.putBoolean("supportsSystemSettings", true)
+    } else {
+      result.putString("overrideLanguage", "")
+      result.putString("systemLanguage", Locale.getDefault().toLanguageTag())
+      result.putBoolean("supportsSystemSettings", false)
+    }
+    promise.resolve(result)
+  }
+
+  @ReactMethod
+  fun setAppLanguage(mode: String, promise: Promise) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      val manager = reactContext.getSystemService(LocaleManager::class.java)
+      manager.applicationLocales =
+        if (mode == "auto") LocaleList.getEmptyLocaleList() else LocaleList.forLanguageTags(mode)
+    }
+    promise.resolve(null)
+  }
+
+  @ReactMethod
+  fun openAppLanguageSettings(promise: Promise) {
+    val action = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      Settings.ACTION_APP_LOCALE_SETTINGS
+    } else {
+      Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+    }
+    val intent = Intent(action, Uri.parse("package:${reactContext.packageName}"))
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    reactContext.startActivity(intent)
+    promise.resolve(null)
+  }
+
+  @ReactMethod
   fun consumeBreakRequest(promise: Promise) {
     val requested = breakRequested
     breakRequested = false
     promise.resolve(requested)
   }
 
-  private fun scheduleAlarm(atMs: Long, mode: String, test: Boolean) {
-    val pendingIntent = alarmPendingIntent(test, mode)
+  @ReactMethod
+  fun dismissBreakPresentation(promise: Promise) {
+    val activity = reactContext.currentActivity
+    if (activity !is MainActivity) {
+      promise.resolve(false)
+      return
+    }
+
+    activity.runOnUiThread {
+      promise.resolve(activity.dismissBreakPresentation())
+    }
+  }
+
+  private fun scheduleAlarm(atMs: Long, mode: String, language: String, test: Boolean) {
+    val pendingIntent = alarmPendingIntent(test, mode, language)
     val alarmManager = alarmManager()
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
       alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMs, pendingIntent)
@@ -90,9 +148,10 @@ class TeumReminderModule(
   private fun alarmManager() =
     reactContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-  private fun alarmPendingIntent(test: Boolean, mode: String = "silent"): PendingIntent {
+  private fun alarmPendingIntent(test: Boolean, mode: String = "silent", language: String = "ko"): PendingIntent {
     val intent = Intent(reactContext, ReminderReceiver::class.java).apply {
       putExtra(ReminderReceiver.EXTRA_MODE, mode)
+      putExtra(ReminderReceiver.EXTRA_LANGUAGE, language)
       putExtra(ReminderReceiver.EXTRA_TEST, test)
     }
     return PendingIntent.getBroadcast(

@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Panel, PrimaryButton } from "../components/ui";
+import { useI18n } from "../i18n";
 import { doneCountsByDay, recordsForDate } from "../lib/records";
-import { DAY_LABELS, fmtKoreanTime } from "../lib/time";
+import { dayLabels, fmtTime } from "../lib/time";
 import { colors, MIN_TOUCH } from "../theme";
 import { BreakRecord } from "../types";
 
@@ -20,6 +21,7 @@ export default function Records({
   now: number;
   onBack: () => void;
 }) {
+  const { language, tr } = useI18n();
   const today = new Date(now);
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -58,16 +60,20 @@ export default function Records({
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Panel title="나의 틈 기록">
+      <Panel title={tr("나의 틈 기록", "My breaks")}>
         <View style={styles.monthRow}>
-          <MonthButton label="‹" a11y="이전 달" onPress={() => moveMonth(-1)} />
-          <Text style={styles.monthLabel}>{`${viewYear}년 ${viewMonth + 1}월`}</Text>
-          <MonthButton label="›" a11y="다음 달" onPress={() => moveMonth(1)} />
+          <MonthButton direction="left" a11y={tr("이전 달", "Previous month")} onPress={() => moveMonth(-1)} />
+          <Text style={styles.monthLabel}>
+            {language === "ko"
+              ? `${viewYear}년 ${viewMonth + 1}월`
+              : new Date(viewYear, viewMonth, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+          </Text>
+          <MonthButton direction="right" a11y={tr("다음 달", "Next month")} onPress={() => moveMonth(1)} />
         </View>
 
         <View style={styles.weekHeader}>
-          {DAY_LABELS.map((label) => (
-            <Text key={label} style={styles.weekHeaderText}>
+          {dayLabels(language).map((label, index) => (
+            <Text key={index} style={styles.weekHeaderText}>
               {label}
             </Text>
           ))}
@@ -86,12 +92,14 @@ export default function Records({
                   key={col}
                   onPress={() => setSelected(day)}
                   accessibilityRole="button"
-                  accessibilityLabel={`${viewMonth + 1}월 ${day}일${count ? `, ${count}회 챙김` : ""}`}
+                  accessibilityLabel={language === "ko"
+                    ? `${viewMonth + 1}월 ${day}일${count ? `, ${count}회 챙김` : ""}`
+                    : `${new Date(viewYear, viewMonth, day).toLocaleDateString("en-US", { month: "long", day: "numeric" })}${count ? `, ${count} break${count === 1 ? "" : "s"} taken` : ""}`}
                   style={[styles.cell, isToday(day) && styles.cellToday, active && styles.cellSelected]}
                 >
                   <Text style={[styles.cellDay, isToday(day) && styles.cellDayToday]}>{day}</Text>
                   {/* 기록 없는 날은 0회 대신 빈칸 — 실패처럼 보이지 않게 */}
-                  <Text style={styles.cellCount}>{count ? `${count}회` : " "}</Text>
+                  <Text style={styles.cellCount}>{count ? (language === "ko" ? `${count}회` : `${count}×`) : " "}</Text>
                 </Pressable>
               );
             })}
@@ -100,32 +108,33 @@ export default function Records({
 
         {todayCount != null && (
           <Text style={styles.todayLine}>
-            {todayCount > 0 ? `오늘 ${todayCount}번 챙겼어요.` : "오늘의 틈이 아직 남아 있어요."}
+            {todayCount > 0
+              ? language === "ko" ? `오늘 ${todayCount}번 챙겼어요.` : `You took ${todayCount} break${todayCount === 1 ? "" : "s"} today.`
+              : tr("오늘의 틈이 아직 남아 있어요.", "Your first break of the day is still waiting.")}
           </Text>
         )}
       </Panel>
 
       {selected != null && (
-        <Panel title={`${viewMonth + 1}월 ${selected}일`}>
+        <Panel title={language === "ko"
+          ? `${viewMonth + 1}월 ${selected}일`
+          : new Date(viewYear, viewMonth, selected).toLocaleDateString("en-US", { month: "long", day: "numeric" })}>
           {dayRecords.length === 0 ? (
-            <Text style={styles.emptyCopy}>이날은 남긴 기록이 없어요.</Text>
+            <Text style={styles.emptyCopy}>{tr("이날은 남긴 기록이 없어요.", "No record for this day.")}</Text>
           ) : (
             dayRecords.map((r, index) => (
               <View
                 key={r.id}
                 style={[styles.recordRow, index === dayRecords.length - 1 && styles.recordRowLast]}
               >
-                <Text style={styles.recordTime}>{fmtKoreanTime(r.resolvedAt)}</Text>
-                <Text style={[styles.recordMark, r.result === "done" && styles.recordMarkDone]}>
-                  {r.result === "done" ? "O" : r.result === "skipped" ? "X" : "—"}
-                </Text>
-                <Text style={styles.recordLabel}>
+                <Text style={styles.recordTime}>{fmtTime(r.resolvedAt, language)}</Text>
+                <Text style={[styles.recordLabel, r.result === "done" && styles.recordLabelDone]}>
                   {r.result === "done"
-                    ? "챙겼어요"
+                    ? tr("챙겼어요", "Took a break")
                     : r.result === "skipped"
-                      ? "이번 틈은 넘겼어요"
-                      : "응답하지 않았어요"}
-                  {r.snoozed ? " · 5분 미룸" : ""}
+                      ? tr("이번 틈은 넘겼어요", "Skipped this break")
+                      : tr("화면을 닫았어요", "Closed the screen")}
+                  {r.snoozed ? tr(" · 5분 미룸", " · delayed 5 min") : ""}
                 </Text>
               </View>
             ))
@@ -133,12 +142,20 @@ export default function Records({
         </Panel>
       )}
 
-      <PrimaryButton label="홈으로 돌아가기" onPress={onBack} />
+      <PrimaryButton label={tr("홈으로 돌아가기", "Back to home")} onPress={onBack} />
     </ScrollView>
   );
 }
 
-function MonthButton({ label, a11y, onPress }: { label: string; a11y: string; onPress: () => void }) {
+function MonthButton({
+  direction,
+  a11y,
+  onPress
+}: {
+  direction: "left" | "right";
+  a11y: string;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -146,7 +163,13 @@ function MonthButton({ label, a11y, onPress }: { label: string; a11y: string; on
       accessibilityLabel={a11y}
       style={({ pressed }) => [styles.monthButton, pressed && styles.monthButtonPressed]}
     >
-      <Text style={styles.monthButtonText}>{label}</Text>
+      <Image
+        source={{
+          uri: direction === "left" ? "ic_teum_chevron_left" : "ic_teum_chevron_right"
+        }}
+        resizeMode="contain"
+        style={styles.monthChevron}
+      />
     </Pressable>
   );
 }
@@ -168,7 +191,10 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.hairline
   },
   monthButtonPressed: { backgroundColor: colors.periwinkle },
-  monthButtonText: { color: colors.carbon, fontSize: 20, fontWeight: "900" },
+  monthChevron: {
+    width: 14,
+    height: 14
+  },
   weekHeader: { flexDirection: "row", marginBottom: 6 },
   weekHeaderText: {
     flex: 1,
@@ -218,7 +244,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontVariant: ["tabular-nums"]
   },
-  recordMark: { width: 22, color: colors.mutedIndigo, fontSize: 14, fontWeight: "900", textAlign: "center" },
-  recordMarkDone: { color: colors.navGold },
-  recordLabel: { flex: 1, color: colors.carbon, fontSize: 12 }
+  recordLabel: { flex: 1, color: colors.mutedIndigo, fontSize: 12 },
+  recordLabelDone: { color: colors.carbon, fontWeight: "700" }
 });

@@ -1,14 +1,16 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { colors, MIN_TOUCH, spacing } from "../theme";
 import { pad2 } from "../lib/time";
+import { AppLanguage, useI18n } from "../i18n";
 
 /** "45분" / "1시간" / "1시간 25분" */
-export function fmtDuration(min: number) {
-  if (min < 60) return `${min}분`;
+export function fmtDuration(min: number, language: AppLanguage = "ko") {
+  if (min < 60) return language === "ko" ? `${min}분` : `${min} min`;
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return m === 0 ? `${h}시간` : `${h}시간 ${m}분`;
+  if (language === "ko") return m === 0 ? `${h}시간` : `${h}시간 ${m}분`;
+  return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
 }
 
 /** 길게 누르면 반복 입력되는 베벨 스테퍼 버튼 */
@@ -64,6 +66,7 @@ function Sheet({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { tr } = useI18n();
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onCancel}>
       <Pressable style={styles.backdrop} onPress={onCancel}>
@@ -76,14 +79,14 @@ function Sheet({
               onPress={onCancel}
               style={({ pressed }) => [styles.cancel, pressed && styles.cancelPressed]}
             >
-              <Text style={styles.cancelText}>취소</Text>
+              <Text style={styles.cancelText}>{tr("취소", "Cancel")}</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
               onPress={onConfirm}
               style={({ pressed }) => [styles.confirm, pressed && styles.confirmPressed]}
             >
-              <Text style={styles.confirmText}>확인</Text>
+              <Text style={styles.confirmText}>{tr("확인", "Done")}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -110,6 +113,7 @@ export function TimeSheet({
   onCancel: () => void;
   onConfirm: (min: number) => void;
 }) {
+  const { language, tr } = useI18n();
   const [hour, setHour] = useState(9);
   const [minute, setMinute] = useState(0);
 
@@ -119,8 +123,11 @@ export function TimeSheet({
     setMinute(Math.round((initialMin % 60) / 5) * 5 % 60);
   }, [visible, initialMin]);
 
-  const meridiem = hour < 12 ? "오전" : "오후";
+  const meridiem = language === "ko" ? (hour < 12 ? "오전" : "오후") : hour < 12 ? "AM" : "PM";
   const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  const preview = language === "ko"
+    ? `${meridiem} ${hour12}:${pad2(minute)}`
+    : `${hour12}:${pad2(minute)} ${meridiem}`;
 
   return (
     <Sheet
@@ -129,35 +136,35 @@ export function TimeSheet({
       onCancel={onCancel}
       onConfirm={() => onConfirm(hour * 60 + minute)}
     >
-      <Text style={styles.preview}>{`${meridiem} ${hour12}:${pad2(minute)}`}</Text>
+      <Text style={styles.preview}>{preview}</Text>
       <View style={styles.clockRow}>
         <View style={styles.digitColumn}>
-          <StepButton label="▲" a11yLabel="1시간 늘리기" onStep={() => setHour((h) => (h + 1) % 24)} />
+          <StepButton label="▲" a11yLabel={tr("1시간 늘리기", "Increase by 1 hour")} onStep={() => setHour((h) => (h + 1) % 24)} />
           <View style={styles.digitPlate}>
             <Text style={styles.digitText}>{pad2(hour)}</Text>
           </View>
-          <StepButton label="▼" a11yLabel="1시간 줄이기" onStep={() => setHour((h) => (h + 23) % 24)} />
-          <Text style={styles.digitCaption}>시</Text>
+          <StepButton label="▼" a11yLabel={tr("1시간 줄이기", "Decrease by 1 hour")} onStep={() => setHour((h) => (h + 23) % 24)} />
+          <Text style={styles.digitCaption}>{tr("시", "hour")}</Text>
         </View>
         <Text style={styles.colon}>:</Text>
         <View style={styles.digitColumn}>
-          <StepButton label="▲" a11yLabel="5분 늘리기" onStep={() => setMinute((m) => (m + 5) % 60)} />
+          <StepButton label="▲" a11yLabel={tr("5분 늘리기", "Increase by 5 minutes")} onStep={() => setMinute((m) => (m + 5) % 60)} />
           <View style={styles.digitPlate}>
             <Text style={styles.digitText}>{pad2(minute)}</Text>
           </View>
-          <StepButton label="▼" a11yLabel="5분 줄이기" onStep={() => setMinute((m) => (m + 55) % 60)} />
-          <Text style={styles.digitCaption}>분</Text>
+          <StepButton label="▼" a11yLabel={tr("5분 줄이기", "Decrease by 5 minutes")} onStep={() => setMinute((m) => (m + 55) % 60)} />
+          <Text style={styles.digitCaption}>{tr("분", "minute")}</Text>
         </View>
       </View>
     </Sheet>
   );
 }
 
-const DURATION_MIN = 15;
-const DURATION_MAX = 240;
+const DURATION_MIN = 1;
+const DURATION_MAX = 24 * 60;
 const DURATION_PRESETS = [30, 45, 60, 90, 120];
 
-/** 알림 간격 선택 시트 — 프리셋 + 5분 단위 자유 조절 */
+/** 알림 간격 선택 시트 — 1분~24시간, 직접 입력 또는 빠른 조절 */
 export function DurationSheet({
   visible,
   title,
@@ -171,43 +178,115 @@ export function DurationSheet({
   onCancel: () => void;
   onConfirm: (min: number) => void;
 }) {
+  const { language, tr } = useI18n();
   const [value, setValue] = useState(60);
+  const [editing, setEditing] = useState(false);
+  const [hours, setHours] = useState("1");
+  const [minutes, setMinutes] = useState("0");
 
   useEffect(() => {
     if (!visible) return;
-    setValue(Math.min(DURATION_MAX, Math.max(DURATION_MIN, Math.round(initialMin / 5) * 5)));
+    const next = Math.min(DURATION_MAX, Math.max(DURATION_MIN, Math.round(initialMin)));
+    setValue(next);
+    setHours(String(Math.floor(next / 60)));
+    setMinutes(String(next % 60));
+    setEditing(false);
   }, [visible, initialMin]);
 
   const add = (delta: number) =>
     setValue((v) => Math.min(DURATION_MAX, Math.max(DURATION_MIN, v + delta)));
 
+  const inputValue = () => {
+    const hour = Math.min(24, Math.max(0, Number.parseInt(hours || "0", 10) || 0));
+    const minute = Math.min(59, Math.max(0, Number.parseInt(minutes || "0", 10) || 0));
+    return Math.min(DURATION_MAX, Math.max(DURATION_MIN, hour * 60 + minute));
+  };
+
+  const beginEditing = () => {
+    setHours(String(Math.floor(value / 60)));
+    setMinutes(String(value % 60));
+    setEditing(true);
+  };
+
+  const applyInput = () => {
+    const next = inputValue();
+    setValue(next);
+    setHours(String(Math.floor(next / 60)));
+    setMinutes(String(next % 60));
+    setEditing(false);
+  };
+
   return (
-    <Sheet visible={visible} title={title} onCancel={onCancel} onConfirm={() => onConfirm(value)}>
+    <Sheet
+      visible={visible}
+      title={title}
+      onCancel={onCancel}
+      onConfirm={() => {
+        const next = editing ? inputValue() : value;
+        if (editing) applyInput();
+        onConfirm(next);
+      }}
+    >
       <View style={styles.presetRow}>
         {DURATION_PRESETS.map((min) => (
           <Pressable
             key={min}
             accessibilityRole="button"
             accessibilityState={{ selected: value === min }}
-            onPress={() => setValue(min)}
+            onPress={() => {
+              setValue(min);
+              setHours(String(Math.floor(min / 60)));
+              setMinutes(String(min % 60));
+              setEditing(false);
+            }}
             style={[styles.preset, value === min && styles.presetActive]}
           >
             <Text style={[styles.presetText, value === min && styles.presetTextActive]}>
-              {fmtDuration(min)}
+              {fmtDuration(min, language)}
             </Text>
           </Pressable>
         ))}
       </View>
       <View style={styles.durationRow}>
-        <StepButton label="−15" a11yLabel="15분 줄이기" onStep={() => add(-15)} />
-        <StepButton label="−5" a11yLabel="5분 줄이기" onStep={() => add(-5)} />
-        <View style={styles.durationPlate}>
-          <Text style={styles.durationText}>{fmtDuration(value)}</Text>
-        </View>
-        <StepButton label="+5" a11yLabel="5분 늘리기" onStep={() => add(5)} />
-        <StepButton label="+15" a11yLabel="15분 늘리기" onStep={() => add(15)} />
+        <StepButton label="−15" a11yLabel={tr("15분 줄이기", "Decrease by 15 minutes")} onStep={() => { setEditing(false); add(-15); }} />
+        <StepButton label="−5" a11yLabel={tr("5분 줄이기", "Decrease by 5 minutes")} onStep={() => { setEditing(false); add(-5); }} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={tr("알림 간격 직접 입력", "Enter reminder interval")}
+          onPress={beginEditing}
+          style={styles.durationPlate}
+        >
+          {editing ? (
+            <View style={styles.durationInputRow}>
+              <TextInput
+                autoFocus
+                value={hours}
+                onChangeText={(text) => setHours(text.replace(/[^0-9]/g, "").slice(0, 2))}
+                keyboardType="number-pad"
+                maxLength={2}
+                selectTextOnFocus
+                style={styles.durationInput}
+                accessibilityLabel={tr("시간 입력", "Hours")}
+              />
+              <Text style={styles.durationUnit}>{tr("시간", "h")}</Text>
+              <TextInput
+                value={minutes}
+                onChangeText={(text) => setMinutes(text.replace(/[^0-9]/g, "").slice(0, 2))}
+                keyboardType="number-pad"
+                maxLength={2}
+                selectTextOnFocus
+                style={styles.durationInput}
+                accessibilityLabel={tr("분 입력", "Minutes")}
+              />
+              <Text style={styles.durationUnit}>{tr("분", "m")}</Text>
+            </View>
+          ) : (
+            <Text style={styles.durationText}>{fmtDuration(value, language)}</Text>
+          )}
+        </Pressable>
+        <StepButton label="+5" a11yLabel={tr("5분 늘리기", "Increase by 5 minutes")} onStep={() => { setEditing(false); add(5); }} />
+        <StepButton label="+15" a11yLabel={tr("15분 늘리기", "Increase by 15 minutes")} onStep={() => { setEditing(false); add(15); }} />
       </View>
-      <Text style={styles.hint}>{`${DURATION_MIN}분부터 ${fmtDuration(DURATION_MAX)}까지, 5분 단위로 고를 수 있어요.`}</Text>
     </Sheet>
   );
 }
@@ -308,7 +387,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontVariant: ["tabular-nums"]
   },
-  hint: { marginTop: 12, color: colors.chromeIndigo, fontSize: 11, lineHeight: 16 },
+  durationInputRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4 },
+  durationInput: {
+    width: 44,
+    padding: 0,
+    color: colors.carbon,
+    fontSize: 19,
+    fontWeight: "900",
+    textAlign: "center",
+    fontVariant: ["tabular-nums"]
+  },
+  durationUnit: { color: colors.mutedIndigo, fontSize: 12, fontWeight: "700" },
   footerRow: { flexDirection: "row", gap: spacing.sm, marginTop: 20 },
   cancel: {
     flex: 1,

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { DurationSheet, fmtDuration, TimeSheet } from "../components/TimePickerSheet";
 import { Panel, PrimaryButton } from "../components/ui";
+import { useI18n } from "../i18n";
 import { modeLabel, previewVibration } from "../lib/notifications";
-import { DAY_LABELS, fmtHM } from "../lib/time";
+import { dayLabels, fmtHM } from "../lib/time";
 import { colors, MIN_TOUCH } from "../theme";
 import { Settings as SettingsType } from "../types";
 import { DayChip, RadioRow } from "./Onboarding";
@@ -13,7 +14,7 @@ const PRIVACY_POLICY_URL =
 
 /**
  * 설정 화면 (A-10). 변경은 즉시 반영·저장된다.
- * 알림 간격은 60분으로 고정 — 바꿀 수 있는 것은 업무 시간과 요일뿐이다.
+ * 업무 시간·요일·간격·언어·알람 방식·기록 방식을 한곳에서 관리한다.
  */
 export default function SettingsScreen({
   settings,
@@ -36,7 +37,9 @@ export default function SettingsScreen({
   onTestNotification: () => void;
   onClearRecords: () => void;
 }) {
+  const { language, mode: languageMode, supportsSystemSettings, tr, setMode, openSystemLanguageSettings } = useI18n();
   const [picker, setPicker] = useState<"start" | "end" | "interval" | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const patch = (partial: Partial<SettingsType>) => onChange({ ...settings, ...partial });
 
@@ -49,24 +52,26 @@ export default function SettingsScreen({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <Panel title="업무 시간">
-        <TimeRow label="시작" value={settings.startMin} onPress={() => setPicker("start")} />
-        <TimeRow label="종료" value={settings.endMin} onPress={() => setPicker("end")} />
+    <>
+      <ScrollView contentContainerStyle={styles.content}>
+      <Panel title={tr("업무 시간", "Work hours")}>
+        <TimeRow label={tr("시작", "Start")} value={settings.startMin} onPress={() => setPicker("start")} />
+        <TimeRow label={tr("종료", "End")} value={settings.endMin} onPress={() => setPicker("end")} />
         <Pressable
           onPress={() => setPicker("interval")}
           accessibilityRole="button"
-          accessibilityLabel={`알람 간격 ${fmtDuration(settings.intervalMin)}, 눌러서 변경`}
+          accessibilityLabel={`${tr("알람 간격", "Reminder interval")} ${fmtDuration(settings.intervalMin, language)}, ${tr("눌러서 변경", "tap to change")}`}
           style={styles.timeRow}
         >
-          <Text style={styles.rowLabel}>알람 간격</Text>
-          <Text style={styles.timeValue}>{fmtDuration(settings.intervalMin)}</Text>
+          <Text style={styles.rowLabel}>{tr("알람 간격", "Reminder interval")}</Text>
+          <Text style={styles.timeValue}>{fmtDuration(settings.intervalMin, language)}</Text>
         </Pressable>
-        <Text style={[styles.rowLabel, styles.sectionGap]}>반복 요일</Text>
+        <Text style={[styles.rowLabel, styles.sectionGap]}>{tr("반복 요일", "Repeat on")}</Text>
         <View style={styles.dayRow}>
-          {DAY_LABELS.map((label, d) => (
+          {dayLabels(language).map((label, d) => (
             <DayChip
               key={d}
+              dayIndex={d}
               label={label}
               active={settings.days.includes(d)}
               onPress={() => toggleDay(d)}
@@ -75,9 +80,29 @@ export default function SettingsScreen({
         </View>
       </Panel>
 
-      <Panel title="알람 방식">
+      <Panel title={tr("언어", "Language")}>
+        <RadioRow
+          label={tr("자동", "Automatic")}
+          description={tr("휴대폰 언어 설정을 따라요.", "Follows your phone language.")}
+          active={languageMode === "auto"}
+          onPress={() => void setMode("auto")}
+        />
+        <RadioRow label="한국어" active={languageMode === "ko"} onPress={() => void setMode("ko")} />
+        <RadioRow label="English" active={languageMode === "en"} onPress={() => void setMode("en")} />
+        {supportsSystemSettings && (
+          <Pressable
+            onPress={() => void openSystemLanguageSettings()}
+            accessibilityRole="button"
+            style={styles.systemLanguageButton}
+          >
+            <Text style={styles.systemLanguageButtonText}>{tr("휴대폰에서 앱 언어 설정", "Open app language settings")}</Text>
+          </Pressable>
+        )}
+      </Panel>
+
+      <Panel title={tr("알람 방식", "Alert style")}>
         <View style={styles.switchRow}>
-          <Text style={styles.rowLabel}>건강 알람</Text>
+          <Text style={styles.rowLabel}>{tr("건강 알람", "Health reminders")}</Text>
           <Switch
             value={settings.notificationsOn}
             onValueChange={(v) => patch({ notificationsOn: v })}
@@ -86,12 +111,12 @@ export default function SettingsScreen({
           />
         </View>
         <RadioRow
-          label="무음 — 화면으로만 조용히 알려드려요"
+          label={tr("무음 — 화면으로만 조용히 알려드려요", "Silent — screen only")}
           active={settings.mode === "silent"}
           onPress={() => patch({ mode: "silent" })}
         />
         <RadioRow
-          label={modeLabel("gentle")}
+          label={modeLabel("gentle", language)}
           active={settings.mode === "gentle"}
           onPress={() => {
             patch({ mode: "gentle" });
@@ -99,7 +124,7 @@ export default function SettingsScreen({
           }}
         />
         <RadioRow
-          label={modeLabel("clear")}
+          label={modeLabel("clear", language)}
           active={settings.mode === "clear"}
           onPress={() => {
             patch({ mode: "clear" });
@@ -107,7 +132,7 @@ export default function SettingsScreen({
           }}
         />
         <RadioRow
-          label={modeLabel("strong")}
+          label={modeLabel("strong", language)}
           active={settings.mode === "strong"}
           onPress={() => {
             patch({ mode: "strong" });
@@ -117,98 +142,97 @@ export default function SettingsScreen({
         {settings.notificationsOn && !permissionOk && (
           <View style={styles.permissionBox}>
             <Text style={styles.permissionCopy}>
-              시스템 알림 권한이 꺼져 있어 알림을 보낼 수 없어요.
+              {tr("시스템 알림 권한이 꺼져 있어 알림을 보낼 수 없어요.", "System notification permission is off, so reminders can’t be delivered.")}
             </Text>
             <Pressable
               onPress={onOpenSystemSettings}
               accessibilityRole="button"
               style={styles.permissionButton}
             >
-              <Text style={styles.permissionButtonText}>시스템 설정 열기</Text>
+              <Text style={styles.permissionButtonText}>{tr("시스템 설정 열기", "Open system settings")}</Text>
             </Pressable>
           </View>
         )}
       </Panel>
 
       {!fullScreenAllowed && (
-        <Panel title="권한 필요" background={colors.ice}>
+        <Panel title={tr("권한 필요", "Permission needed")} background={colors.ice}>
           <Text style={styles.permissionCopy}>
-            잠금 화면에서도 1분의 틈을 바로 열려면 Android의 전체 화면 알림 권한이 필요해요.
+            {tr("잠금 화면에서도 1분의 틈을 바로 열려면 Android의 전체 화면 알림 권한이 필요해요.", "Android full-screen reminder permission is needed to open the one-minute break from the lock screen.")}
           </Text>
           <Pressable
             onPress={onOpenFullScreenSettings}
             accessibilityRole="button"
             style={styles.permissionButton}
           >
-            <Text style={styles.permissionButtonText}>전체 화면 알림 허용</Text>
+            <Text style={styles.permissionButtonText}>{tr("전체 화면 알림 허용", "Allow full-screen reminders")}</Text>
           </Pressable>
         </Panel>
       )}
 
-      <Panel title="기록">
+      <Panel title={tr("틈 기록", "Break records")}>
         <RadioRow
-          label="가볍게 사용 — 응답을 저장하지 않아요"
+          label={tr("가볍게 사용", "Keep it simple")}
+          description={tr("알림만 받고, 실천 기록은 남기지 않아요.", "Get reminders without keeping a record.")}
           active={!settings.recordMode}
           onPress={() => patch({ recordMode: false })}
         />
         <RadioRow
-          label="기록 남기기 — O/X 결과를 이 기기에 저장해요"
+          label={tr("기록하며 사용", "Keep a record")}
+          description={tr("챙긴 틈과 넘긴 틈을 기록해요.", "Keep a record of breaks taken and skipped.")}
           active={settings.recordMode}
           onPress={() => patch({ recordMode: true })}
         />
         <Pressable
-          onPress={() =>
-            Alert.alert("기록 모두 삭제", "저장된 O/X 기록을 모두 삭제해요. 되돌릴 수 없어요.", [
-              { text: "취소", style: "cancel" },
-              { text: "삭제", style: "destructive", onPress: onClearRecords }
-            ])
-          }
+          onPress={() => setDeleteConfirmOpen(true)}
           accessibilityRole="button"
           style={styles.clearButton}
         >
-          <Text style={styles.clearButtonText}>기록 모두 삭제</Text>
+          <Text style={styles.clearButtonText}>{tr("기록 모두 삭제", "Delete all records")}</Text>
         </Pressable>
       </Panel>
 
-      <Panel title="개인정보">
+      <Panel title={tr("개인정보", "Privacy")}>
         <Text style={styles.privacy}>
-          틈새움은 건강·행동 데이터를 수집하거나 외부로 전송하지 않습니다.{"\n"}
-          모든 설정은 이 기기에만 저장됩니다.
+          {tr(
+            "틈새움은 건강·행동 데이터를 수집하거나 외부로 전송하지 않습니다.\n모든 설정과 선택한 틈 기록은 이 기기에만 저장됩니다.",
+            "TeuM does not collect or transmit health or activity data.\nAll settings and selected break records stay on this device."
+          )}
         </Text>
         <Pressable
           onPress={() => void Linking.openURL(PRIVACY_POLICY_URL)}
           accessibilityRole="link"
-          accessibilityLabel="개인정보처리방침 열기"
+          accessibilityLabel={tr("개인정보처리방침 열기", "Open privacy policy")}
           style={styles.privacyLink}
         >
-          <Text style={styles.privacyLinkText}>개인정보처리방침 보기 ↗</Text>
+          <Text style={styles.privacyLinkText}>{tr("개인정보처리방침 보기 ↗", "View privacy policy ↗")}</Text>
         </Pressable>
       </Panel>
 
       {__DEV__ && (
-        <Panel title="개발 테스트">
+        <Panel title={tr("개발 테스트", "Developer test")}>
           <Text style={styles.debugCopy}>
-            선택한 알림 방식과 전체 화면 타이머를 실제 기기에서 확인합니다. 배포 빌드에는 포함되지 않습니다.
+            {tr("선택한 알림 방식과 전체 화면 타이머를 실제 기기에서 확인합니다. 배포 빌드에는 포함되지 않습니다.", "Check the selected alert style and full-screen timer on a real device. This is not included in release builds.")}
           </Text>
           <Pressable
             onPress={onTestNotification}
             accessibilityRole="button"
-            accessibilityLabel="5초 뒤 전체 화면 알림 테스트"
+            accessibilityLabel={tr("5초 뒤 전체 화면 알림 테스트", "Test full-screen reminder in 5 seconds")}
             style={styles.debugButton}
           >
-            <Text style={styles.debugButtonText}>전체 화면 알림 테스트 · 5초 뒤</Text>
+            <Text style={styles.debugButtonText}>{tr("전체 화면 알림 테스트 · 5초 뒤", "Test full-screen reminder · in 5 sec")}</Text>
           </Pressable>
           <Text style={styles.debugHint}>
-            버튼을 누른 뒤 화면을 끄거나 다른 앱을 열어 두세요. 선택한 진동과 1분의 틈 화면을 함께 확인할 수 있어요.
+            {tr("버튼을 누른 뒤 화면을 끄거나 다른 앱을 열어 두세요. 선택한 진동과 1분의 틈 화면을 함께 확인할 수 있어요.", "After tapping, turn off the screen or open another app. You can check the selected vibration and one-minute screen together.")}
           </Text>
         </Panel>
       )}
 
-      <PrimaryButton label="홈으로 돌아가기" onPress={onBack} />
+      <PrimaryButton label={tr("홈으로 돌아가기", "Back to home")} onPress={onBack} />
 
       <TimeSheet
         visible={picker === "start" || picker === "end"}
-        title={picker === "start" ? "업무 시작 시각" : "업무 종료 시각"}
+        title={picker === "start" ? tr("업무 시작 시각", "Work start time") : tr("업무 종료 시각", "Work end time")}
         initialMin={picker === "start" ? settings.startMin : settings.endMin}
         onCancel={() => setPicker(null)}
         onConfirm={(min) => {
@@ -218,7 +242,7 @@ export default function SettingsScreen({
       />
       <DurationSheet
         visible={picker === "interval"}
-        title="알람 간격"
+        title={tr("알람 간격", "Reminder interval")}
         initialMin={settings.intervalMin}
         onCancel={() => setPicker(null)}
         onConfirm={(min) => {
@@ -226,16 +250,63 @@ export default function SettingsScreen({
           setPicker(null);
         }}
       />
-    </ScrollView>
+      </ScrollView>
+
+      <Modal
+        transparent
+        visible={deleteConfirmOpen}
+        animationType="fade"
+        onRequestClose={() => setDeleteConfirmOpen(false)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setDeleteConfirmOpen(false)}>
+          <Pressable
+            accessibilityViewIsModal
+            style={styles.modalPlate}
+            onPress={() => undefined}
+          >
+            <Text style={styles.modalEyebrow}>RECORD RESET</Text>
+            <Text accessibilityRole="header" style={styles.modalTitle}>
+              {tr("기록을 모두 삭제할까요?", "Delete all records?")}
+            </Text>
+            <Text style={styles.modalCopy}>
+              {tr(
+                "저장된 틈 기록이 모두 사라져요.\n이 작업은 되돌릴 수 없어요.",
+                "All saved break records will be removed.\nThis can’t be undone."
+              )}
+            </Text>
+            <View style={styles.modalActions}>
+              <Pressable
+                onPress={() => setDeleteConfirmOpen(false)}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.modalCancel, pressed && styles.modalButtonPressed]}
+              >
+                <Text style={styles.modalCancelText}>{tr("취소", "Cancel")}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setDeleteConfirmOpen(false);
+                  onClearRecords();
+                }}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.modalDelete, pressed && styles.modalDeletePressed]}
+              >
+                <Text style={styles.modalDeleteText}>{tr("모두 삭제", "Delete all")}</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 
 function TimeRow({ label, value, onPress }: { label: string; value: number; onPress: () => void }) {
+  const { tr } = useI18n();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`업무 ${label} ${fmtHM(value)}, 눌러서 변경`}
+      accessibilityLabel={`${label} ${fmtHM(value)}, ${tr("눌러서 변경", "tap to change")}`}
       style={styles.timeRow}
     >
       <Text style={styles.rowLabel}>{label}</Text>
@@ -297,6 +368,19 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.signalDeep
   },
   permissionButtonText: { color: colors.carbon, fontSize: 12, fontWeight: "700" },
+  systemLanguageButton: {
+    minHeight: MIN_TOUCH,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderTopColor: colors.highlight,
+    borderLeftColor: colors.highlight,
+    borderRightColor: colors.hairline,
+    borderBottomColor: colors.hairline
+  },
+  systemLanguageButtonText: { color: colors.chromeIndigo, fontSize: 12, fontWeight: "700" },
   privacy: { color: colors.chromeIndigo, fontSize: 12, lineHeight: 19 },
   clearButton: {
     minHeight: MIN_TOUCH,
@@ -338,5 +422,64 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.shadowDeep
   },
   debugButtonText: { color: colors.surface, fontSize: 12, fontWeight: "700" },
-  debugHint: { color: colors.chromeIndigo, fontSize: 11, lineHeight: 16, marginTop: 10 }
+  debugHint: { color: colors.chromeIndigo, fontSize: 11, lineHeight: 16, marginTop: 10 },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 24,
+    backgroundColor: "rgba(17, 19, 26, 0.72)"
+  },
+  modalPlate: {
+    padding: 18,
+    backgroundColor: colors.platinum,
+    borderWidth: 3,
+    borderTopColor: colors.highlight,
+    borderLeftColor: colors.highlight,
+    borderRightColor: colors.chromeIndigo,
+    borderBottomColor: colors.chromeIndigo,
+    elevation: 16
+  },
+  modalEyebrow: {
+    marginHorizontal: -18,
+    marginTop: -18,
+    marginBottom: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    color: colors.amber,
+    backgroundColor: colors.carbon,
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1
+  },
+  modalTitle: { color: colors.carbon, fontSize: 21, lineHeight: 28, fontWeight: "900" },
+  modalCopy: { marginTop: 10, color: colors.chromeIndigo, fontSize: 13, lineHeight: 20 },
+  modalActions: { flexDirection: "row", gap: 10, marginTop: 22 },
+  modalCancel: {
+    flex: 1,
+    minHeight: MIN_TOUCH,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderTopColor: colors.highlight,
+    borderLeftColor: colors.highlight,
+    borderRightColor: colors.hairline,
+    borderBottomColor: colors.hairline
+  },
+  modalButtonPressed: { backgroundColor: colors.canvasSoft },
+  modalCancelText: { color: colors.carbon, fontSize: 12, fontWeight: "700" },
+  modalDelete: {
+    flex: 1,
+    minHeight: MIN_TOUCH,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.carbon,
+    borderWidth: 2,
+    borderTopColor: colors.mutedIndigo,
+    borderLeftColor: colors.mutedIndigo,
+    borderRightColor: colors.shadowDeep,
+    borderBottomColor: colors.shadowDeep
+  },
+  modalDeletePressed: { backgroundColor: colors.shadowDeep },
+  modalDeleteText: { color: colors.surface, fontSize: 12, fontWeight: "700" }
 });
