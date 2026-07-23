@@ -3,7 +3,7 @@
     "name": "TeuM",
     "slug": "teum",
     "scheme": "teum",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "icon": "./assets/teum-app-icon-512.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -11,7 +11,8 @@
       "package": "com.teum.app",
       "permissions": [
         "android.permission.USE_EXACT_ALARM",
-        "android.permission.USE_FULL_SCREEN_INTENT"
+        "android.permission.USE_FULL_SCREEN_INTENT",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/teum-adaptive-foreground-1024.png",

@@ -1,10 +1,7 @@
 package com.teum.app
 
-import android.app.AlarmManager
 import android.app.LocaleManager
 import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -12,6 +9,7 @@ import android.os.LocaleList
 import android.provider.Settings
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
@@ -23,20 +21,46 @@ class TeumReminderModule(
   override fun getName() = "TeumReminder"
 
   @ReactMethod
-  fun schedule(atMs: Double, mode: String, language: String, promise: Promise) {
-    scheduleAlarm(atMs.toLong(), mode, language, false)
+  fun schedule(
+    atMs: Double,
+    mode: String,
+    language: String,
+    startMin: Double,
+    endMin: Double,
+    intervalMin: Double,
+    days: ReadableArray,
+    promise: Promise
+  ) {
+    val daySet = buildSet {
+      for (index in 0 until days.size()) {
+        val day = days.getInt(index)
+        if (day in 0..6) add(day)
+      }
+    }
+    ReminderAlarmScheduler.scheduleRegular(
+      reactContext,
+      ReminderSchedule(
+        atMs = atMs.toLong(),
+        mode = mode,
+        language = language,
+        startMin = startMin.toInt(),
+        endMin = endMin.toInt(),
+        intervalMin = intervalMin.toInt(),
+        days = daySet
+      )
+    )
     promise.resolve(null)
   }
 
   @ReactMethod
   fun scheduleTest(atMs: Double, mode: String, language: String, promise: Promise) {
-    scheduleAlarm(atMs.toLong(), mode, language, true)
+    ReminderAlarmScheduler.scheduleTest(reactContext, atMs.toLong(), mode, language)
     promise.resolve(null)
   }
 
   @ReactMethod
   fun cancel(promise: Promise) {
-    alarmManager().cancel(alarmPendingIntent(false))
+    ReminderAlarmScheduler.cancelRegular(reactContext)
     promise.resolve(null)
   }
 
@@ -133,40 +157,9 @@ class TeumReminderModule(
     }
   }
 
-  private fun scheduleAlarm(atMs: Long, mode: String, language: String, test: Boolean) {
-    val pendingIntent = alarmPendingIntent(test, mode, language)
-    val alarmManager = alarmManager()
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-      alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMs, pendingIntent)
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMs, pendingIntent)
-    } else {
-      alarmManager.setExact(AlarmManager.RTC_WAKEUP, atMs, pendingIntent)
-    }
-  }
-
-  private fun alarmManager() =
-    reactContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-  private fun alarmPendingIntent(test: Boolean, mode: String = "silent", language: String = "ko"): PendingIntent {
-    val intent = Intent(reactContext, ReminderReceiver::class.java).apply {
-      putExtra(ReminderReceiver.EXTRA_MODE, mode)
-      putExtra(ReminderReceiver.EXTRA_LANGUAGE, language)
-      putExtra(ReminderReceiver.EXTRA_TEST, test)
-    }
-    return PendingIntent.getBroadcast(
-      reactContext,
-      if (test) TEST_REQUEST_CODE else REGULAR_REQUEST_CODE,
-      intent,
-      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    )
-  }
-
   companion object {
     @Volatile
     var breakRequested = false
 
-    private const val REGULAR_REQUEST_CODE = 41001
-    private const val TEST_REQUEST_CODE = 41002
   }
 }

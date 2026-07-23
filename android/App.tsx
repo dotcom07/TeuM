@@ -193,6 +193,7 @@ function AppContent() {
       const rolled = { ...loaded, rhythm: rollForward(loaded.rhythm, loaded.settings, Date.now()) };
       persistedRef.current = rolled;
       setPersisted(rolled);
+      if (rolled.rhythm !== loaded.rhythm) void savePersisted(rolled);
       void scheduleTick(rolled.rhythm.nextTickAt, rolled.settings, languageRef.current);
       setRecords(await loadRecords());
 
@@ -251,15 +252,23 @@ function AppContent() {
     return () => sub.remove();
   }, []);
 
-  // ── 포그라운드 복귀 시 권한 재확인 ─────────────────────────
+  // ── 포그라운드 복귀 시 권한·예약 상태 재확인 ───────────────
   useEffect(() => {
     const sub = AppState.addEventListener("change", async (state) => {
       if (state !== "active") return;
       setPermissionOk(await hasPermission());
       setFullScreenAllowed(await canUseFullScreenReminder());
+      const current = persistedRef.current;
+      if (!current) return;
+      const rolled = rollForward(current.rhythm, current.settings, Date.now());
+      if (rolled !== current.rhythm) {
+        commit({ ...current, rhythm: rolled });
+      } else {
+        void scheduleTick(current.rhythm.nextTickAt, current.settings, languageRef.current);
+      }
     });
     return () => sub.remove();
-  }, []);
+  }, [commit]);
 
   // ── 알림 액션 처리 ─────────────────────────────────────────
   useEffect(() => {

@@ -8,10 +8,16 @@ export const ACTION_SNOOZE = "teum-snooze";
 export const ACTION_SKIP = "teum-skip";
 
 interface TeumReminderNativeModule {
-  schedule(atMs: number, mode: AlertMode, language: AppLanguage): Promise<void>;
-  schedule(atMs: number, mode: AlertMode): Promise<void>;
+  schedule(
+    atMs: number,
+    mode: AlertMode,
+    language: AppLanguage,
+    startMin: number,
+    endMin: number,
+    intervalMin: number,
+    days: number[]
+  ): Promise<void>;
   scheduleTest(atMs: number, mode: AlertMode, language: AppLanguage): Promise<void>;
-  scheduleTest(atMs: number, mode: AlertMode): Promise<void>;
   cancel(): Promise<void>;
   vibrateNow(mode: AlertMode): Promise<void>;
   canUseFullScreenIntent(): Promise<boolean>;
@@ -22,34 +28,8 @@ interface TeumReminderNativeModule {
 
 const nativeReminder = NativeModules.TeumReminder as TeumReminderNativeModule | undefined;
 const CHANNEL_VERSION = "v3";
-
-/** 언어 인자가 없던 기존 개발 빌드와 현재 네이티브 빌드를 모두 지원한다. */
-async function scheduleNative(
-  test: boolean,
-  atMs: number,
-  mode: AlertMode,
-  language: AppLanguage
-) {
-  if (!nativeReminder) return false;
-
-  const currentCall = () =>
-    test
-      ? nativeReminder.scheduleTest(atMs, mode, language)
-      : nativeReminder.schedule(atMs, mode, language);
-  const legacyCall = () =>
-    test ? nativeReminder.scheduleTest(atMs, mode) : nativeReminder.schedule(atMs, mode);
-
-  try {
-    await currentCall();
-  } catch (currentError) {
-    try {
-      await legacyCall();
-    } catch {
-      throw currentError;
-    }
-  }
-  return true;
-}
+let scheduleRevision = 0;
+let scheduleQueue: Promise<void> = Promise.resolve();
 
 // 앱이 켜져 있을 때는 JS가 1분 화면을 직접 연다. Expo Go 폴백 알림은 목록에만 남긴다.
 Notifications.setNotificationHandler({
@@ -122,14 +102,27 @@ function tickContent(title: string, body: string, mode: AlertMode) {
   };
 }
 
-/** 정규 알림은 네이티브 전체 화면 알람으로, Expo Go에서는 일반 알림으로 예약한다. */
-export async function scheduleTick(atMs: number | null, settings: Settings, language: AppLanguage) {
+async function applyScheduleTick(
+  atMs: number | null,
+  settings: Settings,
+  language: AppLanguage
+) {
   await Notifications.cancelAllScheduledNotificationsAsync();
 
   if (Platform.OS === "android" && nativeReminder) {
-    await nativeReminder.cancel();
-    if (atMs == null || !settings.notificationsOn || atMs <= Date.now()) return;
-    await scheduleNative(false, atMs, settings.mode, language);
+    if (atMs == null || !settings.notificationsOn || atMs <= Date.now()) {
+      await nativeReminder.cancel();
+      return;
+    }
+    await nativeReminder.schedule(
+      atMs,
+      settings.mode,
+      language,
+      settings.startMin,
+      settings.endMin,
+      settings.intervalMin,
+      settings.days
+    );
     return;
   }
 
@@ -148,6 +141,21 @@ export async function scheduleTick(atMs: number | null, settings: Settings, lang
       channelId: channelId(settings.mode, settings.headsUp, language)
     }
   });
+}
+
+/**
+ * 정규 알림은 네이티브 전체 화면 알람으로, Expo Go에서는 일반 알림으로 예약한다.
+ * 설정을 빠르게 연속 변경해도 가장 마지막 요청만 실행해 오래된 예약이 되살아나지 않는다.
+ */
+export function scheduleTick(atMs: number | null, settings: Settings, language: AppLanguage) {
+  const revision = ++scheduleRevision;
+  scheduleQueue = scheduleQueue
+    .catch(() => undefined)
+    .then(async () => {
+      if (revision !== scheduleRevision) return;
+      await applyScheduleTick(atMs, settings, language);
+    });
+  return scheduleQueue;
 }
 
 export async function clearDelivered() {
@@ -183,7 +191,8 @@ export async function scheduleDebugNotification(settings: Settings, language: Ap
   if (!(await hasPermission())) return false;
 
   if (Platform.OS === "android" && nativeReminder) {
-    return scheduleNative(true, Date.now() + 5_000, settings.mode, language);
+    await nativeReminder.scheduleTest(Date.now() + 5_000, settings.mode, language);
+    return true;
   }
 
   await Notifications.scheduleNotificationAsync({

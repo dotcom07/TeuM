@@ -1,13 +1,14 @@
 {
   "name": "@teum/android",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "web": "expo start --web",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "test:time": "node --test tests/time.test.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
