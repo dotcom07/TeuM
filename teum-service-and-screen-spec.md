@@ -3,6 +3,7 @@
 > 버전: MVP 1.4
 > 범위: PC 앱, Android 앱  
 > 원칙: 계정·서버·외부 전송은 사용하지 않는다. Android의 `기록하며 사용`에서만 사용자가 챙긴 틈과 넘긴 틈을 기기에 저장한다.
+> 픽셀 데스크 상세: [PIXEL-DESK-GAMIFICATION-SPEC.md](PIXEL-DESK-GAMIFICATION-SPEC.md)
 
 ## 1. 서비스 정의
 

@@ -20,3 +20,7 @@ windows/src-tauri/icons/icon.png
 windows/src-tauri/icons/icon.svg
 *.log
 .DS_Store
+
+# 원본 오픈소스 자산 저장소는 앱 번들·TeuM 저장소에 포함하지 않는다.
+/opensource/*
+!/opensource/README.md
