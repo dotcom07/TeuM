@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TimeSheet } from "../components/TimePickerSheet";
 import { AmberButton, Eyebrow, InfoRow, Panel, Plate, PrimaryButton } from "../components/ui";
 import { useI18n } from "../i18n";
@@ -39,6 +40,7 @@ export default function Home({
   onOpenSystemSettings: () => void;
 }) {
   const { language, tr } = useI18n();
+  const insets = useSafeAreaInsets();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [customPicker, setCustomPicker] = useState(false);
 
@@ -154,7 +156,10 @@ export default function Home({
 
       <Modal transparent visible={sheetOpen} animationType="slide" onRequestClose={() => setSheetOpen(false)}>
         <Pressable style={styles.sheetBackdrop} onPress={() => setSheetOpen(false)}>
-          <Pressable style={styles.sheet} onPress={() => undefined}>
+          <Pressable
+            style={[styles.sheet, { paddingBottom: Math.max(30, insets.bottom + 16) }]}
+            onPress={() => undefined}
+          >
             <Text style={styles.sheetTitle}>{tr("얼마나 멈춰둘까요?", "How long should we pause?")}</Text>
             <SheetOption
               label={tr("30분", "30 minutes")}

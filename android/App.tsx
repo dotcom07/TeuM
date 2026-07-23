@@ -1,14 +1,13 @@
 import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
   AppState,
   BackHandler,
   Image,
   Linking,
   Pressable,
-  SafeAreaView,
-  StatusBar as RNStatusBar,
   StyleSheet,
   Text,
   View
@@ -74,9 +73,11 @@ function rollForward(rhythm: Rhythm, settings: Settings, now: number): Rhythm {
 
 export default function App() {
   return (
-    <I18nProvider>
-      <AppContent />
-    </I18nProvider>
+    <SafeAreaProvider>
+      <I18nProvider>
+        <AppContent />
+      </I18nProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -658,8 +659,7 @@ function Footer() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.carbon,
-    paddingTop: RNStatusBar.currentHeight ?? 0
+    backgroundColor: colors.carbon
   },
   appFrame: { flex: 1, backgroundColor: colors.canvas },
   commandBar: {
