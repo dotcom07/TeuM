@@ -7,6 +7,8 @@
  * 장면(PixelScene)과 렌더러(PixelGlyph)는 손대지 않는다.
  */
 
+import { THEME_ITEMS } from "./themeItems";
+
 export type SlotId =
   | "wallpaper"
   | "flooring"
@@ -561,7 +563,8 @@ export const ITEM_CATALOG: PixelItem[] = [
     frames: { base: FRAME_MOON, active: FRAME_MOON },
     acquire: { type: "milestone", at: 60 },
     addedIn: "1.0.4"
-  }
+  },
+  ...THEME_ITEMS
 ];
 
 export function itemById(id: string): PixelItem | undefined {

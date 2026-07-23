@@ -19,6 +19,12 @@ export const colors = {
   signalDeep: "#a5672f",
   highlight: "#d7e9ff",
   amberHighlight: "#fff0b2",
+  summerOcean: "#4c91a6",
+  summerSand: "#e6c77a",
+  autumnOchre: "#c56d3f",
+  autumnRust: "#8f4438",
+  leafGreen: "#617b52",
+  woodWarm: "#86624b",
   shadowDeep: "#11131a"
 } as const;
 

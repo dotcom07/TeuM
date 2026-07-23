@@ -18,7 +18,13 @@ export const PIXEL_COLORS: Record<string, string> = {
   A: colors.amber,
   S: colors.signal,
   T: colors.systemsTeal,
-  L: colors.platinum
+  L: colors.platinum,
+  B: colors.summerOcean,
+  Y: colors.summerSand,
+  O: colors.autumnOchre,
+  R: colors.autumnRust,
+  G: colors.leafGreen,
+  N: colors.woodWarm
 };
 
 export interface PixelRun {
