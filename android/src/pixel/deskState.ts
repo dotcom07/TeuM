@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { itemById, SlotId } from "./catalog";
+import { EMPTY_PLACEMENT, itemById, SlotId } from "./catalog";
 
 const KEY = "teum.desk.v1";
 
@@ -25,7 +25,7 @@ export async function loadDeskState(): Promise<DeskState> {
     const placements: DeskState["placements"] = {};
     // 알 수 없는 아이템 id는 무시하고 기본 배치로 대체한다 (검증 기준 10).
     for (const [slot, id] of Object.entries(parsed.placements ?? {})) {
-      if (typeof id === "string" && itemById(id)) {
+      if (typeof id === "string" && (id === EMPTY_PLACEMENT || itemById(id))) {
         placements[slot as SlotId] = id;
       }
     }

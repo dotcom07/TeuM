@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Panel, PrimaryButton } from "../components/ui";
+import { AmberButton, Panel, PrimaryButton } from "../components/ui";
 import { useI18n } from "../i18n";
 import {
   DEFAULT_PLACEMENTS,
-  itemById,
-  ownedItems,
+  EMPTY_PLACEMENT,
+  isOwned,
+  ITEM_CATALOG,
   ownedItemsForSlot,
   PixelItem,
+  SLOT_GROUPS,
   SlotId
 } from "../pixel/catalog";
 import { DeskState } from "../pixel/deskState";
@@ -31,29 +33,11 @@ function ItemPreview({ item, box }: { item: PixelItem; box: number }) {
   );
 }
 
-/** 슬롯의 한국어/영어 이름 */
-function slotLabel(slot: SlotId, ko: boolean): string {
-  const names: Record<SlotId, [string, string]> = {
-    "wall-window": ["창문", "Window"],
-    "wall-shelf-a": ["선반 왼쪽", "Shelf left"],
-    "wall-shelf-b": ["선반 오른쪽", "Shelf right"],
-    "wall-frame": ["벽 액자 자리", "Wall frame spot"],
-    "wall-clock": ["벽시계 자리", "Wall clock spot"],
-    "desk-left": ["책상 왼쪽", "Desk left"],
-    "desk-center": ["모니터", "Monitor"],
-    "desk-right": ["책상 오른쪽", "Desk right"],
-    "desk-lamp": ["스탠드 자리", "Lamp spot"],
-    "desk-front": ["책상 앞", "Desk front"],
-    "floor-left": ["바닥 왼쪽", "Floor left"],
-    "floor-right": ["바닥 오른쪽", "Floor right"]
-  };
-  return names[slot][ko ? 0 : 1];
-}
-
 /**
  * 픽셀 데스크 화면 (기획서 §4.7) — 가장 큰 뷰이자 꾸미기 공간.
- * 장면의 슬롯을 직접 누르거나, 아이템란에서 아이템을 눌러 배치한다.
- * 점수·진행률·다음 해금 압박 수치는 표시하지 않는다.
+ * - `책상 꾸미기`를 켜면 빈 자리가 실루엣으로 보이고, 자리를 눌러 아이템을 고른다.
+ * - 내 아이템은 자리(그룹)별로 묶이고, 배치된 아이템은 표시되며 탭으로 해제/재배치된다.
+ * - 도감은 전체 카탈로그를 보여 주되 미소장은 ?로 숨겨 모으고 싶게 만든다.
  */
 export default function Desk({
   desk,
@@ -67,7 +51,7 @@ export default function Desk({
   doneToday: number | null;
   paused: boolean;
   recordMode: boolean;
-  /** slot의 배치를 itemId로 바꾼다. null이면 기본으로 되돌린다. */
+  /** slot의 배치를 바꾼다. null이면 기본으로, EMPTY_PLACEMENT면 비운다. */
   onPlace: (slot: SlotId, itemId: string | null) => void;
   onBack: () => void;
 }) {
@@ -75,11 +59,47 @@ export default function Desk({
   const insets = useSafeAreaInsets();
   const { width: windowW } = useWindowDimensions();
   const [pickerSlot, setPickerSlot] = useState<SlotId | null>(null);
+  const [decorMode, setDecorMode] = useState(false);
 
   const ko = language === "ko";
   const sceneW = Math.min(360, windowW - 14 * 2 - 14 * 2 - 6);
-  const owned = useMemo(() => ownedItems(desk.cumulativeDone), [desk.cumulativeDone]);
-  const decorItems = owned.filter((item) => item.id !== "monitor-basic");
+
+  /** 슬롯에 실제로 놓인 아이템 id (명시적 비움이면 null) */
+  const effective = (slot: SlotId): string | null => {
+    const placed = desk.placements[slot];
+    if (placed === EMPTY_PLACEMENT) return null;
+    return placed ?? DEFAULT_PLACEMENTS[slot] ?? null;
+  };
+
+  const placedSlotOf = (item: PixelItem): SlotId | undefined =>
+    item.slots.find((slot) => effective(slot) === item.id);
+
+  /** 아이템 탭: 배치돼 있으면 해제, 아니면 빈 호환 자리 우선으로 배치. */
+  const toggleItem = (item: PixelItem) => {
+    const placedSlot = placedSlotOf(item);
+    if (placedSlot) {
+      // 기본 아이템은 명시적으로 비우고, 교체 아이템은 걷어서 기본으로 되돌린다.
+      if (DEFAULT_PLACEMENTS[placedSlot] === item.id) onPlace(placedSlot, EMPTY_PLACEMENT);
+      else onPlace(placedSlot, null);
+      return;
+    }
+    const empty = item.slots.find((slot) => effective(slot) == null);
+    onPlace(empty ?? item.slots[0], item.id);
+  };
+
+  const decorCatalog = useMemo(
+    () => ITEM_CATALOG.filter((item) => item.id !== "monitor-basic"),
+    []
+  );
+
+  const groups = SLOT_GROUPS.map((group) => ({
+    group,
+    items: decorCatalog.filter(
+      (item) => isOwned(item, desk.cumulativeDone) && group.slots.some((s) => item.slots.includes(s))
+    )
+  })).filter((entry) => entry.items.length > 0);
+
+  const ownedCount = decorCatalog.filter((item) => isOwned(item, desk.cumulativeDone)).length;
 
   const summary =
     doneToday != null && doneToday > 0
@@ -88,16 +108,11 @@ export default function Desk({
         : `You took ${doneToday} break${doneToday === 1 ? "" : "s"} today.`
       : tr("오늘의 첫 틈을 기다리고 있어요.", "Waiting for today’s first break.");
 
-  /** 아이템 탭: 호환 슬롯 중 비어 있는 곳 우선으로 바로 배치한다. */
-  const placeItem = (item: PixelItem) => {
-    const current = (slot: SlotId) => desk.placements[slot] ?? DEFAULT_PLACEMENTS[slot] ?? null;
-    const empty = item.slots.find((slot) => current(slot) == null);
-    const target = empty ?? item.slots[0];
-    onPlace(target, item.id);
-  };
-
   const pickerItems = pickerSlot ? ownedItemsForSlot(pickerSlot, desk.cumulativeDone) : [];
   const pickerHasDefault = pickerSlot != null && DEFAULT_PLACEMENTS[pickerSlot] != null;
+  const pickerGroup = pickerSlot
+    ? SLOT_GROUPS.find((group) => group.slots.includes(pickerSlot))
+    : undefined;
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -109,35 +124,97 @@ export default function Desk({
             paused={paused}
             placements={desk.placements}
             accessibilityLabel={summary}
-            onSlotPress={(slot) => setPickerSlot(slot)}
+            onSlotPress={decorMode ? (slot) => setPickerSlot(slot) : undefined}
+            showSlotHints={decorMode}
+            revealAll
           />
         </View>
         <Text style={styles.summary}>{summary}</Text>
-        <Text style={styles.hint}>
-          {tr("장면의 자리를 누르면 아이템을 바꿀 수 있어요.", "Tap a spot in the scene to change its item.")}
-        </Text>
+        <AmberButton
+          label={decorMode ? tr("꾸미기 끝내기", "Done decorating") : tr("책상 꾸미기", "Decorate desk")}
+          onPress={() => setDecorMode((v) => !v)}
+          style={styles.decorButton}
+        />
+        {decorMode && (
+          <Text style={styles.hint}>
+            {tr(
+              "점선으로 표시된 빈 자리나 아이템을 눌러 바꿔 보세요.",
+              "Tap a dashed empty spot or an item to change it."
+            )}
+          </Text>
+        )}
       </Panel>
 
       <Panel title={tr("내 아이템", "My items")}>
-        <View style={styles.itemGrid}>
-          {decorItems.map((item) => (
-            <Pressable
-              key={item.id}
-              onPress={() => placeItem(item)}
-              accessibilityRole="button"
-              accessibilityLabel={ko ? `${item.nameKo} 배치하기` : `Place ${item.nameEn}`}
-              style={({ pressed }) => [styles.itemCell, pressed && styles.itemCellPressed]}
-            >
-              <ItemPreview item={item} box={44} />
-              <Text style={styles.itemName}>{ko ? item.nameKo : item.nameEn}</Text>
-            </Pressable>
-          ))}
-        </View>
+        {groups.map(({ group, items }) => (
+          <View key={group.key} style={styles.groupBlock}>
+            <Text style={styles.groupLabel}>{ko ? group.ko : group.en}</Text>
+            <View style={styles.itemGrid}>
+              {items.map((item) => {
+                const placed = placedSlotOf(item) != null;
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => toggleItem(item)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: placed }}
+                    accessibilityLabel={
+                      ko
+                        ? `${item.nameKo}${placed ? ", 배치됨. 누르면 해제" : ", 누르면 배치"}`
+                        : `${item.nameEn}${placed ? ", placed. Tap to remove" : ", tap to place"}`
+                    }
+                    style={({ pressed }) => [
+                      styles.itemCell,
+                      placed && styles.itemCellPlaced,
+                      pressed && styles.itemCellPressed
+                    ]}
+                  >
+                    <ItemPreview item={item} box={44} />
+                    <Text style={styles.itemName}>{ko ? item.nameKo : item.nameEn}</Text>
+                    {placed && <View style={styles.placedDot} />}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ))}
         <Text style={styles.hint}>
           {recordMode
             ? tr("틈을 챙기면 새 아이템이 도착해요.", "New items arrive as you take breaks.")
             : tr("기록하며 사용을 켜면 책상이 자라나요.", "Turn on record mode to grow your desk.")}
         </Text>
+      </Panel>
+
+      <Panel title={tr("도감", "Collection")}>
+        <Text style={styles.collectionCount}>
+          {ko
+            ? `${ownedCount} / ${decorCatalog.length} 모았어요`
+            : `${ownedCount} / ${decorCatalog.length} collected`}
+        </Text>
+        <View style={styles.itemGrid}>
+          {decorCatalog.map((item) => {
+            const owned = isOwned(item, desk.cumulativeDone);
+            if (!owned) {
+              return (
+                <View
+                  key={item.id}
+                  accessible
+                  accessibilityLabel={tr("아직 만나지 못한 아이템", "An item you haven’t met yet")}
+                  style={[styles.itemCell, styles.itemCellUnknown]}
+                >
+                  <Text style={styles.unknownMark}>?</Text>
+                  <Text style={[styles.itemName, styles.unknownName]}>???</Text>
+                </View>
+              );
+            }
+            return (
+              <View key={item.id} style={styles.itemCell}>
+                <ItemPreview item={item} box={44} />
+                <Text style={styles.itemName}>{ko ? item.nameKo : item.nameEn}</Text>
+              </View>
+            );
+          })}
+        </View>
       </Panel>
 
       <PrimaryButton label={tr("홈으로 돌아가기", "Back to home")} onPress={onBack} />
@@ -155,7 +232,7 @@ export default function Desk({
             onPress={() => undefined}
           >
             <Text style={styles.sheetTitle}>
-              {pickerSlot ? slotLabel(pickerSlot, ko) : ""}
+              {pickerGroup ? (ko ? pickerGroup.ko : pickerGroup.en) : ""}
             </Text>
             {pickerItems.length === 0 && (
               <Text style={styles.hint}>
@@ -163,9 +240,7 @@ export default function Desk({
               </Text>
             )}
             {pickerItems.map((item) => {
-              const selected =
-                pickerSlot != null &&
-                (desk.placements[pickerSlot] ?? DEFAULT_PLACEMENTS[pickerSlot]) === item.id;
+              const selected = pickerSlot != null && effective(pickerSlot) === item.id;
               return (
                 <Pressable
                   key={item.id}
@@ -184,16 +259,16 @@ export default function Desk({
             })}
             <Pressable
               onPress={() => {
-                if (pickerSlot) onPlace(pickerSlot, null);
+                if (pickerSlot) {
+                  onPlace(pickerSlot, pickerHasDefault ? EMPTY_PLACEMENT : null);
+                }
                 setPickerSlot(null);
               }}
               accessibilityRole="button"
               style={({ pressed }) => [styles.sheetRow, pressed && styles.sheetRowPressed]}
             >
               <View style={{ width: 36 }} />
-              <Text style={[styles.sheetRowText, styles.sheetMuted]}>
-                {pickerHasDefault ? tr("기본으로 되돌리기", "Back to default") : tr("비우기", "Leave empty")}
-              </Text>
+              <Text style={[styles.sheetRowText, styles.sheetMuted]}>{tr("비우기", "Leave empty")}</Text>
             </Pressable>
           </Pressable>
         </Pressable>
@@ -206,7 +281,16 @@ const styles = StyleSheet.create({
   content: { padding: 14, gap: 14 },
   sceneWrap: { alignItems: "center" },
   summary: { marginTop: 12, color: colors.carbon, fontSize: 14, fontWeight: "700" },
+  decorButton: { marginTop: 12 },
   hint: { marginTop: 8, color: colors.chromeIndigo, fontSize: 11, lineHeight: 16 },
+  groupBlock: { marginBottom: 12 },
+  groupLabel: {
+    marginBottom: 6,
+    color: colors.chromeIndigo,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.5
+  },
   itemGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   itemCell: {
     width: 72,
@@ -219,8 +303,29 @@ const styles = StyleSheet.create({
     borderRightColor: colors.hairline,
     borderBottomColor: colors.hairline
   },
+  itemCellPlaced: {
+    backgroundColor: colors.amberHighlight,
+    borderTopColor: colors.amber,
+    borderLeftColor: colors.amber,
+    borderRightColor: colors.signalDeep,
+    borderBottomColor: colors.signalDeep
+  },
   itemCellPressed: { backgroundColor: colors.ice },
+  itemCellUnknown: { backgroundColor: colors.platinum, justifyContent: "center", minHeight: 84 },
+  unknownMark: { color: colors.mutedIndigo, fontSize: 26, fontWeight: "900" },
+  unknownName: { color: colors.mutedIndigo },
   itemName: { marginTop: 4, color: colors.carbon, fontSize: 10, fontWeight: "700" },
+  placedDot: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 8,
+    height: 8,
+    backgroundColor: colors.signal,
+    borderWidth: 1,
+    borderColor: colors.signalDeep
+  },
+  collectionCount: { marginBottom: 10, color: colors.carbon, fontSize: 12, fontWeight: "700" },
   backdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(17, 19, 26, 0.55)" },
   sheet: {
     padding: 18,

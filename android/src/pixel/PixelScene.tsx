@@ -4,6 +4,7 @@ import {
   DEFAULT_PLACEMENTS,
   DESK_SLOTS,
   DeskSceneState,
+  EMPTY_PLACEMENT,
   itemById,
   sceneStateFor,
   SlotId
@@ -44,9 +45,11 @@ function Window({ lit, scale }: { lit: 0 | 1 | 2; scale: number }) {
   );
 }
 
-/** 슬롯에 실제로 그려질 아이템 id. 배치가 있으면 배치, 없으면 기본. */
+/** 슬롯에 실제로 그려질 아이템 id. 배치가 있으면 배치, 없으면 기본. 명시적 비움은 null. */
 function itemIdForSlot(slot: SlotId, placements: Partial<Record<SlotId, string>>): string | null {
-  return placements[slot] ?? DEFAULT_PLACEMENTS[slot] ?? null;
+  const placed = placements[slot];
+  if (placed === EMPTY_PLACEMENT) return null;
+  return placed ?? DEFAULT_PLACEMENTS[slot] ?? null;
 }
 
 /** 기본 아이템의 하루 등장 규칙 (§6.3). 배치로 바꾼 아이템은 항상 보인다. */
@@ -74,7 +77,9 @@ export default function PixelScene({
   paused,
   placements = {},
   accessibilityLabel,
-  onSlotPress
+  onSlotPress,
+  showSlotHints = false,
+  revealAll = false
 }: {
   /** 표시 폭(dp). 높이는 비율(40/64)로 계산된다. */
   width: number;
@@ -86,6 +91,10 @@ export default function PixelScene({
   accessibilityLabel: string;
   /** 픽셀 데스크 화면에서만: 슬롯 영역을 눌러 꾸미기 */
   onSlotPress?: (slot: SlotId) => void;
+  /** 꾸미기 모드: 빈 슬롯을 실루엣으로 보여 준다 */
+  showSlotHints?: boolean;
+  /** 데스크 화면: 데일리 등장 규칙을 무시하고 배치된 아이템을 전부 보여 준다 */
+  revealAll?: boolean;
 }) {
   const scale = width / ART_W;
   const state: DeskSceneState = sceneStateFor(doneCount, paused);
@@ -130,7 +139,7 @@ export default function PixelScene({
         const item = itemById(itemId);
         if (!item) return null;
         const customized = placements[slot] != null;
-        if (!isVisible(slot, itemId, state, customized)) return null;
+        if (!revealAll && !isVisible(slot, itemId, state, customized)) return null;
         const rows = item.frames[frameFor(itemId, state)];
         const slotBox = DESK_SLOTS[slot];
         // 아이템은 슬롯의 바닥선에 붙인다 (책상 위·바닥 위에 앉게)
@@ -145,6 +154,32 @@ export default function PixelScene({
           />
         );
       })}
+
+      {/* 꾸미기 모드: 빈 슬롯 실루엣 — 어디를 꾸밀 수 있는지 보여 준다 */}
+      {showSlotHints &&
+        itemSlots
+          .filter((slot) => slot !== "desk-center")
+          .filter((slot) => itemIdForSlot(slot, placements) == null)
+          .map((slot) => {
+            const slotBox = DESK_SLOTS[slot];
+            return (
+              <View
+                key={`hint-${slot}`}
+                pointerEvents="none"
+                style={{
+                  position: "absolute",
+                  left: slotBox.x * scale,
+                  top: slotBox.y * scale,
+                  width: slotBox.maxW * scale,
+                  height: slotBox.maxH * scale,
+                  borderWidth: 1.5,
+                  borderStyle: "dashed",
+                  borderColor: colors.mutedIndigo,
+                  backgroundColor: "rgba(96, 97, 156, 0.22)"
+                }}
+              />
+            );
+          })}
 
       {/* 상태 점 — 일시정지면 멈춤 색 (§6.1) */}
       <PixelRect

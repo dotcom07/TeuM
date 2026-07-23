@@ -32,10 +32,29 @@ export const DESK_SLOTS: Record<SlotId, { x: number; y: number; maxW: number; ma
   "desk-center": { x: 25, y: 14, maxW: 14, maxH: 10 },
   "desk-right": { x: 44, y: 16, maxW: 7, maxH: 8 },
   "desk-lamp": { x: 54, y: 12, maxW: 5, maxH: 12 },
-  "desk-front": { x: 20, y: 26, maxW: 8, maxH: 3 },
+  "desk-front": { x: 19, y: 26, maxW: 8, maxH: 3 },
   "floor-left": { x: 2, y: 24, maxW: 6, maxH: 8 },
   "floor-right": { x: 57, y: 24, maxW: 6, maxH: 8 }
 };
+
+/** 꾸미기 그룹 — 아이템란을 "같은 자리끼리" 묶는 기준 (기획서 §4.7) */
+export interface SlotGroup {
+  key: string;
+  ko: string;
+  en: string;
+  slots: SlotId[];
+}
+
+export const SLOT_GROUPS: SlotGroup[] = [
+  { key: "cup", ko: "컵 자리", en: "Cup spot", slots: ["desk-left"] },
+  { key: "plant", ko: "식물 자리", en: "Plant spot", slots: ["desk-right"] },
+  { key: "lamp", ko: "조명 자리", en: "Lamp spot", slots: ["desk-lamp"] },
+  { key: "front", ko: "책상 앞", en: "Desk front", slots: ["desk-front"] },
+  { key: "shelf", ko: "선반", en: "Shelf", slots: ["wall-shelf-a", "wall-shelf-b"] },
+  { key: "frame", ko: "액자 자리", en: "Frame spot", slots: ["wall-frame"] },
+  { key: "clock", ko: "시계 자리", en: "Clock spot", slots: ["wall-clock"] },
+  { key: "floor", ko: "바닥", en: "Floor", slots: ["floor-left", "floor-right"] }
+];
 
 export type ItemStateKey = "base" | "active";
 
@@ -56,7 +75,10 @@ export interface PixelItem {
   addedIn: string;
 }
 
-// ── 기본 아이템 도트맵 ─────────────────────────────────────
+/** 슬롯을 명시적으로 비워 두는 배치 값 */
+export const EMPTY_PLACEMENT = "__empty__";
+
+// ── 기본 아이템 ────────────────────────────────────────────
 
 const MONITOR_BASE = [
   "CCCCCCCCCCCCCC",
@@ -84,14 +106,7 @@ const MONITOR_ACTIVE = [
   "....CCCCCC...."
 ];
 
-const GLASS_FILLED = [
-  "H....H",
-  "H....H",
-  "HEKKEH",
-  "HKKKKH",
-  "HKKKKH",
-  ".HHHH."
-];
+const GLASS = ["H....H", "H....H", "HEKKEH", "HKKKKH", "HKKKKH", ".HHHH."];
 
 const PLANT = [
   "..TTT..",
@@ -134,37 +149,62 @@ const LAMP_ON = [
   ".CCCC"
 ];
 
-// ── 마일스톤 아이템 도트맵 (기획서 §4.7) ────────────────────
+// ── 컵 자리 ────────────────────────────────────────────────
 
-const MUG = [
-  "AAAA..",
-  "AKKA.A",
-  "AKKAAA",
-  "AKKAA.",
-  "AAAA.."
-];
+const MUG = ["AAAA..", "AKKA.A", "AKKAAA", "AKKAA.", "AAAA.."];
 
-const BOOKS = [
-  ".IPT.",
-  ".IPT.",
-  ".IPT.",
+const TEA_CUP = [".H..H.", "WWWWW.", "WAAAW.", "WAAAWW", ".WWW.."];
+
+// ── 식물 자리 ──────────────────────────────────────────────
+
+const CACTUS = ["..T..", "T.T.T", "T.T.T", "TTTTT", "..T..", ".CCC.", ".CPC."];
+
+const FLOWER = ["..S..", ".SAS.", "..S..", "..T..", ".CCC.", ".CPC.", ".CCC."];
+
+// ── 조명 자리 ──────────────────────────────────────────────
+
+const LAMP_ICE = [
+  "EEE..",
+  "EHE..",
+  "..C..",
+  "..C..",
+  "..C..",
+  "..C..",
+  "..C..",
+  "..C..",
+  "..C..",
+  "..C..",
+  ".CCC.",
   "CCCCC"
 ];
 
-const FRAME = [
-  "CCCCCC",
-  "CKKKTC",
-  "CKTTTC",
-  "CTTTTC",
-  "CCCCCC"
-];
+// ── 책상 앞 ────────────────────────────────────────────────
 
-const CLOCK = [
-  ".CC.",
-  "CWCC",
-  "CWWC",
-  ".CC."
-];
+const MEMO = ["AAAA", "AWWA", "AAAA"];
+
+const KEYBOARD = ["CCCCCCC", "HCHCHCH"];
+
+// ── 선반 ───────────────────────────────────────────────────
+
+const BOOKS = [".IPT.", ".IPT.", ".IPT.", "CCCCC"];
+
+const RADIO = ["..H..", "CCCCC", "CAWKC", "CCCCC"];
+
+const GLOBE = [".KT.", ".TK.", "..C.", ".CCC"];
+
+const TROPHY = ["EHE.", "EEE.", ".E..", "EEE."];
+
+// ── 액자 자리 ──────────────────────────────────────────────
+
+const FRAME_TEAL = ["CCCCCC", "CKKKTC", "CKTTTC", "CTTTTC", "CCCCCC"];
+
+const FRAME_MOON = ["CCCCCC", "CIIIIC", "CIIWIC", "CWIIIC", "CIIIIC", "CCCCCC"];
+
+// ── 시계 자리 ──────────────────────────────────────────────
+
+const CLOCK = [".CC.", "CWCC", "CWWC", ".CC."];
+
+// ── 바닥 ───────────────────────────────────────────────────
 
 const TALL_PLANT = [
   "..TT..",
@@ -177,7 +217,18 @@ const TALL_PLANT = [
   ".CCCC."
 ];
 
+const BOX_STACK = [
+  ".PPPP.",
+  ".PKKP.",
+  ".PPPP.",
+  "PPPPPP",
+  "PKKKKP",
+  "PPPPPP",
+  "MMMMMM"
+];
+
 export const ITEM_CATALOG: PixelItem[] = [
+  // 기본·데일리
   {
     id: "monitor-basic",
     nameKo: "모니터",
@@ -192,7 +243,7 @@ export const ITEM_CATALOG: PixelItem[] = [
     nameKo: "물컵",
     nameEn: "Water glass",
     slots: ["desk-left"],
-    frames: { base: GLASS_FILLED, active: GLASS_FILLED },
+    frames: { base: GLASS, active: GLASS },
     acquire: { type: "daily" },
     addedIn: "1.0.4"
   },
@@ -214,6 +265,7 @@ export const ITEM_CATALOG: PixelItem[] = [
     acquire: { type: "default" },
     addedIn: "1.0.4"
   },
+  // 마일스톤 — 촘촘하게 도착해 모으는 재미를 만든다
   {
     id: "mug-amber",
     nameKo: "머그컵",
@@ -221,6 +273,15 @@ export const ITEM_CATALOG: PixelItem[] = [
     slots: ["desk-left"],
     frames: { base: MUG, active: MUG },
     acquire: { type: "milestone", at: 3 },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "memo-note",
+    nameKo: "메모지",
+    nameEn: "Sticky note",
+    slots: ["desk-front"],
+    frames: { base: MEMO, active: MEMO },
+    acquire: { type: "milestone", at: 5 },
     addedIn: "1.0.4"
   },
   {
@@ -233,12 +294,39 @@ export const ITEM_CATALOG: PixelItem[] = [
     addedIn: "1.0.4"
   },
   {
+    id: "cactus",
+    nameKo: "선인장",
+    nameEn: "Cactus",
+    slots: ["desk-right"],
+    frames: { base: CACTUS, active: CACTUS },
+    acquire: { type: "milestone", at: 10 },
+    addedIn: "1.0.4"
+  },
+  {
     id: "frame-teal",
     nameKo: "벽 액자",
     nameEn: "Wall art",
     slots: ["wall-frame"],
-    frames: { base: FRAME, active: FRAME },
+    frames: { base: FRAME_TEAL, active: FRAME_TEAL },
     acquire: { type: "milestone", at: 12 },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "tea-cup",
+    nameKo: "찻잔",
+    nameEn: "Tea cup",
+    slots: ["desk-left"],
+    frames: { base: TEA_CUP, active: TEA_CUP },
+    acquire: { type: "milestone", at: 15 },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "radio-retro",
+    nameKo: "라디오",
+    nameEn: "Radio",
+    slots: ["wall-shelf-a", "wall-shelf-b"],
+    frames: { base: RADIO, active: RADIO },
+    acquire: { type: "milestone", at: 18 },
     addedIn: "1.0.4"
   },
   {
@@ -251,6 +339,24 @@ export const ITEM_CATALOG: PixelItem[] = [
     addedIn: "1.0.4"
   },
   {
+    id: "flower-pot",
+    nameKo: "꽃 화분",
+    nameEn: "Flower pot",
+    slots: ["desk-right"],
+    frames: { base: FLOWER, active: FLOWER },
+    acquire: { type: "milestone", at: 25 },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "keyboard",
+    nameKo: "키보드",
+    nameEn: "Keyboard",
+    slots: ["desk-front"],
+    frames: { base: KEYBOARD, active: KEYBOARD },
+    acquire: { type: "milestone", at: 28 },
+    addedIn: "1.0.4"
+  },
+  {
     id: "plant-tall",
     nameKo: "큰 화분",
     nameEn: "Floor plant",
@@ -258,11 +364,61 @@ export const ITEM_CATALOG: PixelItem[] = [
     frames: { base: TALL_PLANT, active: TALL_PLANT },
     acquire: { type: "milestone", at: 30 },
     addedIn: "1.0.4"
+  },
+  {
+    id: "box-stack",
+    nameKo: "상자 더미",
+    nameEn: "Box stack",
+    slots: ["floor-left", "floor-right"],
+    frames: { base: BOX_STACK, active: BOX_STACK },
+    acquire: { type: "milestone", at: 35 },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "lamp-ice",
+    nameKo: "무드등",
+    nameEn: "Mood lamp",
+    slots: ["desk-lamp"],
+    frames: { base: LAMP_ICE, active: LAMP_ICE },
+    acquire: { type: "milestone", at: 40 },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "globe-shelf",
+    nameKo: "지구본",
+    nameEn: "Globe",
+    slots: ["wall-shelf-a", "wall-shelf-b"],
+    frames: { base: GLOBE, active: GLOBE },
+    acquire: { type: "milestone", at: 45 },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "trophy",
+    nameKo: "트로피",
+    nameEn: "Trophy",
+    slots: ["wall-shelf-a", "wall-shelf-b"],
+    frames: { base: TROPHY, active: TROPHY },
+    acquire: { type: "milestone", at: 50 },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "frame-moon",
+    nameKo: "달 그림",
+    nameEn: "Moon art",
+    slots: ["wall-frame"],
+    frames: { base: FRAME_MOON, active: FRAME_MOON },
+    acquire: { type: "milestone", at: 60 },
+    addedIn: "1.0.4"
   }
 ];
 
 export function itemById(id: string): PixelItem | undefined {
   return ITEM_CATALOG.find((item) => item.id === id);
+}
+
+/** 아이템이 속한 꾸미기 그룹 */
+export function groupOfItem(item: PixelItem): SlotGroup | undefined {
+  return SLOT_GROUPS.find((group) => group.slots.some((slot) => item.slots.includes(slot)));
 }
 
 /** 슬롯별 기본 배치 (없으면 비어 있는 슬롯) */
@@ -273,11 +429,13 @@ export const DEFAULT_PLACEMENTS: Partial<Record<SlotId, string>> = {
   "desk-lamp": "lamp-basic"
 };
 
+export function isOwned(item: PixelItem, cumulativeDone: number): boolean {
+  return item.acquire.type === "milestone" ? cumulativeDone >= item.acquire.at : true;
+}
+
 /** 누적 챙김 기준으로 소장한 아이템 목록 (도착 순서 유지) */
 export function ownedItems(cumulativeDone: number): PixelItem[] {
-  return ITEM_CATALOG.filter((item) =>
-    item.acquire.type === "milestone" ? cumulativeDone >= item.acquire.at : true
-  );
+  return ITEM_CATALOG.filter((item) => isOwned(item, cumulativeDone));
 }
 
 /** 해당 슬롯에 넣을 수 있는 소장 아이템 */
