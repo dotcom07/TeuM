@@ -72,14 +72,14 @@ export const SLOT_GROUPS: SlotGroup[] = [
   { key: "window", ko: "창문", en: "Window", slots: ["wall-window"] },
   { key: "desk", ko: "책상", en: "Desk", slots: ["furniture-desk"] },
   { key: "monitor", ko: "모니터", en: "Monitor", slots: ["desk-center"] },
-  { key: "cup", ko: "컵 자리", en: "Cup spot", slots: ["desk-left"] },
-  { key: "plant", ko: "식물 자리", en: "Plant spot", slots: ["desk-right"] },
-  { key: "lamp", ko: "조명 자리", en: "Lamp spot", slots: ["desk-lamp"] },
+  { key: "cup", ko: "컵", en: "Cups", slots: ["desk-left"] },
+  { key: "plant", ko: "식물", en: "Plants", slots: ["desk-right"] },
+  { key: "lamp", ko: "조명", en: "Lamps", slots: ["desk-lamp"] },
   { key: "front", ko: "책상 앞", en: "Desk front", slots: ["desk-front"] },
   { key: "shelf", ko: "선반", en: "Shelf", slots: ["wall-shelf-a", "wall-shelf-b"] },
   { key: "frame", ko: "액자 자리", en: "Frame spot", slots: ["wall-frame"] },
   { key: "clock", ko: "시계 자리", en: "Clock spot", slots: ["wall-clock"] },
-  { key: "pet", ko: "펫 자리", en: "Pet spot", slots: ["floor-left"] },
+  { key: "pet", ko: "펫", en: "Pets", slots: ["floor-left"] },
   { key: "floor", ko: "바닥", en: "Floor", slots: ["floor-right"] }
 ];
 

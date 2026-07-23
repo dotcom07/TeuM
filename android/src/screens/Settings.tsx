@@ -246,8 +246,8 @@ export default function SettingsScreen({
       <Panel title={tr("백업 및 기기 간 이동", "Backup & move to another device")}>
         <Text style={styles.backupCopy}>
           {tr(
-            "계정 없이도 백업 파일을 직접 저장해 새 기기에서 이어 쓸 수 있어요. 자동 동기화와 로그인은 아직 제공하지 않아요.",
-            "Save a backup file and restore it on a new device without an account. Automatic sync and sign-in are not available yet."
+            "계정 없이도 백업 파일을 직접 저장해 새 기기에서 이어 쓸 수 있어요.",
+            "Save a backup file and restore it on a new device without an account."
           )}
         </Text>
         <Pressable
