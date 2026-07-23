@@ -1,11 +1,10 @@
 {
   "name": "teum",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.1",
   "workspaces": ["windows", "android"],
   "scripts": {
     "dev:windows": "pnpm --dir windows dev",
     "dev:android": "pnpm --dir android start"
   }
 }
-
