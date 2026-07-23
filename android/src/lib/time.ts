@@ -59,6 +59,46 @@ export function nextTickFrom(fromMs: number, s: Settings): number | null {
   return null;
 }
 
+/**
+ * 업무 시작 시각을 기준으로 정렬된 다음 알림 시각.
+ * 최초 시작·업무 시간/간격 변경 시에는 설정을 저장한 시각이 아니라
+ * `업무 시작 + 간격` 슬롯부터 알림을 시작한다.
+ */
+export function nextTickFromWorkStart(nowMs: number, s: Settings): number | null {
+  if (s.days.length === 0) return null;
+  const now = new Date(nowMs);
+  const interval = intervalMs(s);
+
+  for (let dayOffset = 0; dayOffset <= 14; dayOffset += 1) {
+    const start = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + dayOffset,
+      Math.floor(s.startMin / 60),
+      s.startMin % 60,
+      0,
+      0
+    );
+    if (!s.days.includes(start.getDay())) continue;
+
+    const end = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + dayOffset,
+      Math.floor(s.endMin / 60),
+      s.endMin % 60,
+      0,
+      0
+    ).getTime();
+    let candidate = start.getTime() + interval;
+
+    // 오늘 이미 지난 슬롯은 같은 업무일의 다음 정규 슬롯으로 이동한다.
+    while (candidate <= nowMs && candidate <= end) candidate += interval;
+    if (candidate > nowMs && candidate <= end) return candidate;
+  }
+  return null;
+}
+
 /** 오늘 업무 종료 시각(epoch ms) */
 export function endOfWorkToday(nowMs: number, s: Settings): number {
   const d = new Date(nowMs);

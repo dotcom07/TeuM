@@ -36,6 +36,7 @@ import {
   intervalMs,
   isWithinWork,
   nextTickFrom,
+  nextTickFromWorkStart,
   SNOOZE_MS
 } from "./src/lib/time";
 import Break from "./src/screens/Break";
@@ -431,7 +432,7 @@ function AppContent() {
         rhythm.status === "running" &&
         (rhythm.nextTickAt == null || !isWithinWork(rhythm.nextTickAt, settings) || timingChanged)
       ) {
-        rhythm = { ...rhythm, nextTickAt: nextTickFrom(Date.now(), settings) };
+        rhythm = { ...rhythm, nextTickAt: nextTickFromWorkStart(Date.now(), settings) };
       }
       commit({ ...current, settings, rhythm });
     },
@@ -448,7 +449,7 @@ function AppContent() {
         rhythm: {
           status: "running",
           pausedUntil: null,
-          nextTickAt: nextTickFrom(Date.now(), settings)
+          nextTickAt: nextTickFromWorkStart(Date.now(), settings)
         }
       });
       const allowed = await canUseFullScreenReminder();
