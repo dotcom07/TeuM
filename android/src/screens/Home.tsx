@@ -14,6 +14,8 @@ import {
   isWithinWork,
   nextTickFromWorkStart
 } from "../lib/time";
+import PixelScene from "../pixel/PixelScene";
+import PixelSlotMeter from "../pixel/PixelSlotMeter";
 import { colors, MIN_TOUCH } from "../theme";
 import { Rhythm, Settings } from "../types";
 
@@ -23,7 +25,9 @@ export default function Home({
   now,
   permissionOk,
   doneToday,
+  placements,
   onOpenRecords,
+  onOpenDesk,
   onPause,
   onResume,
   onOpenSystemSettings
@@ -34,7 +38,9 @@ export default function Home({
   permissionOk: boolean;
   /** 기록 모드가 꺼져 있으면 null — 홈에 기록 진입을 노출하지 않는다. */
   doneToday: number | null;
+  placements: Partial<Record<import("../pixel/catalog").SlotId, string>>;
   onOpenRecords: () => void;
+  onOpenDesk: () => void;
   onPause: (untilMs: number | null) => void;
   onResume: () => void;
   onOpenSystemSettings: () => void;
@@ -56,6 +62,30 @@ export default function Home({
       : 0;
 
   const workHours = `${fmtHM(settings.startMin)}–${fmtHM(settings.endMin)}`;
+
+  const sceneLabel =
+    doneToday != null && doneToday > 0
+      ? language === "ko"
+        ? `내 책상 장면. 오늘 ${doneToday}번의 틈을 챙겼어요.`
+        : `My desk scene. You took ${doneToday} break${doneToday === 1 ? "" : "s"} today.`
+      : tr("내 책상 장면. 오늘의 첫 틈을 기다리고 있어요.", "My desk scene, waiting for today’s first break.");
+  const deskRow = (
+    <Pressable
+      onPress={onOpenDesk}
+      accessibilityRole="button"
+      accessibilityLabel={tr("픽셀 데스크 열기", "Open pixel desk")}
+      style={styles.deskRow}
+    >
+      <PixelScene
+        width={128}
+        doneCount={doneToday}
+        paused={paused}
+        placements={placements}
+        accessibilityLabel={sceneLabel}
+      />
+    </Pressable>
+  );
+
   return (
     <ScrollView contentContainerStyle={styles.content}>
       {settings.notificationsOn && !permissionOk && (
@@ -81,12 +111,14 @@ export default function Home({
                 : `Your health reminders are paused.\nNext reminder: ${fmtDayTime(rhythm.pausedUntil!, now, language)}.`}
           </Text>
           <PrimaryButton label={tr("알람 다시 시작", "Resume reminders")} onPress={onResume} style={styles.heroButton} />
+          {deskRow}
         </Plate>
       ) : suggesting ? (
         <Plate background={colors.systemsTeal} style={styles.heroPlate}>
           <Eyebrow>PAUSE SIGNAL</Eyebrow>
           <Text style={styles.heroTitleLight}>{tr("1분의 틈을\n여는 중이에요.", "Your one-minute\nbreak is starting.")}</Text>
           <Text style={styles.heroCopyLight}>{tr("물 한 모금과 가벼운 움직임으로 몸을 잠깐 쉬어 주세요.", "Take a sip of water and gently move your body.")}</Text>
+          {deskRow}
         </Plate>
       ) : (
         <Plate background={colors.systemsTeal} style={styles.heroPlate}>
@@ -115,10 +147,22 @@ export default function Home({
               </View>
             </>
           )}
+          {deskRow}
         </Plate>
       )}
 
       <Panel title="TODAY'S RHYTHM">
+        {doneToday != null && (
+          <PixelSlotMeter
+            count={doneToday}
+            label={tr("오늘의 틈", "Today’s breaks")}
+            accessibilityLabel={
+              language === "ko"
+                ? `오늘의 틈 ${doneToday}번 챙김`
+                : `${doneToday} of today’s breaks taken`
+            }
+          />
+        )}
         <InfoRow label={tr("오늘의 업무 시간", "Today’s work hours")} value={workHours} />
         <InfoRow label={tr("알람 방식", "Alert style")} value={modeLabel(settings.mode, language)} />
         <InfoRow
@@ -248,6 +292,7 @@ function SheetOption({
 
 const styles = StyleSheet.create({
   content: { padding: 14, gap: 14 },
+  deskRow: { marginTop: 14, alignItems: "flex-end" },
   noticeCopy: { color: colors.carbon, fontSize: 13, fontWeight: "700", marginBottom: 12 },
   heroPlate: { padding: 22 },
   heroTitle: {

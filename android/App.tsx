@@ -41,12 +41,15 @@ import {
 import Break from "./src/screens/Break";
 import Home from "./src/screens/Home";
 import Onboarding from "./src/screens/Onboarding";
+import { SlotId } from "./src/pixel/catalog";
+import { DeskState, EMPTY_DESK, loadDeskState, saveDeskState } from "./src/pixel/deskState";
+import Desk from "./src/screens/Desk";
 import Records from "./src/screens/Records";
 import SettingsScreen from "./src/screens/Settings";
 import { colors } from "./src/theme";
 import { BreakRecord, BreakResult, Persisted, Rhythm, Settings } from "./src/types";
 
-type Screen = "home" | "break" | "settings" | "records";
+type Screen = "home" | "break" | "settings" | "records" | "desk";
 
 /** 놓친 알림 시각을 다음 정규 슬롯으로 넘긴다. 1시간 안에는 제안 상태를 유지한다. */
 function rollForward(rhythm: Rhythm, settings: Settings, now: number): Rhythm {
@@ -91,6 +94,26 @@ function AppContent() {
   const [toast, setToast] = useState<string | null>(null);
 
   const [records, setRecords] = useState<BreakRecord[]>([]);
+  const [desk, setDesk] = useState<DeskState>(EMPTY_DESK);
+  const deskRef = useRef<DeskState>(EMPTY_DESK);
+
+  /** 데스크 상태 저장 단일 진입점 */
+  const commitDesk = useCallback((next: DeskState) => {
+    deskRef.current = next;
+    setDesk(next);
+    void saveDeskState(next);
+  }, []);
+
+  /** 꾸미기: 슬롯 배치 변경. null이면 기본으로 되돌린다. */
+  const placeDeskItem = useCallback(
+    (slot: SlotId, itemId: string | null) => {
+      const placements = { ...deskRef.current.placements };
+      if (itemId == null) delete placements[slot];
+      else placements[slot] = itemId;
+      commitDesk({ ...deskRef.current, placements });
+    },
+    [commitDesk]
+  );
 
   const persistedRef = useRef<Persisted | null>(null);
   const screenRef = useRef<Screen>("home");
@@ -197,6 +220,9 @@ function AppContent() {
       if (rolled.rhythm !== loaded.rhythm) void savePersisted(rolled);
       void scheduleTick(rolled.rhythm.nextTickAt, rolled.settings, languageRef.current);
       setRecords(await loadRecords());
+      const loadedDesk = await loadDeskState();
+      deskRef.current = loadedDesk;
+      setDesk(loadedDesk);
 
       openBreakFromUrl(await Linking.getInitialURL());
       if (await consumeFullScreenBreakRequest()) {
@@ -244,7 +270,11 @@ function AppContent() {
   // ── 설정 화면에서 뒤로 가기 = 홈으로 (앱 종료 방지) ────────
   useEffect(() => {
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (screenRef.current === "settings" || screenRef.current === "records") {
+      if (
+        screenRef.current === "settings" ||
+        screenRef.current === "records" ||
+        screenRef.current === "desk"
+      ) {
         setScreen("home");
         return true;
       }
@@ -305,12 +335,16 @@ function AppContent() {
     const current = persistedRef.current;
     if (!current) return;
     recordResponse("done");
+    // 픽셀 데스크 누적 챙김 — 기록하며 사용에서만 오른다 (기획서 §4.7).
+    if (current.settings.recordMode) {
+      commitDesk({ ...deskRef.current, cumulativeDone: deskRef.current.cumulativeDone + 1 });
+    }
     patchRhythm({
       status: "running",
       pausedUntil: null,
       nextTickAt: nextTickFrom(Date.now(), current.settings)
     });
-  }, [patchRhythm, recordResponse]);
+  }, [commitDesk, patchRhythm, recordResponse]);
 
   // 넘김: 기존 정규 주기를 유지한다 (예정 시점 + 간격).
   const respondSkip = useCallback(() => {
@@ -566,7 +600,9 @@ function AppContent() {
             now={now}
             permissionOk={permissionOk}
             doneToday={persisted.settings.recordMode ? doneCountToday(records, now) : null}
+            placements={desk.placements}
             onOpenRecords={() => setScreen("records")}
+            onOpenDesk={() => setScreen("desk")}
             onPause={pause}
             onResume={resume}
             onOpenSystemSettings={openSystemSettings}
@@ -574,6 +610,8 @@ function AppContent() {
         )}
         {screen === "break" && (
           <Break
+            doneToday={persisted.settings.recordMode ? doneCountToday(records, now) : null}
+            placements={desk.placements}
             onSnooze={() => {
               respondSnooze();
               closeBreak();
@@ -593,7 +631,23 @@ function AppContent() {
           />
         )}
         {screen === "records" && (
-          <Records records={records} now={now} onBack={() => setScreen("home")} />
+          <Records
+            records={records}
+            now={now}
+            placements={desk.placements}
+            onOpenDesk={() => setScreen("desk")}
+            onBack={() => setScreen("home")}
+          />
+        )}
+        {screen === "desk" && (
+          <Desk
+            desk={desk}
+            doneToday={persisted.settings.recordMode ? doneCountToday(records, now) : null}
+            paused={persisted.rhythm.status === "paused"}
+            recordMode={persisted.settings.recordMode}
+            onPlace={placeDeskItem}
+            onBack={() => setScreen("home")}
+          />
         )}
         {screen === "settings" && (
           <SettingsScreen

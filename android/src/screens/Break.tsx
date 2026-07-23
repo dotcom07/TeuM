@@ -4,6 +4,7 @@ import { BackHandler, StyleSheet, Text, View } from "react-native";
 import { Eyebrow, Plate, PrimaryButton, SecondaryButton } from "../components/ui";
 import { useI18n } from "../i18n";
 import { pad2 } from "../lib/time";
+import PixelScene from "../pixel/PixelScene";
 import { colors } from "../theme";
 
 const ROUTINE_MS = 60_000;
@@ -17,11 +18,16 @@ const ROUTINE_MS = 60_000;
  * - 뒤로 가기는 `이번엔 넘길게요`와 구분해 저장한다.
  */
 export default function Break({
+  doneToday,
+  placements,
   onSnooze,
   onDone,
   onSkip,
   onUnanswered
 }: {
+  /** 오늘 챙긴 횟수 — 기록 모드가 꺼져 있으면 null (기본 장면) */
+  doneToday: number | null;
+  placements: Partial<Record<import("../pixel/catalog").SlotId, string>>;
   onSnooze: () => void;
   /** 챙김 — 누른 즉시 기록·다음 알람 계산 후 홈으로 돌아간다. */
   onDone: () => void;
@@ -83,6 +89,15 @@ export default function Break({
             "Did you take a sip of water\nor stretch?"
           )}
         </Text>
+        <View style={styles.deskMini}>
+          <PixelScene
+            width={120}
+            doneCount={doneToday}
+            paused={false}
+            placements={placements}
+            accessibilityLabel={tr("내 책상 장면", "My desk scene")}
+          />
+        </View>
         <View style={styles.actions}>
           <SecondaryButton
             label={tr("5분 뒤에 다시", "Remind me in 5 min")}
@@ -156,7 +171,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "700"
   },
-  actions: { width: "100%", marginTop: 24, gap: 10 },
+  deskMini: { marginTop: 16, alignItems: "center" },
+  actions: { width: "100%", marginTop: 18, gap: 10 },
   snoozeButton: { width: "100%" },
   answerRow: { flexDirection: "row", gap: 10 },
   answer: { flex: 1 },

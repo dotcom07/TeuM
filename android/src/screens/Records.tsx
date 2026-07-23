@@ -4,6 +4,7 @@ import { Panel, PrimaryButton } from "../components/ui";
 import { useI18n } from "../i18n";
 import { doneCountsByDay, recordsForDate } from "../lib/records";
 import { dayLabels, fmtTime } from "../lib/time";
+import PixelScene from "../pixel/PixelScene";
 import { colors, MIN_TOUCH } from "../theme";
 import { BreakRecord } from "../types";
 
@@ -15,10 +16,14 @@ import { BreakRecord } from "../types";
 export default function Records({
   records,
   now,
+  placements,
+  onOpenDesk,
   onBack
 }: {
   records: BreakRecord[];
   now: number;
+  placements: Partial<Record<import("../pixel/catalog").SlotId, string>>;
+  onOpenDesk: () => void;
   onBack: () => void;
 }) {
   const { language, tr } = useI18n();
@@ -57,6 +62,7 @@ export default function Records({
 
   const dayRecords =
     selected != null ? recordsForDate(records, viewYear, viewMonth, selected) : [];
+  const dayDone = dayRecords.filter((r) => r.result === "done").length;
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -119,6 +125,33 @@ export default function Records({
         <Panel title={language === "ko"
           ? `${viewMonth + 1}월 ${selected}일`
           : new Date(viewYear, viewMonth, selected).toLocaleDateString("en-US", { month: "long", day: "numeric" })}>
+          {/* 달력은 사실 확인용, 장면은 감정 확인용 (기획서 §4.5) */}
+          <View style={styles.daySummary}>
+            <Text style={styles.daySummaryText}>
+              {dayDone > 0
+                ? language === "ko"
+                  ? `${dayDone}번 챙긴 날이에요.`
+                  : `${dayDone} break${dayDone === 1 ? "" : "s"} taken.`
+                : tr("기본 책상 그대로예요.", "The desk stayed as it was.")}
+            </Text>
+            <Pressable
+              onPress={onOpenDesk}
+              accessibilityRole="button"
+              accessibilityLabel={tr("픽셀 데스크 열기", "Open pixel desk")}
+            >
+              <PixelScene
+                width={128}
+                doneCount={dayDone}
+                paused={false}
+                placements={placements}
+                accessibilityLabel={
+                  language === "ko"
+                    ? `이날의 책상 장면. ${dayDone}번 챙김.`
+                    : `Desk scene for this day. ${dayDone} breaks taken.`
+                }
+              />
+            </Pressable>
+          </View>
           {dayRecords.length === 0 ? (
             <Text style={styles.emptyCopy}>{tr("이날은 남긴 기록이 없어요.", "No record for this day.")}</Text>
           ) : (
@@ -227,6 +260,14 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"]
   },
   todayLine: { marginTop: 10, color: colors.carbon, fontSize: 13, fontWeight: "700" },
+  daySummary: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 12
+  },
+  daySummaryText: { flex: 1, color: colors.carbon, fontSize: 13, fontWeight: "700" },
   emptyCopy: { color: colors.mutedIndigo, fontSize: 12, lineHeight: 18 },
   recordRow: {
     flexDirection: "row",
