@@ -1,7 +1,7 @@
 {
   "name": "@teum/android",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
@@ -15,8 +15,11 @@
     "@react-native-community/datetimepicker": "8.4.4",
     "expo": "~54.0.0",
     "expo-device": "~8.0.10",
+    "expo-document-picker": "~14.0.8",
+    "expo-file-system": "~19.0.23",
     "expo-keep-awake": "~15.0.8",
     "expo-notifications": "~0.32.17",
+    "expo-sharing": "~14.0.8",
     "expo-status-bar": "~3.0.8",
     "react": "19.1.0",
     "react-native": "0.81.4",

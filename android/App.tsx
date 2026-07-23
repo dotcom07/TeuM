@@ -13,6 +13,7 @@ import {
   View
 } from "react-native";
 import { I18nProvider, useI18n } from "./src/i18n";
+import { BackupPayload, pickBackup, shareBackup } from "./src/lib/backup";
 import {
   ACTION_SKIP,
   ACTION_SNOOZE,
@@ -28,7 +29,7 @@ import {
   setupCategories,
   setupChannels
 } from "./src/lib/notifications";
-import { appendRecord, clearRecords, doneCountToday, loadRecords } from "./src/lib/records";
+import { appendRecord, clearRecords, doneCountToday, loadRecords, replaceRecords } from "./src/lib/records";
 import { loadPersisted, savePersisted } from "./src/lib/storage";
 import {
   fmtDayTime,
@@ -85,7 +86,7 @@ export default function App() {
 }
 
 function AppContent() {
-  const { language, tr } = useI18n();
+  const { language, mode: languageMode, setMode, tr } = useI18n();
   const [persisted, setPersisted] = useState<Persisted | null>(null);
   const [screen, setScreen] = useState<Screen>("home");
   const [now, setNow] = useState(Date.now());
@@ -541,6 +542,43 @@ function AppContent() {
     }
   }, [fullScreenAllowed, language, showToast, tr]);
 
+  /** 서버 없이도 새 기기로 옮길 수 있는 백업 파일을 만든다. */
+  const exportBackup = useCallback(async () => {
+    const current = persistedRef.current;
+    if (!current) return false;
+    const shared = await shareBackup({
+      persisted: current,
+      records: recordsRef.current,
+      desk: deskRef.current,
+      languageMode
+    });
+    if (shared) {
+      showToast(
+        tr(
+          "백업 파일을 만들었어요. 저장하거나 새 기기로 보내 주세요.",
+          "Your backup is ready. Save it or send it to your new device."
+        )
+      );
+    }
+    return shared;
+  }, [languageMode, showToast, tr]);
+
+  /** 검증된 백업을 현재 기기에 적용한다. 서버 동기화도 나중에 이 경계를 재사용한다. */
+  const restoreBackup = useCallback(
+    async (backup: BackupPayload) => {
+      const restoredRecords = await replaceRecords(backup.records);
+      commitDesk(backup.desk);
+      commit({
+        ...backup.persisted,
+        rhythm: rollForward(backup.persisted.rhythm, backup.persisted.settings, Date.now())
+      });
+      await setMode(backup.languageMode);
+      setRecords(restoredRecords);
+      showToast(tr("백업을 이 기기에 불러왔어요.", "Your backup has been restored to this device."));
+    },
+    [commit, commitDesk, setMode, showToast, tr]
+  );
+
   // ── 예정 시각이 되면 수동 진입 없이 즉시 1분 화면을 연다. ───
   const suggesting =
     persisted != null &&
@@ -659,6 +697,9 @@ function AppContent() {
             onOpenFullScreenSettings={() => void openFullScreenReminderSettings()}
             onBack={() => setScreen("home")}
             onTestNotification={() => void testNotification()}
+            onExportBackup={() => exportBackup()}
+            onPickBackup={() => pickBackup()}
+            onRestoreBackup={(backup) => restoreBackup(backup)}
             onClearRecords={() => {
               void clearRecords();
               setRecords([]);

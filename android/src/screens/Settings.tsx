@@ -3,6 +3,7 @@ import { Linking, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View }
 import { DurationSheet, fmtDuration, TimeSheet } from "../components/TimePickerSheet";
 import { Panel, PrimaryButton } from "../components/ui";
 import { useI18n } from "../i18n";
+import { BackupPayload, BackupSummary } from "../lib/backup";
 import { modeLabel, previewVibration } from "../lib/notifications";
 import { dayLabels, fmtHM } from "../lib/time";
 import { colors, MIN_TOUCH } from "../theme";
@@ -25,6 +26,9 @@ export default function SettingsScreen({
   onOpenFullScreenSettings,
   onBack,
   onTestNotification,
+  onExportBackup,
+  onPickBackup,
+  onRestoreBackup,
   onClearRecords
 }: {
   settings: SettingsType;
@@ -35,11 +39,17 @@ export default function SettingsScreen({
   onOpenFullScreenSettings: () => void;
   onBack: () => void;
   onTestNotification: () => void;
+  onExportBackup: () => Promise<boolean>;
+  onPickBackup: () => Promise<{ payload: BackupPayload; summary: BackupSummary } | null>;
+  onRestoreBackup: (backup: BackupPayload) => Promise<void>;
   onClearRecords: () => void;
 }) {
   const { language, mode: languageMode, supportsSystemSettings, tr, setMode, openSystemLanguageSettings } = useI18n();
   const [picker, setPicker] = useState<"start" | "end" | "interval" | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [backupNote, setBackupNote] = useState<string | null>(null);
+  const [pendingBackup, setPendingBackup] = useState<{ payload: BackupPayload; summary: BackupSummary } | null>(null);
 
   const patch = (partial: Partial<SettingsType>) => onChange({ ...settings, ...partial });
 
@@ -49,6 +59,47 @@ export default function SettingsScreen({
       : [...settings.days, d].sort();
     if (days.length === 0) return; // 최소 하루는 남긴다
     patch({ days });
+  };
+
+  const createBackup = async () => {
+    setBackupBusy(true);
+    setBackupNote(null);
+    try {
+      const shared = await onExportBackup();
+      if (!shared) {
+        setBackupNote(tr("이 기기에서는 백업 파일을 만들 수 없어요.", "This device can’t create a backup file."));
+      }
+    } catch {
+      setBackupNote(tr("백업 파일을 만들지 못했어요. 다시 시도해 주세요.", "Couldn’t create the backup. Please try again."));
+    } finally {
+      setBackupBusy(false);
+    }
+  };
+
+  const chooseBackup = async () => {
+    setBackupBusy(true);
+    setBackupNote(null);
+    try {
+      const selected = await onPickBackup();
+      if (selected) setPendingBackup(selected);
+    } catch {
+      setBackupNote(tr("틈새움 백업 파일을 확인하지 못했어요.", "That file isn’t a valid TeuM backup."));
+    } finally {
+      setBackupBusy(false);
+    }
+  };
+
+  const restoreBackup = async () => {
+    if (!pendingBackup) return;
+    setBackupBusy(true);
+    try {
+      await onRestoreBackup(pendingBackup.payload);
+      setPendingBackup(null);
+    } catch {
+      setBackupNote(tr("백업을 불러오지 못했어요. 다시 시도해 주세요.", "Couldn’t restore the backup. Please try again."));
+    } finally {
+      setBackupBusy(false);
+    }
   };
 
   return (
@@ -192,6 +243,34 @@ export default function SettingsScreen({
         </Pressable>
       </Panel>
 
+      <Panel title={tr("백업 및 기기 간 이동", "Backup & move to another device")}>
+        <Text style={styles.backupCopy}>
+          {tr(
+            "계정 없이도 백업 파일을 직접 저장해 새 기기에서 이어 쓸 수 있어요. 자동 동기화와 로그인은 아직 제공하지 않아요.",
+            "Save a backup file and restore it on a new device without an account. Automatic sync and sign-in are not available yet."
+          )}
+        </Text>
+        <Pressable
+          onPress={() => void createBackup()}
+          disabled={backupBusy}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.backupExportButton, (pressed || backupBusy) && styles.backupButtonPressed]}
+        >
+          <Text style={styles.backupExportText}>
+            {backupBusy ? tr("백업 준비 중…", "Preparing backup…") : tr("백업 파일 만들기", "Create backup file")}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => void chooseBackup()}
+          disabled={backupBusy}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.backupImportButton, (pressed || backupBusy) && styles.backupButtonPressed]}
+        >
+          <Text style={styles.backupImportText}>{tr("백업 파일 불러오기", "Restore backup file")}</Text>
+        </Pressable>
+        {backupNote && <Text accessibilityLiveRegion="polite" style={styles.backupNote}>{backupNote}</Text>}
+      </Panel>
+
       <Panel title={tr("개인정보", "Privacy")}>
         <Text style={styles.privacy}>
           {tr(
@@ -296,6 +375,46 @@ export default function SettingsScreen({
           </Pressable>
         </Pressable>
       </Modal>
+
+      <Modal
+        transparent
+        visible={pendingBackup != null}
+        animationType="fade"
+        onRequestClose={() => setPendingBackup(null)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setPendingBackup(null)}>
+          <Pressable accessibilityViewIsModal style={styles.modalPlate} onPress={() => undefined}>
+            <Text style={styles.modalEyebrow}>RESTORE BACKUP</Text>
+            <Text accessibilityRole="header" style={styles.modalTitle}>
+              {tr("이 백업을 불러올까요?", "Restore this backup?")}
+            </Text>
+            <Text style={styles.modalCopy}>
+              {tr(
+                `현재 기기의 알람 설정, 기록 ${pendingBackup?.summary.recordCount ?? 0}개와 책상 배치가 이 백업으로 바뀌어요.`,
+                `This replaces this device’s reminder settings, ${pendingBackup?.summary.recordCount ?? 0} records, and desk layout.`
+              )}
+            </Text>
+            <View style={styles.modalActions}>
+              <Pressable
+                onPress={() => setPendingBackup(null)}
+                disabled={backupBusy}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.modalCancel, pressed && styles.modalButtonPressed]}
+              >
+                <Text style={styles.modalCancelText}>{tr("취소", "Cancel")}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => void restoreBackup()}
+                disabled={backupBusy}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.modalDelete, pressed && styles.modalDeletePressed]}
+              >
+                <Text style={styles.modalDeleteText}>{tr("불러오기", "Restore")}</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </>
   );
 }
@@ -395,6 +514,34 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.hairline
   },
   clearButtonText: { color: colors.mutedIndigo, fontSize: 12, fontWeight: "700" },
+  backupCopy: { color: colors.chromeIndigo, fontSize: 12, lineHeight: 18, marginBottom: 10 },
+  backupExportButton: {
+    minHeight: MIN_TOUCH,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.amber,
+    borderWidth: 2,
+    borderTopColor: colors.amberHighlight,
+    borderLeftColor: colors.amberHighlight,
+    borderRightColor: colors.signalDeep,
+    borderBottomColor: colors.signalDeep
+  },
+  backupExportText: { color: colors.carbon, fontSize: 12, fontWeight: "700" },
+  backupImportButton: {
+    minHeight: MIN_TOUCH,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderTopColor: colors.highlight,
+    borderLeftColor: colors.highlight,
+    borderRightColor: colors.hairline,
+    borderBottomColor: colors.hairline
+  },
+  backupImportText: { color: colors.chromeIndigo, fontSize: 12, fontWeight: "700" },
+  backupButtonPressed: { opacity: 0.68 },
+  backupNote: { color: colors.signalDeep, fontSize: 11, lineHeight: 16, marginTop: 8 },
   privacyLink: {
     minHeight: MIN_TOUCH,
     justifyContent: "center",

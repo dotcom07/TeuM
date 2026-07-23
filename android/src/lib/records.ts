@@ -34,6 +34,17 @@ export async function clearRecords(): Promise<void> {
   }
 }
 
+/** 백업 복원용 전체 교체. 가져온 데이터도 기존 보관 상한을 넘지 않게 한다. */
+export async function replaceRecords(records: BreakRecord[]): Promise<BreakRecord[]> {
+  const next = records.slice(-MAX_RECORDS);
+  try {
+    await AsyncStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    // 화면에는 복원 결과를 보여 주고, 다음 기록 저장 때 다시 시도한다.
+  }
+  return next;
+}
+
 function sameDay(ms: number, y: number, m: number, d: number) {
   const t = new Date(ms);
   return t.getFullYear() === y && t.getMonth() === m && t.getDate() === d;
