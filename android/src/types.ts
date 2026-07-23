@@ -35,7 +35,7 @@ export interface Rhythm {
   status: "running" | "paused";
   /** 다음 알림 예정 시각 (epoch ms). null이면 예정 없음. */
   nextTickAt: number | null;
-  /** 일시정지 해제 시각 (epoch ms) */
+  /** 자동 재개 시각. 일시정지 상태에서 null이면 사용자가 직접 재개할 때까지 멈춘다. */
   pausedUntil: number | null;
 }
 

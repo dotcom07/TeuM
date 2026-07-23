@@ -8,6 +8,7 @@
 - 업무 시작 시각을 기준으로 다음 알람 시간을 더 정확하게 계산해요.
 - 알람 간격을 빠르게 변경해도 마지막 설정만 적용돼요.
 - 1분부터 24시간까지의 알람 간격 경계를 보완했어요.
+- 필요할 때 직접 다시 시작할 때까지 건강 알람을 멈춰둘 수 있어요.
 
 ## Google Play English
 
@@ -17,6 +18,7 @@ We improved reminder scheduling reliability.
 - Calculates the next reminder more reliably from the start of your workday.
 - Applies only your latest setting when reminder timing changes quickly.
 - Improves scheduling across the full 1-minute to 24-hour interval range.
+- Lets you pause health reminders until you choose to resume.
 
 ## 내부 확인 항목
 
@@ -27,3 +29,5 @@ We improved reminder scheduling reliability.
 - 앱 재실행·업데이트·기기 재부팅: 저장된 예약 복구
 - 기기 시각·시간대 변경: 현지 업무 시간 기준으로 예약 복구
 - 정확한 알람 권한 없음: 일반 유휴 허용 알람으로 대체
+- 직접 다시 시작할 때까지 멈춤: 예약 취소 및 앱 재실행 뒤에도 멈춤 유지
+- 오늘은 그만: 업무 종료 시각에는 울리지 않고 다음 업무일 정상 슬롯부터 재개
