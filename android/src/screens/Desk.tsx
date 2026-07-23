@@ -65,6 +65,8 @@ export default function Desk({
   const { width: windowW } = useWindowDimensions();
   const [pickerSlot, setPickerSlot] = useState<SlotId | null>(null);
   const [decorMode, setDecorMode] = useState(false);
+  const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
+  const [collectionOpen, setCollectionOpen] = useState(false);
 
   const ko = language === "ko";
   const sceneW = Math.min(360, windowW - 14 * 2 - 14 * 2 - 6);
@@ -103,6 +105,17 @@ export default function Desk({
     )
   })).filter((entry) => entry.items.length > 0);
 
+  // 카테고리 칩 + 가로 아이템 줄 — 세로 스크롤이 길어지지 않게 고정 높이로 유지한다.
+  const activeGroup =
+    groups.find((entry) => entry.group.key === selectedGroupKey) ?? groups[0] ?? null;
+
+  /** 장면에서 자리를 누르면 해당 카테고리 칩도 함께 선택한다. */
+  const openSlotPicker = (slot: SlotId) => {
+    const group = SLOT_GROUPS.find((g) => g.slots.includes(slot));
+    if (group) setSelectedGroupKey(group.key);
+    setPickerSlot(slot);
+  };
+
   const ownedCount = decorCatalog.filter((item) => isOwned(item, desk.cumulativeDone)).length;
 
   const summary =
@@ -128,7 +141,7 @@ export default function Desk({
             paused={paused}
             placements={desk.placements}
             accessibilityLabel={summary}
-            onSlotPress={decorMode ? (slot) => setPickerSlot(slot) : undefined}
+            onSlotPress={decorMode ? openSlotPicker : undefined}
             showSlotHints={decorMode}
             revealAll
           />
@@ -150,38 +163,61 @@ export default function Desk({
       </Panel>
 
       <Panel title={tr("내 아이템", "My items")}>
-        {groups.map(({ group, items }) => (
-          <View key={group.key} style={styles.groupBlock}>
-            <Text style={styles.groupLabel}>{ko ? group.ko : group.en}</Text>
-            <View style={styles.itemGrid}>
-              {items.map((item) => {
-                const placed = placedSlotOf(item) != null;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => toggleItem(item)}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: placed }}
-                    accessibilityLabel={
-                      ko
-                        ? `${item.nameKo}${placed ? ", 배치됨. 누르면 해제" : ", 누르면 배치"}`
-                        : `${item.nameEn}${placed ? ", placed. Tap to remove" : ", tap to place"}`
-                    }
-                    style={({ pressed }) => [
-                      styles.itemCell,
-                      placed && styles.itemCellPlaced,
-                      pressed && styles.itemCellPressed
-                    ]}
-                  >
-                    <ItemPreview item={item} box={44} />
-                    <Text style={styles.itemName}>{ko ? item.nameKo : item.nameEn}</Text>
-                    {placed && <View style={styles.placedDot} />}
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        ))}
+        {/* 카테고리 칩 — 한 줄 가로 스크롤 */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+          {groups.map(({ group, items }) => {
+            const active = activeGroup?.group.key === group.key;
+            return (
+              <Pressable
+                key={group.key}
+                onPress={() => setSelectedGroupKey(group.key)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                style={[styles.chip, active && styles.chipActive]}
+              >
+                <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                  {ko ? group.ko : group.en}
+                  {items.length > 1 ? ` ${items.length}` : ""}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
+        {/* 선택한 카테고리의 아이템 — 한 줄 가로 스크롤 */}
+        {activeGroup && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.itemRow}
+          >
+            {activeGroup.items.map((item) => {
+              const placed = placedSlotOf(item) != null;
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => toggleItem(item)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: placed }}
+                  accessibilityLabel={
+                    ko
+                      ? `${item.nameKo}${placed ? ", 배치됨. 누르면 해제" : ", 누르면 배치"}`
+                      : `${item.nameEn}${placed ? ", placed. Tap to remove" : ", tap to place"}`
+                  }
+                  style={({ pressed }) => [
+                    styles.itemCell,
+                    placed && styles.itemCellPlaced,
+                    pressed && styles.itemCellPressed
+                  ]}
+                >
+                  <ItemPreview item={item} box={44} />
+                  <Text style={styles.itemName}>{ko ? item.nameKo : item.nameEn}</Text>
+                  {placed && <View style={styles.placedDot} />}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        )}
         <Text style={styles.hint}>
           {recordMode
             ? tr("틈을 챙기면 새 아이템이 도착해요.", "New items arrive as you take breaks.")
@@ -190,35 +226,47 @@ export default function Desk({
       </Panel>
 
       <Panel title={tr("도감", "Collection")}>
-        <Text style={styles.collectionCount}>
-          {ko
-            ? `${ownedCount} / ${decorCatalog.length} 모았어요`
-            : `${ownedCount} / ${decorCatalog.length} collected`}
-        </Text>
-        <View style={styles.itemGrid}>
-          {decorCatalog.map((item) => {
-            const owned = isOwned(item, desk.cumulativeDone);
-            if (!owned) {
+        <Pressable
+          onPress={() => setCollectionOpen((v) => !v)}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: collectionOpen }}
+          style={styles.collectionHeader}
+        >
+          <Text style={styles.collectionCount}>
+            {ko
+              ? `${ownedCount} / ${decorCatalog.length} 모았어요`
+              : `${ownedCount} / ${decorCatalog.length} collected`}
+          </Text>
+          <Text style={styles.collectionToggle}>
+            {collectionOpen ? tr("접기 ▲", "Hide ▲") : tr("펼치기 ▼", "Show ▼")}
+          </Text>
+        </Pressable>
+        {collectionOpen && (
+          <View style={[styles.itemGrid, styles.collectionGrid]}>
+            {decorCatalog.map((item) => {
+              const owned = isOwned(item, desk.cumulativeDone);
+              if (!owned) {
+                return (
+                  <View
+                    key={item.id}
+                    accessible
+                    accessibilityLabel={tr("아직 만나지 못한 아이템", "An item you haven’t met yet")}
+                    style={[styles.itemCell, styles.itemCellUnknown]}
+                  >
+                    <Text style={styles.unknownMark}>?</Text>
+                    <Text style={[styles.itemName, styles.unknownName]}>???</Text>
+                  </View>
+                );
+              }
               return (
-                <View
-                  key={item.id}
-                  accessible
-                  accessibilityLabel={tr("아직 만나지 못한 아이템", "An item you haven’t met yet")}
-                  style={[styles.itemCell, styles.itemCellUnknown]}
-                >
-                  <Text style={styles.unknownMark}>?</Text>
-                  <Text style={[styles.itemName, styles.unknownName]}>???</Text>
+                <View key={item.id} style={styles.itemCell}>
+                  <ItemPreview item={item} box={44} />
+                  <Text style={styles.itemName}>{ko ? item.nameKo : item.nameEn}</Text>
                 </View>
               );
-            }
-            return (
-              <View key={item.id} style={styles.itemCell}>
-                <ItemPreview item={item} box={44} />
-                <Text style={styles.itemName}>{ko ? item.nameKo : item.nameEn}</Text>
-              </View>
-            );
-          })}
-        </View>
+            })}
+          </View>
+        )}
       </Panel>
 
       <PrimaryButton label={tr("홈으로 돌아가기", "Back to home")} onPress={onBack} />
@@ -289,15 +337,31 @@ const styles = StyleSheet.create({
   summary: { marginTop: 12, color: colors.carbon, fontSize: 14, fontWeight: "700" },
   decorButton: { marginTop: 12 },
   hint: { marginTop: 8, color: colors.chromeIndigo, fontSize: 11, lineHeight: 16 },
-  groupBlock: { marginBottom: 12 },
-  groupLabel: {
-    marginBottom: 6,
-    color: colors.chromeIndigo,
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.5
+  chipRow: { gap: 6, paddingBottom: 10 },
+  chip: {
+    minHeight: 36,
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderTopColor: colors.highlight,
+    borderLeftColor: colors.highlight,
+    borderRightColor: colors.hairline,
+    borderBottomColor: colors.hairline
   },
+  chipActive: { backgroundColor: colors.amber },
+  chipText: { color: colors.mutedIndigo, fontSize: 12, fontWeight: "700" },
+  chipTextActive: { color: colors.carbon },
+  itemRow: { gap: 8, paddingVertical: 2 },
   itemGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  collectionHeader: {
+    minHeight: MIN_TOUCH,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  collectionToggle: { color: colors.chromeIndigo, fontSize: 12, fontWeight: "700" },
+  collectionGrid: { marginTop: 10 },
   itemCell: {
     width: 72,
     alignItems: "center",
@@ -331,7 +395,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.signalDeep
   },
-  collectionCount: { marginBottom: 10, color: colors.carbon, fontSize: 12, fontWeight: "700" },
+  collectionCount: { color: colors.carbon, fontSize: 12, fontWeight: "700" },
   backdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(17, 19, 26, 0.55)" },
   sheet: {
     padding: 18,
