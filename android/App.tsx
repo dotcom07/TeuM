@@ -1,14 +1,13 @@
 import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
   AppState,
   BackHandler,
   Image,
   Linking,
   Pressable,
-  SafeAreaView,
-  StatusBar as RNStatusBar,
   StyleSheet,
   Text,
   View
@@ -74,9 +73,11 @@ function rollForward(rhythm: Rhythm, settings: Settings, now: number): Rhythm {
 
 export default function App() {
   return (
-    <I18nProvider>
-      <AppContent />
-    </I18nProvider>
+    <SafeAreaProvider>
+      <I18nProvider>
+        <AppContent />
+      </I18nProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -193,6 +194,7 @@ function AppContent() {
       const rolled = { ...loaded, rhythm: rollForward(loaded.rhythm, loaded.settings, Date.now()) };
       persistedRef.current = rolled;
       setPersisted(rolled);
+      if (rolled.rhythm !== loaded.rhythm) void savePersisted(rolled);
       void scheduleTick(rolled.rhythm.nextTickAt, rolled.settings, languageRef.current);
       setRecords(await loadRecords());
 
@@ -251,15 +253,23 @@ function AppContent() {
     return () => sub.remove();
   }, []);
 
-  // ── 포그라운드 복귀 시 권한 재확인 ─────────────────────────
+  // ── 포그라운드 복귀 시 권한·예약 상태 재확인 ───────────────
   useEffect(() => {
     const sub = AppState.addEventListener("change", async (state) => {
       if (state !== "active") return;
       setPermissionOk(await hasPermission());
       setFullScreenAllowed(await canUseFullScreenReminder());
+      const current = persistedRef.current;
+      if (!current) return;
+      const rolled = rollForward(current.rhythm, current.settings, Date.now());
+      if (rolled !== current.rhythm) {
+        commit({ ...current, rhythm: rolled });
+      } else {
+        void scheduleTick(current.rhythm.nextTickAt, current.settings, languageRef.current);
+      }
     });
     return () => sub.remove();
-  }, []);
+  }, [commit]);
 
   // ── 알림 액션 처리 ─────────────────────────────────────────
   useEffect(() => {
@@ -389,30 +399,35 @@ function AppContent() {
   respondSnoozeRef.current = respondSnooze;
 
   const pause = useCallback(
-    (untilMs: number) => {
+    (untilMs: number | null) => {
       const current = persistedRef.current;
       if (!current) return;
+      if (untilMs == null) {
+        patchRhythm({ status: "paused", pausedUntil: null, nextTickAt: null });
+        showToast(tr("알람을 멈춰 두었어요.", "Your health reminders are paused."));
+        return;
+      }
       // 해제 시각이 업무 시간 안이면 그때 바로, 아니면 다음 업무 흐름에 맞춰 알린다.
       const nextTickAt = isWithinWork(untilMs, current.settings)
         ? untilMs
         : nextTickFrom(untilMs - intervalMs(current.settings), current.settings);
       patchRhythm({ status: "paused", pausedUntil: untilMs, nextTickAt });
     },
-    [patchRhythm]
+    [patchRhythm, showToast, tr]
   );
 
   const resume = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
     const now = Date.now();
-    const nextTickAt = nextTickFrom(now, current.settings);
+    const nextTickAt = nextTickFromWorkStart(now, current.settings);
     patchRhythm({ status: "running", pausedUntil: null, nextTickAt });
     showToast(
       nextTickAt != null
         ? language === "ko"
-          ? `다시 시작할게요. 다음 건강 알람은 ${fmtDayTime(nextTickAt, now, language)}이에요.`
-          : `Reminders resumed. Your next health reminder is ${fmtDayTime(nextTickAt, now, language)}.`
-        : tr("다시 시작할게요.", "Reminders resumed.")
+          ? `건강 알람을 다시 시작했어요. 다음 알람은 ${fmtDayTime(nextTickAt, now, language)}이에요.`
+          : `Health reminders resumed. Your next reminder is ${fmtDayTime(nextTickAt, now, language)}.`
+        : tr("건강 알람을 다시 시작했어요.", "Health reminders resumed.")
     );
   }, [language, patchRhythm, showToast, tr]);
 
@@ -644,8 +659,7 @@ function Footer() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.carbon,
-    paddingTop: RNStatusBar.currentHeight ?? 0
+    backgroundColor: colors.carbon
   },
   appFrame: { flex: 1, backgroundColor: colors.canvas },
   commandBar: {

@@ -1,4 +1,4 @@
-import { Settings } from "../types";
+import type { Settings } from "../types";
 import type { AppLanguage } from "../i18n";
 
 export const SNOOZE_MS = 5 * 60 * 1000;
@@ -48,6 +48,12 @@ export function nextWindowStart(afterMs: number, s: Settings): number | null {
  */
 export function nextTickFrom(fromMs: number, s: Settings): number | null {
   if (s.days.length === 0) return null;
+  const workDurationMin = s.endMin - s.startMin;
+  if (workDurationMin < 0) return null;
+  if (s.intervalMin > workDurationMin) {
+    const candidate = fromMs + intervalMs(s);
+    return isWithinWork(candidate, s) ? candidate : nextWindowStart(candidate, s);
+  }
   let from = fromMs;
   for (let i = 0; i < 30; i += 1) {
     const candidate = from + intervalMs(s);
@@ -68,23 +74,48 @@ export function nextTickFromWorkStart(nowMs: number, s: Settings): number | null
   if (s.days.length === 0) return null;
   const now = new Date(nowMs);
   const interval = intervalMs(s);
+  const workDurationMin = s.endMin - s.startMin;
+  if (workDurationMin < 0) return null;
 
-  for (let dayOffset = 0; dayOffset <= 14; dayOffset += 1) {
-    const start = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + dayOffset,
-      Math.floor(s.startMin / 60),
-      s.startMin % 60,
-      0,
-      0
-    );
-    if (!s.days.includes(start.getDay())) continue;
+  const todayStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    Math.floor(s.startMin / 60),
+    s.startMin % 60,
+    0,
+    0
+  );
+  const todayEnd = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    Math.floor(s.endMin / 60),
+    s.endMin % 60,
+    0,
+    0
+  );
+  const anchor =
+    s.days.includes(todayStart.getDay()) && nowMs <= todayEnd.getTime()
+      ? todayStart.getTime()
+      : nextWindowStart(nowMs, s);
+  if (anchor == null) return null;
+
+  // 간격이 하루의 업무 구간보다 길면 시작 기준 후보를 먼저 계산하고,
+  // 업무 밖에 떨어진 경우 그 뒤의 첫 업무 시작으로 이동한다.
+  if (s.intervalMin > workDurationMin) {
+    const candidate = anchor + interval;
+    return isWithinWork(candidate, s) ? candidate : nextWindowStart(candidate, s);
+  }
+
+  let startMs: number | null = anchor;
+  for (let dayOffset = 0; dayOffset <= 14 && startMs != null; dayOffset += 1) {
+    const start = new Date(startMs);
 
     const end = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + dayOffset,
+      start.getFullYear(),
+      start.getMonth(),
+      start.getDate(),
       Math.floor(s.endMin / 60),
       s.endMin % 60,
       0,
@@ -95,6 +126,7 @@ export function nextTickFromWorkStart(nowMs: number, s: Settings): number | null
     // 오늘 이미 지난 슬롯은 같은 업무일의 다음 정규 슬롯으로 이동한다.
     while (candidate <= nowMs && candidate <= end) candidate += interval;
     if (candidate > nowMs && candidate <= end) return candidate;
+    startMs = nextWindowStart(end, s);
   }
   return null;
 }

@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, MIN_TOUCH, spacing } from "../theme";
 import { pad2 } from "../lib/time";
 import { AppLanguage, useI18n } from "../i18n";
@@ -67,10 +68,14 @@ function Sheet({
   onConfirm: () => void;
 }) {
   const { tr } = useI18n();
+  const insets = useSafeAreaInsets();
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onCancel}>
       <Pressable style={styles.backdrop} onPress={onCancel}>
-        <Pressable style={styles.sheet} onPress={() => undefined}>
+        <Pressable
+          style={[styles.sheet, { paddingBottom: Math.max(30, insets.bottom + 16) }]}
+          onPress={() => undefined}
+        >
           <Text style={styles.title}>{title}</Text>
           {children}
           <View style={styles.footerRow}>
