@@ -53,7 +53,8 @@ export const SLOT_GROUPS: SlotGroup[] = [
   { key: "shelf", ko: "선반", en: "Shelf", slots: ["wall-shelf-a", "wall-shelf-b"] },
   { key: "frame", ko: "액자 자리", en: "Frame spot", slots: ["wall-frame"] },
   { key: "clock", ko: "시계 자리", en: "Clock spot", slots: ["wall-clock"] },
-  { key: "floor", ko: "바닥", en: "Floor", slots: ["floor-left", "floor-right"] }
+  { key: "pet", ko: "펫 자리", en: "Pet spot", slots: ["floor-left"] },
+  { key: "floor", ko: "바닥", en: "Floor", slots: ["floor-right"] }
 ];
 
 export type ItemStateKey = "base" | "active";
@@ -204,6 +205,28 @@ const FRAME_MOON = ["CCCCCC", "CIIIIC", "CIIWIC", "CWIIIC", "CIIIIC", "CCCCCC"];
 
 const CLOCK = [".CC.", "CWCC", "CWWC", ".CC."];
 
+// ── 펫 자리 ────────────────────────────────────────────────
+
+const CAT = [
+  "C.C...",
+  "CCCC..",
+  "CWCW..",
+  "CCCC..",
+  "CCCC.C",
+  "CCCCCC",
+  ".C..C."
+];
+
+const DOG = [
+  ".M.M..",
+  "MMMM..",
+  "MWMW..",
+  "MMMM..",
+  "MMMM.M",
+  "MMMMMM",
+  ".M..M."
+];
+
 // ── 바닥 ───────────────────────────────────────────────────
 
 const TALL_PLANT = [
@@ -262,6 +285,15 @@ export const ITEM_CATALOG: PixelItem[] = [
     nameEn: "Desk lamp",
     slots: ["desk-lamp"],
     frames: { base: LAMP_OFF, active: LAMP_ON },
+    acquire: { type: "default" },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "cat-basic",
+    nameKo: "고양이",
+    nameEn: "Cat",
+    slots: ["floor-left"],
+    frames: { base: CAT, active: CAT },
     acquire: { type: "default" },
     addedIn: "1.0.4"
   },
@@ -339,6 +371,15 @@ export const ITEM_CATALOG: PixelItem[] = [
     addedIn: "1.0.4"
   },
   {
+    id: "dog-basic",
+    nameKo: "강아지",
+    nameEn: "Dog",
+    slots: ["floor-left"],
+    frames: { base: DOG, active: DOG },
+    acquire: { type: "milestone", at: 22 },
+    addedIn: "1.0.4"
+  },
+  {
     id: "flower-pot",
     nameKo: "꽃 화분",
     nameEn: "Flower pot",
@@ -360,7 +401,7 @@ export const ITEM_CATALOG: PixelItem[] = [
     id: "plant-tall",
     nameKo: "큰 화분",
     nameEn: "Floor plant",
-    slots: ["floor-left", "floor-right"],
+    slots: ["floor-right"],
     frames: { base: TALL_PLANT, active: TALL_PLANT },
     acquire: { type: "milestone", at: 30 },
     addedIn: "1.0.4"
@@ -369,7 +410,7 @@ export const ITEM_CATALOG: PixelItem[] = [
     id: "box-stack",
     nameKo: "상자 더미",
     nameEn: "Box stack",
-    slots: ["floor-left", "floor-right"],
+    slots: ["floor-right"],
     frames: { base: BOX_STACK, active: BOX_STACK },
     acquire: { type: "milestone", at: 35 },
     addedIn: "1.0.4"
@@ -426,7 +467,8 @@ export const DEFAULT_PLACEMENTS: Partial<Record<SlotId, string>> = {
   "desk-left": "glass-basic",
   "desk-center": "monitor-basic",
   "desk-right": "plant-basic",
-  "desk-lamp": "lamp-basic"
+  "desk-lamp": "lamp-basic",
+  "floor-left": "cat-basic"
 };
 
 export function isOwned(item: PixelItem, cumulativeDone: number): boolean {
