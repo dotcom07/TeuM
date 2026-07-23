@@ -8,11 +8,14 @@
  */
 
 export type SlotId =
+  | "wallpaper"
+  | "flooring"
   | "wall-window"
   | "wall-shelf-a"
   | "wall-shelf-b"
   | "wall-frame"
   | "wall-clock"
+  | "furniture-desk"
   | "desk-left"
   | "desk-center"
   | "desk-right"
@@ -21,13 +24,19 @@ export type SlotId =
   | "floor-left"
   | "floor-right";
 
-/** 슬롯 지도 (기획서 §3.3) — 아트 px 좌표. 아이템은 자기 위치를 모른다. */
+/**
+ * 슬롯 지도 (기획서 §3.3) — 아트 px 좌표. 아이템은 자기 위치를 모른다.
+ * 키 순서가 곧 그리기 순서다: 벽지 → 바닥지 → 창문·벽 → 책상 → 소품.
+ */
 export const DESK_SLOTS: Record<SlotId, { x: number; y: number; maxW: number; maxH: number }> = {
+  wallpaper: { x: 0, y: 0, maxW: 64, maxH: 31 },
+  flooring: { x: 0, y: 31, maxW: 64, maxH: 9 },
   "wall-window": { x: 5, y: 3, maxW: 16, maxH: 12 },
   "wall-shelf-a": { x: 26, y: 5, maxW: 5, maxH: 4 },
   "wall-shelf-b": { x: 33, y: 5, maxW: 5, maxH: 4 },
   "wall-frame": { x: 44, y: 4, maxW: 6, maxH: 7 },
   "wall-clock": { x: 56, y: 4, maxW: 4, maxH: 4 },
+  "furniture-desk": { x: 4, y: 24, maxW: 56, maxH: 8 },
   "desk-left": { x: 12, y: 18, maxW: 6, maxH: 6 },
   "desk-center": { x: 25, y: 14, maxW: 14, maxH: 10 },
   "desk-right": { x: 44, y: 16, maxW: 7, maxH: 8 },
@@ -36,6 +45,18 @@ export const DESK_SLOTS: Record<SlotId, { x: number; y: number; maxW: number; ma
   "floor-left": { x: 2, y: 24, maxW: 6, maxH: 8 },
   "floor-right": { x: 57, y: 24, maxW: 6, maxH: 8 }
 };
+
+/**
+ * 구조 슬롯 — 방의 뼈대라 비울 수 없다. 교체만 가능하다.
+ * 장면 탭 대상에서도 제외한다(작은 슬롯을 가리므로 창문·모니터만 예외).
+ */
+export const STRUCTURAL_SLOTS: ReadonlySet<SlotId> = new Set([
+  "wallpaper",
+  "flooring",
+  "wall-window",
+  "furniture-desk",
+  "desk-center"
+]);
 
 /** 꾸미기 그룹 — 아이템란을 "같은 자리끼리" 묶는 기준 (기획서 §4.7) */
 export interface SlotGroup {
@@ -46,6 +67,11 @@ export interface SlotGroup {
 }
 
 export const SLOT_GROUPS: SlotGroup[] = [
+  { key: "wallpaper", ko: "벽지", en: "Wallpaper", slots: ["wallpaper"] },
+  { key: "flooring", ko: "바닥지", en: "Flooring", slots: ["flooring"] },
+  { key: "window", ko: "창문", en: "Window", slots: ["wall-window"] },
+  { key: "desk", ko: "책상", en: "Desk", slots: ["furniture-desk"] },
+  { key: "monitor", ko: "모니터", en: "Monitor", slots: ["desk-center"] },
   { key: "cup", ko: "컵 자리", en: "Cup spot", slots: ["desk-left"] },
   { key: "plant", ko: "식물 자리", en: "Plant spot", slots: ["desk-right"] },
   { key: "lamp", ko: "조명 자리", en: "Lamp spot", slots: ["desk-lamp"] },
@@ -72,12 +98,59 @@ export interface PixelItem {
   slots: SlotId[];
   /** 상태별 도트맵. base는 필수. */
   frames: Record<ItemStateKey, string[]>;
+  /** 추가 상태 변형 (예: 창문의 lit1/lit2) */
+  states?: Record<string, string[]>;
   acquire: Acquire;
   addedIn: string;
 }
 
 /** 슬롯을 명시적으로 비워 두는 배치 값 */
 export const EMPTY_PLACEMENT = "__empty__";
+
+// ── 방 구조 아이템 (벽지·바닥지·창문·책상) ──────────────────
+
+const WALLPAPER_SKY = Array.from({ length: 31 }, () => "K".repeat(64));
+
+const FLOORING_PERIWINKLE = [
+  "M".repeat(64),
+  ...Array.from({ length: 8 }, () => "P".repeat(64))
+];
+
+const DESK_LEG_ROW = (() => {
+  const row = Array(56).fill(".");
+  row[2] = row[3] = "I";
+  row[52] = row[53] = "I";
+  return row.join("");
+})();
+
+const DESK_INDIGO = [
+  "H".repeat(56),
+  "I".repeat(56),
+  "I".repeat(56),
+  ...Array.from({ length: 5 }, () => DESK_LEG_ROW)
+];
+
+/** 창문 도트맵 — lit: 켜진 유리칸 수 (왼쪽 위 → 오른쪽 위 순서) */
+function windowRows(lit: 0 | 1 | 2): string[] {
+  const paneTopLeft = lit >= 1 ? "A" : "I";
+  const paneTopRight = lit >= 2 ? "A" : "I";
+  const top = `C${paneTopLeft.repeat(6)}C${paneTopRight.repeat(7)}C`;
+  const bottom = `C${"I".repeat(6)}C${"I".repeat(7)}C`;
+  return [
+    "C".repeat(16),
+    top,
+    top,
+    top,
+    top,
+    "C".repeat(16),
+    bottom,
+    bottom,
+    bottom,
+    bottom,
+    "C".repeat(16),
+    "C".repeat(16)
+  ];
+}
 
 // ── 기본 아이템 ────────────────────────────────────────────
 
@@ -251,6 +324,44 @@ const BOX_STACK = [
 ];
 
 export const ITEM_CATALOG: PixelItem[] = [
+  // 방 구조 — 기본 지급, 교체형
+  {
+    id: "wallpaper-sky",
+    nameKo: "하늘 벽지",
+    nameEn: "Sky wallpaper",
+    slots: ["wallpaper"],
+    frames: { base: WALLPAPER_SKY, active: WALLPAPER_SKY },
+    acquire: { type: "default" },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "flooring-periwinkle",
+    nameKo: "차분한 바닥",
+    nameEn: "Calm flooring",
+    slots: ["flooring"],
+    frames: { base: FLOORING_PERIWINKLE, active: FLOORING_PERIWINKLE },
+    acquire: { type: "default" },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "window-basic",
+    nameKo: "창문",
+    nameEn: "Window",
+    slots: ["wall-window"],
+    frames: { base: windowRows(0), active: windowRows(0) },
+    states: { lit1: windowRows(1), lit2: windowRows(2) },
+    acquire: { type: "default" },
+    addedIn: "1.0.4"
+  },
+  {
+    id: "desk-indigo",
+    nameKo: "인디고 책상",
+    nameEn: "Indigo desk",
+    slots: ["furniture-desk"],
+    frames: { base: DESK_INDIGO, active: DESK_INDIGO },
+    acquire: { type: "default" },
+    addedIn: "1.0.4"
+  },
   // 기본·데일리
   {
     id: "monitor-basic",
@@ -464,6 +575,10 @@ export function groupOfItem(item: PixelItem): SlotGroup | undefined {
 
 /** 슬롯별 기본 배치 (없으면 비어 있는 슬롯) */
 export const DEFAULT_PLACEMENTS: Partial<Record<SlotId, string>> = {
+  wallpaper: "wallpaper-sky",
+  flooring: "flooring-periwinkle",
+  "wall-window": "window-basic",
+  "furniture-desk": "desk-indigo",
   "desk-left": "glass-basic",
   "desk-center": "monitor-basic",
   "desk-right": "plant-basic",

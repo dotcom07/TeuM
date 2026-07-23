@@ -11,7 +11,8 @@ import {
   ownedItemsForSlot,
   PixelItem,
   SLOT_GROUPS,
-  SlotId
+  SlotId,
+  STRUCTURAL_SLOTS
 } from "../pixel/catalog";
 import { DeskState } from "../pixel/deskState";
 import { PixelGlyph } from "../pixel/PixelGlyph";
@@ -23,9 +24,13 @@ function ItemPreview({ item, box }: { item: PixelItem; box: number }) {
   const rows = item.frames.base;
   const w = Math.max(...rows.map((row) => row.length));
   const h = rows.length;
-  const scale = Math.max(1, Math.floor(Math.min(box / w, box / h)));
+  // 소품은 정수 배율로 또렷하게, 벽지·책상처럼 큰 도트맵은 축소해 담는다.
+  const raw = Math.min(box / w, box / h);
+  const scale = raw >= 1 ? Math.floor(raw) : raw;
   return (
-    <View style={{ width: box, height: box, alignItems: "center", justifyContent: "center" }}>
+    <View
+      style={{ width: box, height: box, alignItems: "center", justifyContent: "center", overflow: "hidden" }}
+    >
       <View style={{ width: w * scale, height: h * scale }}>
         <PixelGlyph rows={rows} x={0} y={0} scale={scale} />
       </View>
@@ -78,6 +83,8 @@ export default function Desk({
   const toggleItem = (item: PixelItem) => {
     const placedSlot = placedSlotOf(item);
     if (placedSlot) {
+      // 구조 아이템(벽지·바닥지·창문·책상·모니터)은 방의 뼈대라 비울 수 없다. 교체만 가능.
+      if (STRUCTURAL_SLOTS.has(placedSlot)) return;
       // 기본 아이템은 명시적으로 비우고, 교체 아이템은 걷어서 기본으로 되돌린다.
       if (DEFAULT_PLACEMENTS[placedSlot] === item.id) onPlace(placedSlot, EMPTY_PLACEMENT);
       else onPlace(placedSlot, null);
@@ -87,10 +94,7 @@ export default function Desk({
     onPlace(empty ?? item.slots[0], item.id);
   };
 
-  const decorCatalog = useMemo(
-    () => ITEM_CATALOG.filter((item) => item.id !== "monitor-basic"),
-    []
-  );
+  const decorCatalog = useMemo(() => ITEM_CATALOG, []);
 
   const groups = SLOT_GROUPS.map((group) => ({
     group,
@@ -257,19 +261,21 @@ export default function Desk({
                 </Pressable>
               );
             })}
-            <Pressable
-              onPress={() => {
-                if (pickerSlot) {
-                  onPlace(pickerSlot, pickerHasDefault ? EMPTY_PLACEMENT : null);
-                }
-                setPickerSlot(null);
-              }}
-              accessibilityRole="button"
-              style={({ pressed }) => [styles.sheetRow, pressed && styles.sheetRowPressed]}
-            >
-              <View style={{ width: 36 }} />
-              <Text style={[styles.sheetRowText, styles.sheetMuted]}>{tr("비우기", "Leave empty")}</Text>
-            </Pressable>
+            {pickerSlot != null && !STRUCTURAL_SLOTS.has(pickerSlot) && (
+              <Pressable
+                onPress={() => {
+                  if (pickerSlot) {
+                    onPlace(pickerSlot, pickerHasDefault ? EMPTY_PLACEMENT : null);
+                  }
+                  setPickerSlot(null);
+                }}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.sheetRow, pressed && styles.sheetRowPressed]}
+              >
+                <View style={{ width: 36 }} />
+                <Text style={[styles.sheetRowText, styles.sheetMuted]}>{tr("비우기", "Leave empty")}</Text>
+              </Pressable>
+            )}
           </Pressable>
         </Pressable>
       </Modal>
