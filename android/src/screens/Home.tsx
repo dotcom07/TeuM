@@ -16,6 +16,13 @@ import {
 } from "../lib/time";
 import PixelScene from "../pixel/PixelScene";
 import PixelSlotMeter from "../pixel/PixelSlotMeter";
+import type { DeskState } from "../pixel/deskState";
+import {
+  availableChoicePoints,
+  GIFT_INTERVAL,
+  nextGiftProgress,
+  pendingGiftCount
+} from "../pixel/rewards109";
 import { colors, MIN_TOUCH } from "../theme";
 import { Rhythm, Settings } from "../types";
 
@@ -25,6 +32,7 @@ export default function Home({
   now,
   permissionOk,
   doneToday,
+  desk,
   placements,
   onOpenRecords,
   onOpenDesk,
@@ -38,6 +46,7 @@ export default function Home({
   permissionOk: boolean;
   /** 기록 모드가 꺼져 있으면 null — 홈에 기록 진입을 노출하지 않는다. */
   doneToday: number | null;
+  desk: DeskState;
   placements: Partial<Record<import("../pixel/catalog").SlotId, string>>;
   onOpenRecords: () => void;
   onOpenDesk: () => void;
@@ -62,6 +71,9 @@ export default function Home({
       : 0;
 
   const workHours = `${fmtHM(settings.startMin)}–${fmtHM(settings.endMin)}`;
+  const giftProgress = nextGiftProgress(desk.cumulativeDone);
+  const waitingGifts = pendingGiftCount(desk);
+  const choicePoints = availableChoicePoints(desk);
 
   const sceneLabel =
     doneToday != null && doneToday > 0
@@ -150,6 +162,44 @@ export default function Home({
           {deskRow}
         </Plate>
       )}
+
+      <Panel title="PIXEL REWARDS">
+        <View style={styles.rewardSummary}>
+          <View style={styles.rewardBlock}>
+            <Text style={styles.rewardLabel}>
+              {waitingGifts > 0
+                ? tr("열 수 있는 선물상자", "Gift boxes ready")
+                : tr("다음 선물상자", "Next gift box")}
+            </Text>
+            <Text style={styles.rewardValue}>
+              {waitingGifts > 0
+                ? `${waitingGifts}${tr("개", "")}`
+                : `${giftProgress} / ${GIFT_INTERVAL}`}
+            </Text>
+          </View>
+          <View style={styles.rewardDivider} />
+          <View style={styles.rewardBlock}>
+            <Text style={styles.rewardLabel}>{tr("선택 포인트", "Choice points")}</Text>
+            <Text style={styles.rewardValue}>{choicePoints}P</Text>
+          </View>
+        </View>
+        <View style={styles.rewardMeter} accessibilityElementsHidden>
+          <View
+            style={[
+              styles.rewardMeterFill,
+              {
+                width: `${waitingGifts > 0 ? 100 : Math.round((giftProgress / GIFT_INTERVAL) * 100)}%`
+              }
+            ]}
+          />
+        </View>
+        <Text style={styles.rewardHint}>
+          {tr(
+            "5번마다 랜덤 상자 · 10번마다 1P · 원하는 아이템은 5P",
+            "Random box every 5 · 1P every 10 · choose an item for 5P"
+          )}
+        </Text>
+      </Panel>
 
       <Panel title="TODAY'S RHYTHM">
         {doneToday != null && (
@@ -343,6 +393,35 @@ const styles = StyleSheet.create({
     borderColor: colors.ice
   },
   meterFill: { height: "100%", backgroundColor: colors.signal },
+  rewardSummary: { flexDirection: "row", alignItems: "stretch" },
+  rewardBlock: { flex: 1 },
+  rewardDivider: {
+    width: 2,
+    marginHorizontal: 14,
+    backgroundColor: colors.hairline
+  },
+  rewardLabel: { color: colors.mutedIndigo, fontSize: 11, fontWeight: "700" },
+  rewardValue: {
+    marginTop: 4,
+    color: colors.carbon,
+    fontSize: 24,
+    fontWeight: "900",
+    fontVariant: ["tabular-nums"]
+  },
+  rewardMeter: {
+    height: 12,
+    marginTop: 14,
+    padding: 2,
+    backgroundColor: colors.carbon
+  },
+  rewardMeterFill: { height: "100%", backgroundColor: colors.amber },
+  rewardHint: {
+    marginTop: 8,
+    color: colors.chromeIndigo,
+    fontSize: 10,
+    lineHeight: 15,
+    fontWeight: "700"
+  },
   panelCopy: { color: colors.carbon, marginBottom: 12, fontSize: 12 },
   sheetBackdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(17, 19, 26, 0.55)" },
   sheet: {

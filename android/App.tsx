@@ -40,10 +40,18 @@ import {
   SNOOZE_MS
 } from "./src/lib/time";
 import Break from "./src/screens/Break";
+import GiftBox109 from "./src/components/GiftBox109";
 import Home from "./src/screens/Home";
 import Onboarding from "./src/screens/Onboarding";
-import { SlotId } from "./src/pixel/catalog";
+import { ITEM_CATALOG } from "./src/pixel/catalog";
+import type { PixelItem, SlotId } from "./src/pixel/catalog";
 import { DeskState, EMPTY_DESK, loadDeskState, saveDeskState } from "./src/pixel/deskState";
+import {
+  chooseItem109,
+  completeBreakReward109,
+  openGift109,
+  pendingGiftCount
+} from "./src/pixel/rewards109";
 import Desk from "./src/screens/Desk";
 import Records from "./src/screens/Records";
 import SettingsScreen from "./src/screens/Settings";
@@ -93,6 +101,7 @@ function AppContent() {
   const [permissionOk, setPermissionOk] = useState(false);
   const [fullScreenAllowed, setFullScreenAllowed] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [giftBoxOpen, setGiftBoxOpen] = useState(false);
 
   const [records, setRecords] = useState<BreakRecord[]>([]);
   const [desk, setDesk] = useState<DeskState>(EMPTY_DESK);
@@ -115,6 +124,59 @@ function AppContent() {
     },
     [commitDesk]
   );
+
+  const openPixelGift = useCallback((): PixelItem | null => {
+    const result = openGift109(deskRef.current);
+    if (result.state !== deskRef.current) commitDesk(result.state);
+    return result.item;
+  }, [commitDesk]);
+
+  const choosePixelItem = useCallback(
+    (itemId: string): boolean => {
+      const result = chooseItem109(deskRef.current, itemId);
+      if (!result.ok) return false;
+      commitDesk(result.state);
+      showToastRef.current?.(
+        languageRef.current === "ko"
+          ? `${result.item.nameKo}을(를) 확정 획득했어요.`
+          : `You chose ${result.item.nameEn}.`
+      );
+      return true;
+    },
+    [commitDesk]
+  );
+
+  const debugUnlockAllItems = useCallback(() => {
+    commitDesk({
+      ...deskRef.current,
+      ownedItemIds: ITEM_CATALOG.map((item) => item.id)
+    });
+    showToastRef.current?.(
+      languageRef.current === "ko"
+        ? "개발 테스트용으로 모든 아이템을 열었어요."
+        : "All items unlocked for developer testing."
+    );
+  }, [commitDesk]);
+
+  const debugAddGift = useCallback(() => {
+    const current = deskRef.current;
+    const nextGiftAt = (Math.floor(current.cumulativeDone / 5) + 1) * 5;
+    commitDesk({ ...current, cumulativeDone: nextGiftAt });
+  }, [commitDesk]);
+
+  const debugAddChoicePoints = useCallback(() => {
+    const current = deskRef.current;
+    commitDesk({
+      ...current,
+      cumulativeDone: current.cumulativeDone + 50,
+      openedGiftCount: current.openedGiftCount + 10
+    });
+    showToastRef.current?.(
+      languageRef.current === "ko"
+        ? "개발 테스트용 선택 포인트 5P를 추가했어요."
+        : "Added 5 choice points for developer testing."
+    );
+  }, [commitDesk]);
 
   const persistedRef = useRef<Persisted | null>(null);
   const screenRef = useRef<Screen>("home");
@@ -338,7 +400,7 @@ function AppContent() {
     recordResponse("done");
     // 픽셀 데스크 누적 챙김 — 기록하며 사용에서만 오른다 (기획서 §4.7).
     if (current.settings.recordMode) {
-      commitDesk({ ...deskRef.current, cumulativeDone: deskRef.current.cumulativeDone + 1 });
+      commitDesk(completeBreakReward109(deskRef.current));
     }
     patchRhythm({
       status: "running",
@@ -346,6 +408,12 @@ function AppContent() {
       nextTickAt: nextTickFrom(Date.now(), current.settings)
     });
   }, [commitDesk, patchRhythm, recordResponse]);
+
+  useEffect(() => {
+    if (screen !== "break" && pendingGiftCount(desk) > 0) {
+      setGiftBoxOpen(true);
+    }
+  }, [desk, screen]);
 
   // 넘김: 기존 정규 주기를 유지한다 (예정 시점 + 간격).
   const respondSkip = useCallback(() => {
@@ -638,6 +706,7 @@ function AppContent() {
             now={now}
             permissionOk={permissionOk}
             doneToday={persisted.settings.recordMode ? doneCountToday(records, now) : null}
+            desk={desk}
             placements={desk.placements}
             onOpenRecords={() => setScreen("records")}
             onOpenDesk={() => setScreen("desk")}
@@ -684,6 +753,7 @@ function AppContent() {
             paused={persisted.rhythm.status === "paused"}
             recordMode={persisted.settings.recordMode}
             onPlace={placeDeskItem}
+            onChooseItem={choosePixelItem}
             onBack={() => setScreen("home")}
           />
         )}
@@ -697,6 +767,9 @@ function AppContent() {
             onOpenFullScreenSettings={() => void openFullScreenReminderSettings()}
             onBack={() => setScreen("home")}
             onTestNotification={() => void testNotification()}
+            onDebugUnlockAllItems={debugUnlockAllItems}
+            onDebugAddGift={debugAddGift}
+            onDebugAddChoicePoints={debugAddChoicePoints}
             onExportBackup={() => exportBackup()}
             onPickBackup={() => pickBackup()}
             onRestoreBackup={(backup) => restoreBackup(backup)}
@@ -707,6 +780,15 @@ function AppContent() {
             }}
           />
         )}
+        <GiftBox109
+          visible={giftBoxOpen}
+          pendingCount={pendingGiftCount(desk)}
+          onOpen={openPixelGift}
+          onDone={() => {
+            setGiftBoxOpen(false);
+            setScreen("desk");
+          }}
+        />
         <Footer />
       </View>
     </SafeAreaView>

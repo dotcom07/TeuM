@@ -26,6 +26,9 @@ export default function SettingsScreen({
   onOpenFullScreenSettings,
   onBack,
   onTestNotification,
+  onDebugUnlockAllItems,
+  onDebugAddGift,
+  onDebugAddChoicePoints,
   onExportBackup,
   onPickBackup,
   onRestoreBackup,
@@ -39,6 +42,9 @@ export default function SettingsScreen({
   onOpenFullScreenSettings: () => void;
   onBack: () => void;
   onTestNotification: () => void;
+  onDebugUnlockAllItems: () => void;
+  onDebugAddGift: () => void;
+  onDebugAddChoicePoints: () => void;
   onExportBackup: () => Promise<boolean>;
   onPickBackup: () => Promise<{ payload: BackupPayload; summary: BackupSummary } | null>;
   onRestoreBackup: (backup: BackupPayload) => Promise<void>;
@@ -300,6 +306,30 @@ export default function SettingsScreen({
             style={styles.debugButton}
           >
             <Text style={styles.debugButtonText}>{tr("전체 화면 알림 테스트 · 5초 뒤", "Test full-screen reminder · in 5 sec")}</Text>
+          </Pressable>
+          <View style={styles.debugButtonGap} />
+          <Pressable
+            onPress={onDebugAddGift}
+            accessibilityRole="button"
+            style={styles.debugButton}
+          >
+            <Text style={styles.debugButtonText}>{tr("선물상자 1개 추가", "Add one gift box")}</Text>
+          </Pressable>
+          <View style={styles.debugButtonGap} />
+          <Pressable
+            onPress={onDebugAddChoicePoints}
+            accessibilityRole="button"
+            style={styles.debugButton}
+          >
+            <Text style={styles.debugButtonText}>{tr("선택 포인트 5P 추가", "Add 5 choice points")}</Text>
+          </Pressable>
+          <View style={styles.debugButtonGap} />
+          <Pressable
+            onPress={onDebugUnlockAllItems}
+            accessibilityRole="button"
+            style={styles.debugButton}
+          >
+            <Text style={styles.debugButtonText}>{tr("모든 아이템 잠금 해제", "Unlock all items")}</Text>
           </Pressable>
           <Text style={styles.debugHint}>
             {tr("버튼을 누른 뒤 화면을 끄거나 다른 앱을 열어 두세요. 선택한 진동과 1분의 틈 화면을 함께 확인할 수 있어요.", "After tapping, turn off the screen or open another app. You can check the selected vibration and one-minute screen together.")}
@@ -569,6 +599,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.shadowDeep
   },
   debugButtonText: { color: colors.surface, fontSize: 12, fontWeight: "700" },
+  debugButtonGap: { height: 8 },
   debugHint: { color: colors.chromeIndigo, fontSize: 11, lineHeight: 16, marginTop: 10 },
   modalBackdrop: {
     flex: 1,

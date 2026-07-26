@@ -1,13 +1,16 @@
 {
   "name": "@teum/android",
   "private": true,
-  "version": "1.0.6",
+  "version": "1.0.9",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "web": "expo start --web",
     "ios": "expo run:ios",
+    "art:audit": "node --experimental-strip-types --experimental-loader ./scripts/resolve-typescript.mjs ./scripts/audit-pixel-art.mjs",
+    "art:review": "node --experimental-strip-types --experimental-loader ./scripts/resolve-typescript.mjs ./scripts/render-art-review.mjs",
+    "test:pixel": "node --experimental-strip-types --experimental-loader ./scripts/resolve-typescript.mjs --test tests/pixel-art-anchor.test.mjs tests/pixel-quality109.test.mjs tests/rewards109.test.mjs",
     "test:time": "node --test tests/time.test.mjs"
   },
   "dependencies": {

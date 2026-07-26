@@ -6,17 +6,22 @@ import { useI18n } from "../i18n";
 import {
   DEFAULT_PLACEMENTS,
   EMPTY_PLACEMENT,
-  isOwned,
   ITEM_CATALOG,
-  ownedItemsForSlot,
-  PixelItem,
   SLOT_GROUPS,
-  SlotId,
   STRUCTURAL_SLOTS
 } from "../pixel/catalog";
-import { DeskState } from "../pixel/deskState";
+import type { PixelItem, SlotId } from "../pixel/catalog";
+import type { DeskState } from "../pixel/deskState";
 import { PixelGlyph } from "../pixel/PixelGlyph";
 import PixelScene from "../pixel/PixelScene";
+import { EXPANSION_THEME_META } from "../pixel/themeExpansion109";
+import {
+  availableChoicePoints,
+  CHOICE_COST,
+  completionsUntilNextPoint,
+  isItemOwned,
+  ownedItemsForSlot109
+} from "../pixel/rewards109";
 import { colors, MIN_TOUCH } from "../theme";
 
 /** 소장 아이템 도트 미리보기 — 박스 안에 맞춰 정수 배율로 그린다. */
@@ -38,6 +43,16 @@ function ItemPreview({ item, box }: { item: PixelItem; box: number }) {
   );
 }
 
+const COLLECTION_THEMES = [
+  { key: "base", ko: "기본", en: "Classic" },
+  { key: "cat", ko: "고양이와 생쥐", en: "Cat & Mouse" },
+  { key: "summer", ko: "여름", en: "Summer" },
+  { key: "autumn", ko: "가을", en: "Autumn" },
+  ...EXPANSION_THEME_META.map(([key, ko, en]) => ({ key, ko, en }))
+];
+
+const collectionThemeKey = (item: PixelItem) => item.themeKey ?? "base";
+
 /**
  * 픽셀 데스크 화면 (기획서 §4.7) — 가장 큰 뷰이자 꾸미기 공간.
  * - `책상 꾸미기`를 켜면 빈 자리가 실루엣으로 보이고, 자리를 눌러 아이템을 고른다.
@@ -50,6 +65,7 @@ export default function Desk({
   paused,
   recordMode,
   onPlace,
+  onChooseItem,
   onBack
 }: {
   desk: DeskState;
@@ -58,6 +74,7 @@ export default function Desk({
   recordMode: boolean;
   /** slot의 배치를 바꾼다. null이면 기본으로, EMPTY_PLACEMENT면 비운다. */
   onPlace: (slot: SlotId, itemId: string | null) => void;
+  onChooseItem: (itemId: string) => boolean;
   onBack: () => void;
 }) {
   const { language, tr } = useI18n();
@@ -67,6 +84,8 @@ export default function Desk({
   const [decorMode, setDecorMode] = useState(false);
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [collectionOpen, setCollectionOpen] = useState(false);
+  const [selectedCollectionTheme, setSelectedCollectionTheme] = useState("base");
+  const [purchaseCandidate, setPurchaseCandidate] = useState<PixelItem | null>(null);
 
   const ko = language === "ko";
   const sceneW = Math.min(360, windowW - 14 * 2 - 14 * 2 - 6);
@@ -101,7 +120,7 @@ export default function Desk({
   const groups = SLOT_GROUPS.map((group) => ({
     group,
     items: decorCatalog.filter(
-      (item) => isOwned(item, desk.cumulativeDone) && group.slots.some((s) => item.slots.includes(s))
+      (item) => isItemOwned(desk, item) && group.slots.some((s) => item.slots.includes(s))
     )
   })).filter((entry) => entry.items.length > 0);
 
@@ -116,7 +135,21 @@ export default function Desk({
     setPickerSlot(slot);
   };
 
-  const ownedCount = decorCatalog.filter((item) => isOwned(item, desk.cumulativeDone)).length;
+  const ownedCount = decorCatalog.filter((item) => isItemOwned(desk, item)).length;
+  const collectionThemes = useMemo(
+    () =>
+      COLLECTION_THEMES.map((theme) => ({
+        ...theme,
+        items: decorCatalog.filter((item) => collectionThemeKey(item) === theme.key)
+      })).filter((theme) => theme.items.length > 0),
+    [decorCatalog]
+  );
+  const activeCollectionTheme =
+    collectionThemes.find((theme) => theme.key === selectedCollectionTheme) ??
+    collectionThemes[0];
+  const activeCollectionOwned =
+    activeCollectionTheme?.items.filter((item) => isItemOwned(desk, item)).length ?? 0;
+  const choicePoints = availableChoicePoints(desk);
 
   const summary =
     doneToday != null && doneToday > 0
@@ -125,7 +158,7 @@ export default function Desk({
         : `You took ${doneToday} break${doneToday === 1 ? "" : "s"} today.`
       : tr("오늘의 첫 틈을 기다리고 있어요.", "Waiting for today’s first break.");
 
-  const pickerItems = pickerSlot ? ownedItemsForSlot(pickerSlot, desk.cumulativeDone) : [];
+  const pickerItems = pickerSlot ? ownedItemsForSlot109(desk, pickerSlot) : [];
   const pickerHasDefault = pickerSlot != null && DEFAULT_PLACEMENTS[pickerSlot] != null;
   const pickerGroup = pickerSlot
     ? SLOT_GROUPS.find((group) => group.slots.includes(pickerSlot))
@@ -242,29 +275,81 @@ export default function Desk({
           </Text>
         </Pressable>
         {collectionOpen && (
-          <View style={[styles.itemGrid, styles.collectionGrid]}>
-            {decorCatalog.map((item) => {
-              const owned = isOwned(item, desk.cumulativeDone);
-              if (!owned) {
+          <View style={styles.collectionThemes}>
+            <View style={styles.pointsBar}>
+              <Text style={styles.pointsLabel}>{tr("선택 포인트", "Choice points")}</Text>
+              <Text style={styles.pointsValue}>{choicePoints}P</Text>
+              <Text style={styles.pointsCost}>{tr("확정 획득 5P", "Choose for 5P")}</Text>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chipRow}
+            >
+              {collectionThemes.map((theme) => {
+                const active = activeCollectionTheme?.key === theme.key;
+                const themeOwned = theme.items.filter((item) => isItemOwned(desk, item)).length;
                 return (
-                  <View
-                    key={item.id}
-                    accessible
-                    accessibilityLabel={tr("아직 만나지 못한 아이템", "An item you haven’t met yet")}
-                    style={[styles.itemCell, styles.itemCellUnknown]}
+                  <Pressable
+                    key={theme.key}
+                    onPress={() => setSelectedCollectionTheme(theme.key)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    style={[styles.chip, active && styles.chipActive]}
                   >
-                    <Text style={styles.unknownMark}>?</Text>
-                    <Text style={[styles.itemName, styles.unknownName]}>???</Text>
-                  </View>
+                    <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                      {ko ? theme.ko : theme.en} {themeOwned}/{theme.items.length}
+                    </Text>
+                  </Pressable>
                 );
-              }
-              return (
-                <View key={item.id} style={styles.itemCell}>
-                  <ItemPreview item={item} box={44} />
-                  <Text style={styles.itemName}>{ko ? item.nameKo : item.nameEn}</Text>
+              })}
+            </ScrollView>
+            {activeCollectionTheme && (
+              <View>
+                <Text style={styles.collectionThemeTitle}>
+                  {ko ? activeCollectionTheme.ko : activeCollectionTheme.en}
+                  {` · ${activeCollectionOwned}/${activeCollectionTheme.items.length}`}
+                </Text>
+                <View style={styles.itemGrid}>
+                  {activeCollectionTheme.items.map((item) => {
+                    const owned = isItemOwned(desk, item);
+                    const itemName = ko ? item.nameKo : item.nameEn;
+                    return (
+                      <Pressable
+                        key={item.id}
+                        disabled={owned}
+                        onPress={() => setPurchaseCandidate(item)}
+                        accessibilityRole={owned ? undefined : "button"}
+                        accessibilityLabel={
+                          owned
+                            ? itemName
+                            : tr(
+                                `${itemName}, 아직 모으지 못함. 5포인트로 확정 획득`,
+                                `${itemName}, not collected. Choose for 5 points`
+                              )
+                        }
+                        style={({ pressed }) => [
+                          styles.itemCell,
+                          !owned && styles.itemCellUnknown,
+                          pressed && styles.itemCellPressed
+                        ]}
+                      >
+                        {owned ? (
+                          <ItemPreview item={item} box={44} />
+                        ) : (
+                          <View style={styles.unknownArt}>
+                            <Text style={styles.unknownMark}>??</Text>
+                          </View>
+                        )}
+                        <Text style={[styles.itemName, !owned && styles.unknownName]}>
+                          {itemName}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
                 </View>
-              );
-            })}
+              </View>
+            )}
           </View>
         )}
       </Panel>
@@ -327,6 +412,59 @@ export default function Desk({
           </Pressable>
         </Pressable>
       </Modal>
+
+      <Modal
+        transparent
+        visible={purchaseCandidate != null}
+        animationType="fade"
+        onRequestClose={() => setPurchaseCandidate(null)}
+      >
+        <Pressable style={styles.purchaseBackdrop} onPress={() => setPurchaseCandidate(null)}>
+          <Pressable style={styles.purchaseCard} onPress={() => undefined}>
+            <Text style={styles.purchaseEyebrow}>CHOICE ITEM</Text>
+            <Text style={styles.purchaseTitle}>
+              {purchaseCandidate
+                ? ko
+                  ? purchaseCandidate.nameKo
+                  : purchaseCandidate.nameEn
+                : ""}
+            </Text>
+            <View style={styles.purchaseUnknown}>
+              <Text style={styles.purchaseUnknownMark}>??</Text>
+            </View>
+            <Text style={styles.purchaseBalance}>
+              {tr(
+                `보유 ${choicePoints}P · 필요 ${CHOICE_COST}P`,
+                `${choicePoints}P available · ${CHOICE_COST}P needed`
+              )}
+            </Text>
+            {choicePoints >= CHOICE_COST ? (
+              <AmberButton
+                label={tr("5P로 확정 획득", "Choose for 5P")}
+                onPress={() => {
+                  if (purchaseCandidate && onChooseItem(purchaseCandidate.id)) {
+                    setPurchaseCandidate(null);
+                  }
+                }}
+              />
+            ) : (
+              <Text style={styles.purchaseHint}>
+                {tr(
+                  `다음 1P까지 ${completionsUntilNextPoint(desk.cumulativeDone)}번 남았어요.`,
+                  `${completionsUntilNextPoint(desk.cumulativeDone)} completions until the next 1P.`
+                )}
+              </Text>
+            )}
+            <Pressable
+              onPress={() => setPurchaseCandidate(null)}
+              accessibilityRole="button"
+              style={styles.purchaseClose}
+            >
+              <Text style={styles.purchaseCloseText}>{tr("닫기", "Close")}</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
 }
@@ -361,7 +499,24 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   collectionToggle: { color: colors.chromeIndigo, fontSize: 12, fontWeight: "700" },
-  collectionGrid: { marginTop: 10 },
+  collectionThemes: { marginTop: 10, gap: 14 },
+  pointsBar: {
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    backgroundColor: colors.carbon
+  },
+  pointsLabel: { color: colors.ice, fontSize: 11, fontWeight: "700" },
+  pointsValue: { color: colors.amber, fontSize: 20, fontWeight: "900" },
+  pointsCost: { marginLeft: "auto", color: colors.surface, fontSize: 10, fontWeight: "700" },
+  collectionThemeTitle: {
+    marginBottom: 8,
+    color: colors.chromeIndigo,
+    fontSize: 13,
+    fontWeight: "900"
+  },
   itemCell: {
     width: 72,
     alignItems: "center",
@@ -381,8 +536,9 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.signalDeep
   },
   itemCellPressed: { backgroundColor: colors.ice },
-  itemCellUnknown: { backgroundColor: colors.platinum, justifyContent: "center", minHeight: 84 },
-  unknownMark: { color: colors.mutedIndigo, fontSize: 26, fontWeight: "900" },
+  itemCellUnknown: { backgroundColor: colors.platinum, minHeight: 84 },
+  unknownArt: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
+  unknownMark: { color: colors.mutedIndigo, fontSize: 20, fontWeight: "900" },
   unknownName: { color: colors.mutedIndigo },
   itemName: { marginTop: 4, color: colors.carbon, fontSize: 10, fontWeight: "700" },
   placedDot: {
@@ -421,5 +577,68 @@ const styles = StyleSheet.create({
   sheetRowPressed: { backgroundColor: colors.ice },
   sheetRowText: { flex: 1, color: colors.carbon, fontSize: 13, fontWeight: "700" },
   sheetMuted: { color: colors.mutedIndigo, fontWeight: "400" },
-  sheetSelected: { color: colors.navGold, fontSize: 11, fontWeight: "700" }
+  sheetSelected: { color: colors.navGold, fontSize: 11, fontWeight: "700" },
+  purchaseBackdrop: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: "rgba(17, 19, 26, 0.7)"
+  },
+  purchaseCard: {
+    width: "100%",
+    maxWidth: 360,
+    alignItems: "center",
+    padding: 22,
+    backgroundColor: colors.platinum,
+    borderWidth: 3,
+    borderTopColor: colors.highlight,
+    borderLeftColor: colors.highlight,
+    borderRightColor: colors.chromeIndigo,
+    borderBottomColor: colors.chromeIndigo
+  },
+  purchaseEyebrow: {
+    color: colors.chromeIndigo,
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 1.5
+  },
+  purchaseTitle: {
+    marginTop: 8,
+    color: colors.carbon,
+    fontSize: 18,
+    fontWeight: "900",
+    textAlign: "center"
+  },
+  purchaseUnknown: {
+    width: 88,
+    height: 88,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 14,
+    backgroundColor: colors.canvasSoft,
+    borderWidth: 3,
+    borderColor: colors.surface
+  },
+  purchaseUnknownMark: { color: colors.chromeIndigo, fontSize: 28, fontWeight: "900" },
+  purchaseBalance: {
+    marginVertical: 14,
+    color: colors.carbon,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  purchaseHint: {
+    color: colors.chromeIndigo,
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: "700",
+    textAlign: "center"
+  },
+  purchaseClose: {
+    minHeight: MIN_TOUCH,
+    justifyContent: "center",
+    marginTop: 10,
+    paddingHorizontal: 20
+  },
+  purchaseCloseText: { color: colors.mutedIndigo, fontSize: 12, fontWeight: "700" }
 });

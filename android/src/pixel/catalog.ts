@@ -8,6 +8,7 @@
  */
 
 import { THEME_ITEMS } from "./themeItems";
+import { EXPANSION_THEME_ITEMS_109 } from "./themeExpansion109";
 
 export type SlotId =
   | "wallpaper"
@@ -90,7 +91,8 @@ export type ItemStateKey = "base" | "active";
 export type Acquire =
   | { type: "default" }
   | { type: "daily" }
-  | { type: "milestone"; at: number };
+  | { type: "milestone"; at: number }
+  | { type: "gift" };
 
 export interface PixelItem {
   /** 배포 후 바꾸지 않는 안정 id */
@@ -103,6 +105,7 @@ export interface PixelItem {
   /** 추가 상태 변형 (예: 창문의 lit1/lit2) */
   states?: Record<string, string[]>;
   acquire: Acquire;
+  themeKey?: string;
   addedIn: string;
 }
 
@@ -403,8 +406,8 @@ export const ITEM_CATALOG: PixelItem[] = [
   },
   {
     id: "cat-basic",
-    nameKo: "고양이",
-    nameEn: "Cat",
+    nameKo: "클래식 검정냥이",
+    nameEn: "Classic black cat",
     slots: ["floor-left"],
     frames: { base: CAT, active: CAT },
     acquire: { type: "default" },
@@ -564,7 +567,8 @@ export const ITEM_CATALOG: PixelItem[] = [
     acquire: { type: "milestone", at: 60 },
     addedIn: "1.0.4"
   },
-  ...THEME_ITEMS
+  ...THEME_ITEMS,
+  ...EXPANSION_THEME_ITEMS_109
 ];
 
 export function itemById(id: string): PixelItem | undefined {
@@ -588,20 +592,6 @@ export const DEFAULT_PLACEMENTS: Partial<Record<SlotId, string>> = {
   "desk-lamp": "lamp-basic",
   "floor-left": "cat-basic"
 };
-
-export function isOwned(item: PixelItem, cumulativeDone: number): boolean {
-  return item.acquire.type === "milestone" ? cumulativeDone >= item.acquire.at : true;
-}
-
-/** 누적 챙김 기준으로 소장한 아이템 목록 (도착 순서 유지) */
-export function ownedItems(cumulativeDone: number): PixelItem[] {
-  return ITEM_CATALOG.filter((item) => isOwned(item, cumulativeDone));
-}
-
-/** 해당 슬롯에 넣을 수 있는 소장 아이템 */
-export function ownedItemsForSlot(slot: SlotId, cumulativeDone: number): PixelItem[] {
-  return ownedItems(cumulativeDone).filter((item) => item.slots.includes(slot));
-}
 
 // ── 오늘의 상태 변화 (기획서 §6.3) ─────────────────────────
 
