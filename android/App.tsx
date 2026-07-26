@@ -13,6 +13,7 @@ import {
   View
 } from "react-native";
 import { I18nProvider, useI18n } from "./src/i18n";
+import GiftBoxReveal from "./src/components/GiftBoxReveal";
 import { BackupPayload, pickBackup, shareBackup } from "./src/lib/backup";
 import {
   ACTION_SKIP,
@@ -43,14 +44,38 @@ import Break from "./src/screens/Break";
 import Home from "./src/screens/Home";
 import Onboarding from "./src/screens/Onboarding";
 import { SlotId } from "./src/pixel/catalog";
-import { DeskState, EMPTY_DESK, loadDeskState, saveDeskState } from "./src/pixel/deskState";
+import {
+  DeskState,
+  EMPTY_DESK,
+  loadDeskState,
+  RewardBox,
+  saveDeskState
+} from "./src/pixel/deskState";
+import {
+  completeBreakReward,
+  createRewardBox,
+  dismissRewardBox,
+  discoverCompletionEggs,
+  discoverSettingsEggs,
+  rewardCandidates
+} from "./src/pixel/rewards";
 import Desk from "./src/screens/Desk";
 import Records from "./src/screens/Records";
-import SettingsScreen from "./src/screens/Settings";
+import SettingsScreen, { DevRewardPreset } from "./src/screens/Settings";
 import { colors } from "./src/theme";
 import { BreakRecord, BreakResult, Persisted, Rhythm, Settings } from "./src/types";
 
 type Screen = "home" | "break" | "settings" | "records" | "desk";
+
+function devRewardDate(preset: DevRewardPreset, current = new Date()): Date {
+  const year = current.getFullYear();
+  if (preset === "spring") return new Date(year, 3, 15, 12);
+  if (preset === "rainy") return new Date(year, 6, 15, 12);
+  if (preset === "winter") return new Date(year, 0, 15, 12);
+  if (preset === "december") return new Date(year, 11, 10, 12);
+  if (preset === "general") return new Date(year, 8, 15, 12);
+  return current;
+}
 
 /** 놓친 알림 시각을 다음 정규 슬롯으로 넘긴다. 1시간 안에는 제안 상태를 유지한다. */
 function rollForward(rhythm: Rhythm, settings: Settings, now: number): Rhythm {
@@ -93,10 +118,19 @@ function AppContent() {
   const [permissionOk, setPermissionOk] = useState(false);
   const [fullScreenAllowed, setFullScreenAllowed] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [devRewardPreset, setDevRewardPreset] = useState<DevRewardPreset>("current");
+  const [devPreviewBox, setDevPreviewBox] = useState<RewardBox | null>(null);
+  const [devShowroom, setDevShowroom] = useState(false);
+  const devShowroomPlacementsRef = useRef<DeskState["placements"] | null>(null);
+  const devRewardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [records, setRecords] = useState<BreakRecord[]>([]);
   const [desk, setDesk] = useState<DeskState>(EMPTY_DESK);
   const deskRef = useRef<DeskState>(EMPTY_DESK);
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+  }, []);
 
   /** 데스크 상태 저장 단일 진입점 */
   const commitDesk = useCallback((next: DeskState) => {
@@ -114,6 +148,43 @@ function AppContent() {
       commitDesk({ ...deskRef.current, placements });
     },
     [commitDesk]
+  );
+
+  const openDevShowroom = useCallback(() => {
+    devShowroomPlacementsRef.current = { ...deskRef.current.placements };
+    setDevShowroom(true);
+    setScreen("desk");
+  }, []);
+
+  const exitDevShowroom = useCallback(() => {
+    const placements = devShowroomPlacementsRef.current;
+    if (placements) commitDesk({ ...deskRef.current, placements });
+    devShowroomPlacementsRef.current = null;
+    setDevShowroom(false);
+  }, [commitDesk]);
+
+  const scheduleDevReward = useCallback(() => {
+    if (devRewardTimerRef.current) clearTimeout(devRewardTimerRef.current);
+    showToast(tr("5초 뒤 랜덤 상자를 열어요.", "A random box will open in 5 seconds."));
+    devRewardTimerRef.current = setTimeout(() => {
+      const createdAt = devRewardDate(devRewardPreset).getTime();
+      const previewState: DeskState = {
+        ...deskRef.current,
+        cumulativeDone: Math.max(1, deskRef.current.cumulativeDone),
+        ownedItemIds: []
+      };
+      const box = createRewardBox(previewState, createdAt, true);
+      if (box) setDevPreviewBox(box);
+      else showToast(tr("현재 조건에 맞는 보상 후보가 없어요.", "No reward candidates match these conditions."));
+      devRewardTimerRef.current = null;
+    }, 5000);
+  }, [devRewardPreset, showToast, tr]);
+
+  useEffect(
+    () => () => {
+      if (devRewardTimerRef.current) clearTimeout(devRewardTimerRef.current);
+    },
+    []
   );
 
   const persistedRef = useRef<Persisted | null>(null);
@@ -276,13 +347,19 @@ function AppContent() {
         screenRef.current === "records" ||
         screenRef.current === "desk"
       ) {
+        if (screenRef.current === "desk" && devShowroomPlacementsRef.current) {
+          const placements = devShowroomPlacementsRef.current;
+          devShowroomPlacementsRef.current = null;
+          setDevShowroom(false);
+          commitDesk({ ...deskRef.current, placements });
+        }
         setScreen("home");
         return true;
       }
       return false;
     });
     return () => sub.remove();
-  }, []);
+  }, [commitDesk]);
 
   // ── 포그라운드 복귀 시 권한·예약 상태 재확인 ───────────────
   useEffect(() => {
@@ -320,10 +397,6 @@ function AppContent() {
   }, []);
 
   // ── 리듬 동작 ─────────────────────────────────────────────
-  const showToast = useCallback((message: string) => {
-    setToast(message);
-  }, []);
-
   useEffect(() => {
     if (!toast) return;
     const id = setTimeout(() => setToast(null), 3500);
@@ -335,10 +408,20 @@ function AppContent() {
   const respondDone = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
+    const completedAt = Date.now();
+    const snoozed = breakSnoozedRef.current;
+    const completedToday = doneCountToday(recordsRef.current, completedAt) + 1;
     recordResponse("done");
     // 픽셀 데스크 누적 챙김 — 기록하며 사용에서만 오른다 (기획서 §4.7).
     if (current.settings.recordMode) {
-      commitDesk({ ...deskRef.current, cumulativeDone: deskRef.current.cumulativeDone + 1 });
+      const reward = completeBreakReward(deskRef.current, completedAt);
+      const eggs = discoverCompletionEggs(
+        reward.state,
+        completedAt,
+        completedToday,
+        snoozed
+      );
+      commitDesk(eggs.state);
     }
     patchRhythm({
       status: "running",
@@ -485,8 +568,10 @@ function AppContent() {
         rhythm = { ...rhythm, nextTickAt: nextTickFromWorkStart(Date.now(), settings) };
       }
       commit({ ...current, settings, rhythm });
+      const eggs = discoverSettingsEggs(deskRef.current, settings.startMin, settings.endMin);
+      if (eggs.state !== deskRef.current) commitDesk(eggs.state);
     },
-    [commit]
+    [commit, commitDesk]
   );
 
   const finishOnboarding = useCallback(
@@ -502,11 +587,13 @@ function AppContent() {
           nextTickAt: nextTickFromWorkStart(Date.now(), settings)
         }
       });
+      const eggs = discoverSettingsEggs(deskRef.current, settings.startMin, settings.endMin);
+      if (eggs.state !== deskRef.current) commitDesk(eggs.state);
       const allowed = await canUseFullScreenReminder();
       setFullScreenAllowed(allowed);
       if (!allowed) await openFullScreenReminderSettings();
     },
-    [commit]
+    [commit, commitDesk]
   );
 
   const openSystemSettings = useCallback(() => {
@@ -620,8 +707,14 @@ function AppContent() {
       <View style={styles.appFrame}>
         {screen !== "break" && (
           <Header
-            onLogo={() => setScreen("home")}
-            onSettings={() => setScreen(screen === "settings" ? "home" : "settings")}
+            onLogo={() => {
+              if (devShowroom) exitDevShowroom();
+              setScreen("home");
+            }}
+            onSettings={() => {
+              if (devShowroom) exitDevShowroom();
+              setScreen(screen === "settings" ? "home" : "settings");
+            }}
             settingsOpen={screen === "settings"}
           />
         )}
@@ -683,8 +776,16 @@ function AppContent() {
             doneToday={persisted.settings.recordMode ? doneCountToday(records, now) : null}
             paused={persisted.rhythm.status === "paused"}
             recordMode={persisted.settings.recordMode}
+            showroom={__DEV__ && devShowroom}
             onPlace={placeDeskItem}
-            onBack={() => setScreen("home")}
+            onDismissRewardBox={(boxId) =>
+              commitDesk(dismissRewardBox(deskRef.current, boxId))
+            }
+            onExitShowroom={__DEV__ ? exitDevShowroom : undefined}
+            onBack={() => {
+              if (devShowroom) exitDevShowroom();
+              setScreen("home");
+            }}
           />
         )}
         {screen === "settings" && (
@@ -697,6 +798,17 @@ function AppContent() {
             onOpenFullScreenSettings={() => void openFullScreenReminderSettings()}
             onBack={() => setScreen("home")}
             onTestNotification={() => void testNotification()}
+            devRewardPreset={devRewardPreset}
+            devRewardCandidateCount={
+              rewardCandidates(
+                Math.max(1, desk.cumulativeDone),
+                [],
+                devRewardDate(devRewardPreset)
+              ).length
+            }
+            onChangeDevRewardPreset={setDevRewardPreset}
+            onTestReward={scheduleDevReward}
+            onOpenItemShowroom={openDevShowroom}
             onExportBackup={() => exportBackup()}
             onPickBackup={() => pickBackup()}
             onRestoreBackup={(backup) => restoreBackup(backup)}
@@ -707,6 +819,11 @@ function AppContent() {
             }}
           />
         )}
+        <GiftBoxReveal
+          box={devPreviewBox}
+          visible={devPreviewBox != null}
+          onDismiss={() => setDevPreviewBox(null)}
+        />
         <Footer />
       </View>
     </SafeAreaView>

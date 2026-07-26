@@ -1,13 +1,27 @@
 /**
  * 픽셀 데스크 아이템 카탈로그 (기획서 §3.4).
- * 도트맵은 64×40 아트 그리드(아트 px = 논리 4px) 기준이며,
- * 문자 팔레트는 PixelGlyph.PIXEL_COLORS를 따른다.
+ * 제작 원화는 72×45 중간 그리드, 실제 장면은 320×180 논리 해상도이며,
+ * 문자 형태는 공용 토큰을 쓰고 실제 색은 아이템 themeKey의 전용 팔레트를 따른다.
  *
  * 확장 규칙: 새 아이템은 이 파일에 정의를 추가하는 것으로 끝나야 한다.
  * 장면(PixelScene)과 렌더러(PixelGlyph)는 손대지 않는다.
  */
 
-import { THEME_ITEMS } from "./themeItems";
+import { THEME_ITEMS } from "./themeItems.ts";
+import { EXPANSION_ITEMS } from "./themeCatalog.ts";
+import { DENSE_PET_ROWS } from "./petArtworkDense.ts";
+import {
+  applyClusterLighting,
+  ART_W,
+  clusterScaleRows,
+  densifySourceRows,
+  padStructuralRows,
+  PET_CLUSTER_SCALE,
+  PROP_CLUSTER_SCALE,
+  SCENE_CONTENT_SCALE,
+  SCENE_CONTENT_X
+} from "./pixelDensity.ts";
+import { themePaletteFor } from "./themePalettes.ts";
 
 export type SlotId =
   | "wallpaper"
@@ -30,23 +44,77 @@ export type SlotId =
  * 슬롯 지도 (기획서 §3.3) — 아트 px 좌표. 아이템은 자기 위치를 모른다.
  * 키 순서가 곧 그리기 순서다: 벽지 → 바닥지 → 창문·벽 → 책상 → 소품.
  */
-export const DESK_SLOTS: Record<SlotId, { x: number; y: number; maxW: number; maxH: number }> = {
-  wallpaper: { x: 0, y: 0, maxW: 64, maxH: 31 },
-  flooring: { x: 0, y: 31, maxW: 64, maxH: 9 },
-  "wall-window": { x: 5, y: 3, maxW: 16, maxH: 12 },
-  "wall-shelf-a": { x: 26, y: 5, maxW: 5, maxH: 4 },
-  "wall-shelf-b": { x: 33, y: 5, maxW: 5, maxH: 4 },
-  "wall-frame": { x: 44, y: 4, maxW: 6, maxH: 7 },
-  "wall-clock": { x: 56, y: 4, maxW: 4, maxH: 4 },
-  "furniture-desk": { x: 4, y: 24, maxW: 56, maxH: 8 },
-  "desk-left": { x: 12, y: 18, maxW: 6, maxH: 6 },
-  "desk-center": { x: 25, y: 14, maxW: 14, maxH: 10 },
-  "desk-right": { x: 44, y: 16, maxW: 7, maxH: 8 },
-  "desk-lamp": { x: 54, y: 12, maxW: 5, maxH: 12 },
-  "desk-front": { x: 19, y: 26, maxW: 8, maxH: 3 },
-  "floor-left": { x: 2, y: 24, maxW: 6, maxH: 8 },
-  "floor-right": { x: 57, y: 24, maxW: 6, maxH: 8 }
+type SlotBox = { x: number; y: number; maxW: number; maxH: number };
+
+/** 72×45 제작 원화의 기준 슬롯. 저장 데이터가 아니라 아트 좌표 변환에만 사용한다. */
+export const SOURCE_DESK_SLOTS: Record<SlotId, SlotBox> = {
+  wallpaper: { x: 0, y: 0, maxW: 72, maxH: 35 },
+  flooring: { x: 0, y: 35, maxW: 72, maxH: 10 },
+  "wall-window": { x: 6, y: 3, maxW: 18, maxH: 14 },
+  "wall-shelf-a": { x: 29, y: 6, maxW: 6, maxH: 5 },
+  "wall-shelf-b": { x: 37, y: 6, maxW: 6, maxH: 5 },
+  "wall-frame": { x: 50, y: 5, maxW: 7, maxH: 8 },
+  "wall-clock": { x: 63, y: 5, maxW: 5, maxH: 5 },
+  "furniture-desk": { x: 5, y: 27, maxW: 63, maxH: 9 },
+  "desk-left": { x: 14, y: 20, maxW: 7, maxH: 7 },
+  "desk-center": { x: 28, y: 16, maxW: 16, maxH: 11 },
+  "desk-right": { x: 50, y: 18, maxW: 8, maxH: 9 },
+  "desk-lamp": { x: 61, y: 14, maxW: 6, maxH: 14 },
+  "desk-front": { x: 21, y: 29, maxW: 9, maxH: 3 },
+  "floor-left": { x: 1, y: 25, maxW: 9, maxH: 11 },
+  "floor-right": { x: 64, y: 27, maxW: 7, maxH: 9 }
 };
+
+/** 320×180 장면 슬롯. 좌우 16px 여백 안에 4배 콘텐츠를 배치한다. */
+export const DESK_SLOTS: Record<SlotId, SlotBox> = Object.fromEntries(
+  Object.entries(SOURCE_DESK_SLOTS).map(([slot, box]) => {
+    if (slot === "wallpaper") {
+      return [slot, { x: 0, y: 0, maxW: ART_W, maxH: box.maxH * SCENE_CONTENT_SCALE }];
+    }
+    if (slot === "flooring") {
+      return [
+        slot,
+        {
+          x: 0,
+          y: box.y * SCENE_CONTENT_SCALE,
+          maxW: ART_W,
+          maxH: box.maxH * SCENE_CONTENT_SCALE
+        }
+      ];
+    }
+    if (slot === "floor-left") {
+      return [slot, { x: 12, y: 96, maxW: 64, maxH: 72 }];
+    }
+    return [
+      slot,
+      {
+        x: box.x * SCENE_CONTENT_SCALE + SCENE_CONTENT_X,
+        y: box.y * SCENE_CONTENT_SCALE,
+        maxW: box.maxW * SCENE_CONTENT_SCALE,
+        maxH: box.maxH * SCENE_CONTENT_SCALE
+      }
+    ];
+  })
+) as Record<SlotId, SlotBox>;
+
+/** 레이어 소유권·경계 합성이 흔들리지 않도록 객체 키 순서와 분리한 명시적 z-order. */
+export const SLOT_RENDER_ORDER: readonly SlotId[] = [
+  "wallpaper",
+  "flooring",
+  "wall-window",
+  "wall-shelf-a",
+  "wall-shelf-b",
+  "wall-frame",
+  "wall-clock",
+  "furniture-desk",
+  "desk-front",
+  "desk-left",
+  "desk-center",
+  "desk-right",
+  "desk-lamp",
+  "floor-right",
+  "floor-left"
+];
 
 /**
  * 구조 슬롯 — 방의 뼈대라 비울 수 없다. 교체만 가능하다.
@@ -90,7 +158,9 @@ export type ItemStateKey = "base" | "active";
 export type Acquire =
   | { type: "default" }
   | { type: "daily" }
-  | { type: "milestone"; at: number };
+  | { type: "milestone"; at: number }
+  | { type: "reward"; unlockAt: number; limited: boolean }
+  | { type: "easterEgg"; eggId: string };
 
 export interface PixelItem {
   /** 배포 후 바꾸지 않는 안정 id */
@@ -103,6 +173,8 @@ export interface PixelItem {
   /** 추가 상태 변형 (예: 창문의 lit1/lit2) */
   states?: Record<string, string[]>;
   acquire: Acquire;
+  /** 신규 테마/쇼룸 분류 키. 기존 아이템은 생략할 수 있다. */
+  themeKey?: string;
   addedIn: string;
 }
 
@@ -325,7 +397,7 @@ const BOX_STACK = [
   "MMMMMM"
 ];
 
-export const ITEM_CATALOG: PixelItem[] = [
+const RAW_ITEM_CATALOG: PixelItem[] = [
   // 방 구조 — 기본 지급, 교체형
   {
     id: "wallpaper-sky",
@@ -564,8 +636,70 @@ export const ITEM_CATALOG: PixelItem[] = [
     acquire: { type: "milestone", at: 60 },
     addedIn: "1.0.4"
   },
-  ...THEME_ITEMS
+  ...THEME_ITEMS.map((item) => ({
+    ...item,
+    themeKey: item.id.startsWith("summer-")
+      ? "summer"
+      : item.id.startsWith("autumn-")
+        ? "autumn"
+        : "rival"
+  })),
+  ...EXPANSION_ITEMS
 ];
+
+function tokenForRole(
+  themeKey: string | undefined,
+  role: "ink" | "surface",
+  preferred: readonly string[],
+  fallback: string
+): string {
+  const palette = themePaletteFor(themeKey);
+  return (
+    preferred.find((token) => palette?.tokenRoles[token] === role) ??
+    Object.entries(palette?.tokenRoles ?? {}).find(([, tokenRole]) => tokenRole === role)?.[0] ??
+    fallback
+  );
+}
+
+function rowsAtProductionDensity(item: PixelItem, rows: string[]): string[] {
+  const isPet = item.slots.includes("floor-left");
+  const isStructural = item.slots.includes("wallpaper") || item.slots.includes("flooring");
+  const isFrozenClassic = item.id === "cat-black" || item.id.startsWith("classic-");
+  const sourceRows = DENSE_PET_ROWS[item.id] ?? densifySourceRows(rows);
+  const clusterScale = isPet ? PET_CLUSTER_SCALE : PROP_CLUSTER_SCALE;
+  let productionRows = clusterScaleRows(sourceRows, clusterScale);
+
+  if (!isStructural && !isFrozenClassic) {
+    const highlight = tokenForRole(
+      item.themeKey,
+      "surface",
+      ["W", "E", "H", "L", "K", "Y"],
+      "W"
+    );
+    const shadow = tokenForRole(item.themeKey, "ink", ["C", "R", "N", "I"], "C");
+    productionRows = applyClusterLighting(productionRows, highlight, shadow, 2);
+  }
+  return isStructural ? padStructuralRows(productionRows) : productionRows;
+}
+
+function itemAtProductionDensity(item: PixelItem): PixelItem {
+  const denseItem: PixelItem = {
+    ...item,
+    frames: {
+      base: rowsAtProductionDensity(item, item.frames.base),
+      active: rowsAtProductionDensity(item, item.frames.active)
+    }
+  };
+  if (item.states) {
+    denseItem.states = Object.fromEntries(
+      Object.entries(item.states).map(([state, rows]) => [state, rowsAtProductionDensity(item, rows)])
+    );
+  }
+  return denseItem;
+}
+
+/** 저장 id·획득 규칙은 유지하고 렌더링용 도트맵만 320×180 밀도로 제공한다. */
+export const ITEM_CATALOG: PixelItem[] = RAW_ITEM_CATALOG.map(itemAtProductionDensity);
 
 export function itemById(id: string): PixelItem | undefined {
   return ITEM_CATALOG.find((item) => item.id === id);
@@ -589,18 +723,28 @@ export const DEFAULT_PLACEMENTS: Partial<Record<SlotId, string>> = {
   "floor-left": "cat-basic"
 };
 
-export function isOwned(item: PixelItem, cumulativeDone: number): boolean {
-  return item.acquire.type === "milestone" ? cumulativeDone >= item.acquire.at : true;
+export function isOwned(
+  item: PixelItem,
+  cumulativeDone: number,
+  ownedItemIds: readonly string[] = []
+): boolean {
+  if (ownedItemIds.includes(item.id)) return true;
+  if (item.acquire.type === "milestone") return cumulativeDone >= item.acquire.at;
+  return item.acquire.type === "default" || item.acquire.type === "daily";
 }
 
 /** 누적 챙김 기준으로 소장한 아이템 목록 (도착 순서 유지) */
-export function ownedItems(cumulativeDone: number): PixelItem[] {
-  return ITEM_CATALOG.filter((item) => isOwned(item, cumulativeDone));
+export function ownedItems(cumulativeDone: number, ownedItemIds: readonly string[] = []): PixelItem[] {
+  return ITEM_CATALOG.filter((item) => isOwned(item, cumulativeDone, ownedItemIds));
 }
 
 /** 해당 슬롯에 넣을 수 있는 소장 아이템 */
-export function ownedItemsForSlot(slot: SlotId, cumulativeDone: number): PixelItem[] {
-  return ownedItems(cumulativeDone).filter((item) => item.slots.includes(slot));
+export function ownedItemsForSlot(
+  slot: SlotId,
+  cumulativeDone: number,
+  ownedItemIds: readonly string[] = []
+): PixelItem[] {
+  return ownedItems(cumulativeDone, ownedItemIds).filter((item) => item.slots.includes(slot));
 }
 
 // ── 오늘의 상태 변화 (기획서 §6.3) ─────────────────────────

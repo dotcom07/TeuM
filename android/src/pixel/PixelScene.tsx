@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { colors } from "../theme";
 import {
@@ -9,13 +10,14 @@ import {
   PixelItem,
   sceneStateFor,
   SlotId,
+  SLOT_RENDER_ORDER,
   STRUCTURAL_SLOTS
-} from "./catalog";
-import { PixelGlyph, PixelRect } from "./PixelGlyph";
+} from "./catalog.ts";
+import { PixelRect } from "./PixelGlyph.tsx";
+import { ART_H, ART_W } from "./pixelDensity.ts";
+import { composePixelRuns, type PixelLayer } from "./pixelSeparation.ts";
 
-/** 아트 그리드 크기 — 아트 px 1칸 = 논리 4px (기획서 §3.1의 256×160 논리 캔버스) */
-export const ART_W = 64;
-export const ART_H = 40;
+export { ART_H, ART_W } from "./pixelDensity";
 
 /** 슬롯에 실제로 그려질 아이템 id. 배치가 있으면 배치, 없으면 기본. 명시적 비움은 null. */
 function itemIdForSlot(slot: SlotId, placements: Partial<Record<SlotId, string>>): string | null {
@@ -47,11 +49,12 @@ function rowsFor(item: PixelItem, state: DeskSceneState): string[] {
 const TAPPABLE_SLOTS = (Object.keys(DESK_SLOTS) as SlotId[]).filter(
   (slot) => !STRUCTURAL_SLOTS.has(slot) || slot === "wall-window" || slot === "desk-center"
 );
+const ALL_SLOTS = SLOT_RENDER_ORDER;
 
 /**
  * 픽셀 데스크 장면 (기획서 §3).
- * 벽지 → 바닥지 → 창문 → 책상 → 소품 순서(슬롯 지도 순서)로 전부 아이템을 합성한다.
- * 애니메이션 없음 — `움직임 줄이기` 설정과 무관하게 항상 정지 화면이다.
+ * 벽지 → 바닥지 → 창문 → 책상 → 소품 순서(명시적 z-order)로 전부 아이템을 합성한다.
+ * 장면 자체는 정적이며, 펫·선물상자 모션은 별도 벡터 레이어에서 처리한다.
  */
 export default function PixelScene({
   width,
@@ -63,7 +66,7 @@ export default function PixelScene({
   showSlotHints = false,
   revealAll = false
 }: {
-  /** 표시 폭(dp). 높이는 비율(40/64)로 계산된다. */
+  /** 표시 폭(dp). 높이는 16:9 비율로 계산된다. */
   width: number;
   /** 오늘 챙긴 횟수. 기록 모드가 꺼져 있으면 null (기본 장면 유지). */
   doneCount: number | null;
@@ -80,7 +83,36 @@ export default function PixelScene({
 }) {
   const scale = width / ART_W;
   const state: DeskSceneState = sceneStateFor(doneCount, paused);
-  const allSlots = Object.keys(DESK_SLOTS) as SlotId[];
+  const sceneRuns = useMemo(() => {
+    const layers: PixelLayer[] = [];
+    for (const slot of ALL_SLOTS) {
+      const itemId = itemIdForSlot(slot, placements);
+      if (!itemId) continue;
+      const item = itemById(itemId);
+      if (!item) continue;
+      const customized = placements[slot] != null;
+      if (!revealAll && !isVisible(itemId, state, customized)) continue;
+      const rows = rowsFor(item, state);
+      const slotBox = DESK_SLOTS[slot];
+      layers.push({
+        id: `${slot}:${item.id}`,
+        rows,
+        x: slotBox.x,
+        y: slotBox.y + Math.max(0, slotBox.maxH - rows.length),
+        themeKey: item.themeKey,
+        boundaryMode: slot === "wallpaper" || slot === "flooring" ? "none" : "adaptive"
+      });
+    }
+    return composePixelRuns(ART_W, ART_H, layers);
+  }, [
+    placements,
+    revealAll,
+    state.glass,
+    state.lampOn,
+    state.monitorActive,
+    state.plant,
+    state.windowLit
+  ]);
 
   return (
     <View
@@ -98,32 +130,22 @@ export default function PixelScene({
         overflow: "hidden"
       }}
     >
-      {/* 아이템 레이어 — 슬롯 지도 순서가 곧 z-순서 */}
-      {allSlots.map((slot) => {
-        const itemId = itemIdForSlot(slot, placements);
-        if (!itemId) return null;
-        const item = itemById(itemId);
-        if (!item) return null;
-        const customized = placements[slot] != null;
-        if (!revealAll && !isVisible(itemId, state, customized)) return null;
-        const rows = rowsFor(item, state);
-        const slotBox = DESK_SLOTS[slot];
-        // 아이템은 슬롯의 바닥선에 붙인다 (책상 위·바닥 위에 앉게)
-        const yOffset = slotBox.maxH - rows.length;
-        return (
-          <PixelGlyph
-            key={slot}
-            rows={rows}
-            x={slotBox.x}
-            y={slotBox.y + Math.max(0, yOffset)}
-            scale={scale}
-          />
-        );
-      })}
+      {/* 한 번 합성한 장면 — 아이템 안쪽 1px 경계가 배경·다른 소품과 뭉치는 것을 막는다. */}
+      {sceneRuns.map((run, index) => (
+        <PixelRect
+          key={`${run.y}:${run.x}:${index}`}
+          x={run.x}
+          y={run.y}
+          w={run.w}
+          h={run.h ?? 1}
+          color={run.color}
+          scale={scale}
+        />
+      ))}
 
       {/* 꾸미기 모드: 빈 슬롯 실루엣 — 어디를 꾸밀 수 있는지 보여 준다 */}
       {showSlotHints &&
-        allSlots
+        ALL_SLOTS
           .filter((slot) => !STRUCTURAL_SLOTS.has(slot))
           .filter((slot) => itemIdForSlot(slot, placements) == null)
           .map((slot) => {
@@ -149,8 +171,8 @@ export default function PixelScene({
 
       {/* 상태 점 — 일시정지면 멈춤 색 (§6.1) */}
       <PixelRect
-        x={51}
-        y={26}
+        x={244}
+        y={116}
         w={1}
         h={1}
         color={state.paused ? colors.mutedIndigo : colors.signal}

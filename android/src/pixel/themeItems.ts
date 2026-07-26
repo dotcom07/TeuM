@@ -344,27 +344,28 @@ function makeThemeItem(
 
 /** 첫 틈/12번째 틈/36번째 틈에 한 테마 전체가 열려 방을 한 번에 맞출 수 있다. */
 export const THEME_ITEMS: PixelItem[] = [
-  makeThemeItem("cat-wallpaper", "고양이 벽지", "Cat wallpaper", "wallpaper", CAT_WALLPAPER, 1),
-  makeThemeItem("cat-flooring", "고양이 발바닥 바닥", "Cat-paw flooring", "flooring", CAT_FLOORING, 1),
-  makeThemeItem("cat-window", "창가의 고양이", "Window cat", "wall-window", CAT_WINDOW, 1),
-  makeThemeItem("cat-desk", "고양이 책상", "Cat desk", "furniture-desk", CAT_DESK, 1),
-  makeThemeItem("cat-monitor", "고양이 모니터", "Cat monitor", "desk-center", CAT_MONITOR, 1),
-  makeThemeItem("cat-mug", "고양이 머그", "Cat mug", "desk-left", CAT_MUG, 1),
-  makeThemeItem("cat-grass", "고양이풀", "Cat grass", "desk-right", CAT_GRASS, 1),
-  makeThemeItem("cat-lamp", "고양이 조명", "Cat lamp", "desk-lamp", CAT_LAMP, 1),
-  makeThemeItem("cat-desk-mat", "고양이 데스크 매트", "Cat desk mat", "desk-front", CAT_DESK_FRONT, 1),
+  // 저장 호환성을 위해 기존 cat-* id는 유지하고 사용자 표시만 라이벌 테마로 바꾼다.
+  makeThemeItem("cat-wallpaper", "라이벌 벽지", "Rival wallpaper", "wallpaper", CAT_WALLPAPER, 1),
+  makeThemeItem("cat-flooring", "라이벌 발자국 바닥", "Rival paw-print flooring", "flooring", CAT_FLOORING, 1),
+  makeThemeItem("cat-window", "창가의 라이벌", "Window rival", "wall-window", CAT_WINDOW, 1),
+  makeThemeItem("cat-desk", "라이벌 책상", "Rival desk", "furniture-desk", CAT_DESK, 1),
+  makeThemeItem("cat-monitor", "라이벌 모니터", "Rival monitor", "desk-center", CAT_MONITOR, 1),
+  makeThemeItem("cat-mug", "라이벌 머그", "Rival mug", "desk-left", CAT_MUG, 1),
+  makeThemeItem("cat-grass", "수상한 화분", "Suspicious plant", "desk-right", CAT_GRASS, 1),
+  makeThemeItem("cat-lamp", "라이벌 조명", "Rival lamp", "desk-lamp", CAT_LAMP, 1),
+  makeThemeItem("cat-desk-mat", "라이벌 데스크 매트", "Rival desk mat", "desk-front", CAT_DESK_FRONT, 1),
   makeThemeItem(
     "cat-figure",
-    "고양이 피규어",
-    "Cat figure",
+    "라이벌 피규어",
+    "Rival figure",
     ["wall-shelf-a", "wall-shelf-b"],
     CAT_SHELF,
     1
   ),
-  makeThemeItem("cat-portrait", "고양이 초상화", "Cat portrait", "wall-frame", CAT_FRAME, 1),
-  makeThemeItem("cat-clock", "고양이 시계", "Cat clock", "wall-clock", CAT_CLOCK, 1),
-  makeThemeItem("cat-tuxedo", "턱시도 고양이", "Tuxedo cat", "floor-left", TUXEDO_CAT, 1),
-  makeThemeItem("cat-cushion", "고양이 방석", "Cat cushion", "floor-right", CAT_CUSHION, 1),
+  makeThemeItem("cat-portrait", "라이벌 초상화", "Rival portrait", "wall-frame", CAT_FRAME, 1),
+  makeThemeItem("cat-clock", "라이벌 시계", "Rival clock", "wall-clock", CAT_CLOCK, 1),
+  makeThemeItem("cat-tuxedo", "꼬마 라이벌", "Little rival", "floor-left", TUXEDO_CAT, 1),
+  makeThemeItem("cat-cushion", "라이벌 방석", "Rival cushion", "floor-right", CAT_CUSHION, 1),
 
   makeThemeItem("summer-wallpaper", "바닷바람 벽지", "Sea-breeze wallpaper", "wallpaper", SUMMER_WALLPAPER, 12),
   makeThemeItem("summer-flooring", "모래빛 바닥", "Sandy flooring", "flooring", SUMMER_FLOORING, 12),

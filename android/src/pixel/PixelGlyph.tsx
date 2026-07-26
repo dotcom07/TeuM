@@ -1,31 +1,10 @@
 import { useMemo } from "react";
 import { View } from "react-native";
-import { colors } from "../theme";
+import { separatedGlyphRuns } from "./pixelSeparation.ts";
+import { BASE_PIXEL_COLORS, pixelColor } from "./themePalettes.ts";
 
-/**
- * 도트맵 문자 → 브랜드 팔레트 토큰.
- * 픽셀 데스크는 이 팔레트 밖의 색을 쓰지 않는다 (기획서 §3.4).
- */
-export const PIXEL_COLORS: Record<string, string> = {
-  C: colors.carbon,
-  I: colors.chromeIndigo,
-  M: colors.mutedIndigo,
-  P: colors.periwinkle,
-  K: colors.canvasSoft,
-  E: colors.ice,
-  H: colors.highlight,
-  W: colors.surface,
-  A: colors.amber,
-  S: colors.signal,
-  T: colors.systemsTeal,
-  L: colors.platinum,
-  B: colors.summerOcean,
-  Y: colors.summerSand,
-  O: colors.autumnOchre,
-  R: colors.autumnRust,
-  G: colors.leafGreen,
-  N: colors.woodWarm
-};
+/** 테마가 없는 기본 아이템의 도트맵 문자 → 색상 토큰. */
+export const PIXEL_COLORS: Record<string, string> = BASE_PIXEL_COLORS;
 
 export interface PixelRun {
   x: number;
@@ -39,7 +18,14 @@ export interface PixelRun {
  * 픽셀마다 View를 만들지 않기 위한 핵심 단계 (기획서 §8).
  * `.` 과 공백은 투명.
  */
-export function rowsToRuns(rows: string[]): PixelRun[] {
+export function rowsToRuns(
+  rows: string[],
+  themeKey?: string,
+  separation?: { enabled: boolean; itemId: string; backgroundColor?: string }
+): PixelRun[] {
+  if (separation?.enabled) {
+    return separatedGlyphRuns(rows, themeKey, separation.itemId, separation.backgroundColor);
+  }
   const runs: PixelRun[] = [];
   rows.forEach((row, y) => {
     let x = 0;
@@ -51,7 +37,7 @@ export function rowsToRuns(rows: string[]): PixelRun[] {
       }
       let end = x + 1;
       while (end < row.length && row[end] === ch) end += 1;
-      const color = PIXEL_COLORS[ch];
+      const color = pixelColor(ch, themeKey);
       if (color) runs.push({ x, y, w: end - x, color });
       x = end;
     }
@@ -62,20 +48,39 @@ export function rowsToRuns(rows: string[]): PixelRun[] {
 /**
  * 아트 픽셀 좌표계 위에 도트맵 하나를 그린다.
  * 부모는 position:relative 컨테이너, scale은 아트 픽셀 1칸의 dp 크기.
- * 사각형에 0.5dp 여유를 줘 비정수 배율에서 헤어라인 틈을 막는다 (기획서 §3.1).
+ * 사각형에 작은 여유를 줘 비정수 배율에서 헤어라인 틈을 막는다 (기획서 §3.1).
  */
 export function PixelGlyph({
   rows,
   x,
   y,
-  scale
+  scale,
+  themeKey,
+  itemId,
+  separateEdges = false,
+  separationBackground
 }: {
   rows: string[];
   x: number;
   y: number;
   scale: number;
+  themeKey?: string;
+  /** 경계색 해시와 장면 레이어 소유권에 쓰는 안정 id. */
+  itemId?: string;
+  /** 배경과 겹치는 실루엣 안쪽 경계를 적응형 1px 분리색으로 바꾼다. */
+  separateEdges?: boolean;
+  /** 단독 미리보기에서 실제로 맞닿는 배경색. */
+  separationBackground?: string;
 }) {
-  const runs = useMemo(() => rowsToRuns(rows), [rows]);
+  const runs = useMemo(
+    () =>
+      rowsToRuns(rows, themeKey, {
+        enabled: separateEdges,
+        itemId: itemId ?? themeKey ?? "pixel-glyph",
+        backgroundColor: separationBackground
+      }),
+    [itemId, rows, separateEdges, separationBackground, themeKey]
+  );
   return (
     <>
       {runs.map((run, index) => (
@@ -85,8 +90,8 @@ export function PixelGlyph({
             position: "absolute",
             left: (x + run.x) * scale,
             top: (y + run.y) * scale,
-            width: run.w * scale + 0.5,
-            height: scale + 0.5,
+            width: run.w * scale + Math.min(0.35, scale * 0.08),
+            height: scale + Math.min(0.35, scale * 0.08),
             backgroundColor: run.color
           }}
         />
