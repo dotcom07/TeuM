@@ -25,7 +25,6 @@ export const colors = {
   autumnRust: "#8f4438",
   leafGreen: "#617b52",
   woodWarm: "#86624b",
-  springBlossom: "#e6a7bb",
   shadowDeep: "#11131a"
 } as const;
 

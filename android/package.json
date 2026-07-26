@@ -1,18 +1,14 @@
 {
   "name": "@teum/android",
   "private": true,
-  "version": "1.0.7",
+  "version": "1.0.6",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "web": "expo start --web",
     "ios": "expo run:ios",
-    "test:time": "node --test tests/time.test.mjs",
-    "test:rewards": "node --test tests/rewards.test.mjs",
-    "test:catalog": "node --test tests/catalog.test.mjs",
-    "test:palettes": "node --test tests/theme-palettes.test.mjs",
-    "test:pixels": "node --test tests/catalog.test.mjs tests/theme-palettes.test.mjs tests/pixel-separation.test.mjs tests/pixel-motion.test.mjs tests/pixel-canvas.test.mjs tests/pixel-quality.test.mjs"
+    "test:time": "node --test tests/time.test.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

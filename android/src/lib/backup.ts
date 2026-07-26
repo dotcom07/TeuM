@@ -2,7 +2,8 @@ import * as DocumentPicker from "expo-document-picker";
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { LanguageMode } from "../i18n";
-import { DeskState, normalizeDeskState } from "../pixel/deskState";
+import { DESK_SLOTS, EMPTY_PLACEMENT, itemById, SlotId } from "../pixel/catalog";
+import { DeskState } from "../pixel/deskState";
 import { BreakRecord, DEFAULT_RHYTHM, DEFAULT_SETTINGS, Persisted } from "../types";
 
 const FORMAT = "teum-backup";
@@ -141,7 +142,19 @@ function normalizeRecords(value: unknown): BreakRecord[] {
 }
 
 function normalizeDesk(value: unknown): DeskState {
-  return normalizeDeskState(value);
+  const raw = isObject(value) ? value : {};
+  const placements: DeskState["placements"] = {};
+  if (isObject(raw.placements)) {
+    for (const [slot, id] of Object.entries(raw.placements)) {
+      if (typeof id !== "string" || !(slot in DESK_SLOTS)) continue;
+      if (id === EMPTY_PLACEMENT || itemById(id)) placements[slot as SlotId] = id;
+    }
+  }
+  return {
+    version: 1,
+    cumulativeDone: Math.max(0, Number(raw.cumulativeDone) || 0),
+    placements
+  };
 }
 
 function validMinute(value: unknown, fallback: number): number {

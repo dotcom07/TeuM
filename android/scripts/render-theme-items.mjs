@@ -1,17 +1,49 @@
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { DESK_SLOTS, ITEM_CATALOG } from "../src/pixel/catalog.ts";
-import { ART_H, ART_W } from "../src/pixel/pixelDensity.ts";
-import { THEME_ITEMS as RAW_THEME_ITEMS } from "../src/pixel/themeItems.ts";
-import { BASE_PIXEL_COLORS, pixelColor } from "../src/pixel/themePalettes.ts";
+import { THEME_ITEMS } from "../src/pixel/themeItems.ts";
 
 const outputPath = process.argv[2] ?? fileURLToPath(new URL("../theme-items-preview.svg", import.meta.url));
 const sceneOutputPath = outputPath.replace(/\.svg$/i, "-scenes.svg");
 
-const palette = BASE_PIXEL_COLORS;
-const previewSlots = DESK_SLOTS;
-const productionById = new Map(ITEM_CATALOG.map((item) => [item.id, item]));
-const THEME_ITEMS = RAW_THEME_ITEMS.map((item) => productionById.get(item.id) ?? item);
+const palette = {
+  C: "#21242e",
+  I: "#3d4f97",
+  M: "#60619c",
+  P: "#8ba1d4",
+  K: "#9fbee7",
+  E: "#c0d5e6",
+  H: "#d7e9ff",
+  W: "#ffffff",
+  A: "#ecab37",
+  S: "#e2954f",
+  T: "#206479",
+  L: "#dedede",
+  B: "#4c91a6",
+  Y: "#e6c77a",
+  O: "#c56d3f",
+  R: "#8f4438",
+  G: "#617b52",
+  N: "#86624b"
+};
+
+// catalog.ts의 64×40 슬롯 좌표를 미리보기에서도 동일하게 사용한다.
+const previewSlots = {
+  wallpaper: { x: 0, y: 0, maxW: 64, maxH: 31 },
+  flooring: { x: 0, y: 31, maxW: 64, maxH: 9 },
+  "wall-window": { x: 5, y: 3, maxW: 16, maxH: 12 },
+  "wall-shelf-a": { x: 26, y: 5, maxW: 5, maxH: 4 },
+  "wall-shelf-b": { x: 33, y: 5, maxW: 5, maxH: 4 },
+  "wall-frame": { x: 44, y: 4, maxW: 6, maxH: 7 },
+  "wall-clock": { x: 56, y: 4, maxW: 4, maxH: 4 },
+  "furniture-desk": { x: 4, y: 24, maxW: 56, maxH: 8 },
+  "desk-left": { x: 12, y: 18, maxW: 6, maxH: 6 },
+  "desk-center": { x: 25, y: 14, maxW: 14, maxH: 10 },
+  "desk-right": { x: 44, y: 16, maxW: 7, maxH: 8 },
+  "desk-lamp": { x: 54, y: 12, maxW: 5, maxH: 12 },
+  "desk-front": { x: 19, y: 26, maxW: 8, maxH: 3 },
+  "floor-left": { x: 2, y: 24, maxW: 6, maxH: 8 },
+  "floor-right": { x: 57, y: 24, maxW: 6, maxH: 8 }
+};
 
 const validationErrors = [];
 const itemIds = new Set();
@@ -72,7 +104,7 @@ const cells = THEME_ITEMS.map((item, index) => {
   const pixels = item.frames.base
     .flatMap((line, py) =>
       [...line].map((token, px) => {
-        const color = pixelColor(token, item.themeKey);
+        const color = palette[token];
         if (!color) return "";
         return `<rect x="${originX + px * scale}" y="${originY + py * scale}" width="${scale}" height="${scale}" fill="${color}"/>`;
       })
@@ -97,12 +129,12 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${
 await writeFile(outputPath, svg, "utf8");
 
 const sceneScale = 5;
-const sceneW = ART_W * sceneScale;
-const sceneH = ART_H * sceneScale;
+const sceneW = 64 * sceneScale;
+const sceneH = 40 * sceneScale;
 const sceneGap = 20;
 const sceneLabelH = 34;
 const sceneThemes = [
-  { prefix: "cat-", label: "라이벌 테마" },
+  { prefix: "cat-", label: "고양이 테마" },
   { prefix: "summer-", label: "여름 테마" },
   { prefix: "autumn-", label: "가을 테마" }
 ];
@@ -120,7 +152,7 @@ const scenes = sceneThemes.map((theme, index) => {
     const yOffset = Math.max(0, box.maxH - rows.length);
     return rows.flatMap((line, py) =>
       [...line].map((token, px) => {
-        const color = pixelColor(token, item.themeKey);
+        const color = palette[token];
         if (!color) return "";
         return `<rect x="${originX + (box.x + px) * sceneScale}" y="${originY + (box.y + yOffset + py) * sceneScale}" width="${sceneScale}" height="${sceneScale}" fill="${color}"/>`;
       })

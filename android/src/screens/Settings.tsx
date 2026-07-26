@@ -13,8 +13,6 @@ import { DayChip, RadioRow } from "./Onboarding";
 const PRIVACY_POLICY_URL =
   "https://aluminum-language-c6a.notion.site/TeuM-3a447d4c6bf180f7a6f6e221089a5012?pvs=73";
 
-export type DevRewardPreset = "current" | "spring" | "rainy" | "winter" | "december" | "general";
-
 /**
  * 설정 화면 (A-10). 변경은 즉시 반영·저장된다.
  * 업무 시간·요일·간격·언어·알람 방식·기록 방식을 한곳에서 관리한다.
@@ -28,11 +26,6 @@ export default function SettingsScreen({
   onOpenFullScreenSettings,
   onBack,
   onTestNotification,
-  devRewardPreset,
-  devRewardCandidateCount,
-  onChangeDevRewardPreset,
-  onTestReward,
-  onOpenItemShowroom,
   onExportBackup,
   onPickBackup,
   onRestoreBackup,
@@ -46,11 +39,6 @@ export default function SettingsScreen({
   onOpenFullScreenSettings: () => void;
   onBack: () => void;
   onTestNotification: () => void;
-  devRewardPreset: DevRewardPreset;
-  devRewardCandidateCount: number;
-  onChangeDevRewardPreset: (preset: DevRewardPreset) => void;
-  onTestReward: () => void;
-  onOpenItemShowroom: () => void;
   onExportBackup: () => Promise<boolean>;
   onPickBackup: () => Promise<{ payload: BackupPayload; summary: BackupSummary } | null>;
   onRestoreBackup: (backup: BackupPayload) => Promise<void>;
@@ -315,65 +303,6 @@ export default function SettingsScreen({
           </Pressable>
           <Text style={styles.debugHint}>
             {tr("버튼을 누른 뒤 화면을 끄거나 다른 앱을 열어 두세요. 선택한 진동과 1분의 틈 화면을 함께 확인할 수 있어요.", "After tapping, turn off the screen or open another app. You can check the selected vibration and one-minute screen together.")}
-          </Text>
-          <View style={styles.debugDivider} />
-          <Text style={styles.rowLabel}>{tr("보상 날짜 프리셋", "Reward date preset")}</Text>
-          <View style={styles.debugPresetRow}>
-            {(
-              [
-                ["current", tr("현재", "Now")],
-                ["spring", tr("봄", "Spring")],
-                ["rainy", tr("장마", "Rainy")],
-                ["winter", tr("겨울", "Winter")],
-                ["december", "12월"],
-                ["general", tr("일반", "General")]
-              ] as Array<[DevRewardPreset, string]>
-            ).map(([preset, label]) => {
-              const active = devRewardPreset === preset;
-              return (
-                <Pressable
-                  key={preset}
-                  onPress={() => onChangeDevRewardPreset(preset)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  style={[styles.debugPreset, active && styles.debugPresetActive]}
-                >
-                  <Text style={[styles.debugPresetText, active && styles.debugPresetTextActive]}>
-                    {label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Text style={styles.debugHint}>
-            {tr(
-              `현재 조건 후보 ${devRewardCandidateCount}개 · 시스템 날짜는 바뀌지 않아요.`,
-              `${devRewardCandidateCount} candidates · The system date is unchanged.`
-            )}
-          </Text>
-          <Pressable
-            onPress={onTestReward}
-            accessibilityRole="button"
-            style={styles.debugButton}
-          >
-            <Text style={styles.debugButtonText}>
-              {tr("랜덤 상자 테스트 · 5초 뒤", "Test random box · in 5 sec")}
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={onOpenItemShowroom}
-            accessibilityRole="button"
-            style={styles.debugButton}
-          >
-            <Text style={styles.debugButtonText}>
-              {tr("전체 아이템 쇼룸 · 직접 배치", "All-item showroom · place directly")}
-            </Text>
-          </Pressable>
-          <Text style={styles.debugHint}>
-            {tr(
-              "쇼룸에서는 테마·슬롯별 모든 아이템을 바로 적용하고 디자인을 비교할 수 있어요. 종료하면 원래 배치로 돌아갑니다.",
-              "The showroom lets you place every theme item by slot. Exiting restores your original layout."
-            )}
           </Text>
         </Panel>
       )}
@@ -641,21 +570,6 @@ const styles = StyleSheet.create({
   },
   debugButtonText: { color: colors.surface, fontSize: 12, fontWeight: "700" },
   debugHint: { color: colors.chromeIndigo, fontSize: 11, lineHeight: 16, marginTop: 10 },
-  debugDivider: { height: 1, marginVertical: 14, backgroundColor: colors.hairline },
-  debugPresetRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
-  debugPreset: {
-    minHeight: 34,
-    minWidth: 52,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 9,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.mutedIndigo
-  },
-  debugPresetActive: { backgroundColor: colors.chromeIndigo, borderColor: colors.chromeIndigo },
-  debugPresetText: { color: colors.chromeIndigo, fontSize: 10, fontWeight: "800" },
-  debugPresetTextActive: { color: colors.surface },
   modalBackdrop: {
     flex: 1,
     justifyContent: "center",

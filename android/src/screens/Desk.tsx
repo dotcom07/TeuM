@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AmberButton, Panel, PrimaryButton } from "../components/ui";
-import GiftBoxReveal from "../components/GiftBoxReveal";
 import { useI18n } from "../i18n";
 import {
   DEFAULT_PLACEMENTS,
@@ -18,7 +17,6 @@ import {
 import { DeskState } from "../pixel/deskState";
 import { PixelGlyph } from "../pixel/PixelGlyph";
 import PixelScene from "../pixel/PixelScene";
-import { themePaletteFor } from "../pixel/themePalettes";
 import { colors, MIN_TOUCH } from "../theme";
 
 /** 소장 아이템 도트 미리보기 — 박스 안에 맞춰 정수 배율로 그린다. */
@@ -26,33 +24,15 @@ function ItemPreview({ item, box }: { item: PixelItem; box: number }) {
   const rows = item.frames.base;
   const w = Math.max(...rows.map((row) => row.length));
   const h = rows.length;
-  const previewBackground = themePaletteFor(item.themeKey)?.colors.background ?? colors.canvasSoft;
-  const separateEdges = !item.slots.some((slot) => slot === "wallpaper" || slot === "flooring");
   // 소품은 정수 배율로 또렷하게, 벽지·책상처럼 큰 도트맵은 축소해 담는다.
   const raw = Math.min(box / w, box / h);
   const scale = raw >= 1 ? Math.floor(raw) : raw;
   return (
     <View
-      style={{
-        width: box,
-        height: box,
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "hidden",
-        backgroundColor: previewBackground
-      }}
+      style={{ width: box, height: box, alignItems: "center", justifyContent: "center", overflow: "hidden" }}
     >
       <View style={{ width: w * scale, height: h * scale }}>
-        <PixelGlyph
-          rows={rows}
-          x={0}
-          y={0}
-          scale={scale}
-          themeKey={item.themeKey}
-          itemId={item.id}
-          separateEdges={separateEdges}
-          separationBackground={previewBackground}
-        />
+        <PixelGlyph rows={rows} x={0} y={0} scale={scale} />
       </View>
     </View>
   );
@@ -69,22 +49,15 @@ export default function Desk({
   doneToday,
   paused,
   recordMode,
-  showroom = false,
   onPlace,
-  onDismissRewardBox,
-  onExitShowroom,
   onBack
 }: {
   desk: DeskState;
   doneToday: number | null;
   paused: boolean;
   recordMode: boolean;
-  /** 개발 빌드 전용: 소유 조건을 무시하고 전 아이템을 배치할 수 있다. */
-  showroom?: boolean;
   /** slot의 배치를 바꾼다. null이면 기본으로, EMPTY_PLACEMENT면 비운다. */
   onPlace: (slot: SlotId, itemId: string | null) => void;
-  onDismissRewardBox: (boxId: string) => void;
-  onExitShowroom?: () => void;
   onBack: () => void;
 }) {
   const { language, tr } = useI18n();
@@ -94,10 +67,8 @@ export default function Desk({
   const [decorMode, setDecorMode] = useState(false);
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [collectionOpen, setCollectionOpen] = useState(false);
-  const [giftOpen, setGiftOpen] = useState(false);
 
   const ko = language === "ko";
-  const pendingBox = desk.pendingBoxes[0] ?? null;
   const sceneW = Math.min(360, windowW - 14 * 2 - 14 * 2 - 6);
 
   /** 슬롯에 실제로 놓인 아이템 id (명시적 비움이면 null) */
@@ -130,9 +101,7 @@ export default function Desk({
   const groups = SLOT_GROUPS.map((group) => ({
     group,
     items: decorCatalog.filter(
-      (item) =>
-        (showroom || isOwned(item, desk.cumulativeDone, desk.ownedItemIds)) &&
-        group.slots.some((s) => item.slots.includes(s))
+      (item) => isOwned(item, desk.cumulativeDone) && group.slots.some((s) => item.slots.includes(s))
     )
   })).filter((entry) => entry.items.length > 0);
 
@@ -147,11 +116,7 @@ export default function Desk({
     setPickerSlot(slot);
   };
 
-  const ownedCount = showroom
-    ? decorCatalog.length
-    : decorCatalog.filter((item) =>
-        isOwned(item, desk.cumulativeDone, desk.ownedItemIds)
-      ).length;
+  const ownedCount = decorCatalog.filter((item) => isOwned(item, desk.cumulativeDone)).length;
 
   const summary =
     doneToday != null && doneToday > 0
@@ -160,11 +125,7 @@ export default function Desk({
         : `You took ${doneToday} break${doneToday === 1 ? "" : "s"} today.`
       : tr("오늘의 첫 틈을 기다리고 있어요.", "Waiting for today’s first break.");
 
-  const pickerItems = pickerSlot
-    ? showroom
-      ? ITEM_CATALOG.filter((item) => item.slots.includes(pickerSlot))
-      : ownedItemsForSlot(pickerSlot, desk.cumulativeDone, desk.ownedItemIds)
-    : [];
+  const pickerItems = pickerSlot ? ownedItemsForSlot(pickerSlot, desk.cumulativeDone) : [];
   const pickerHasDefault = pickerSlot != null && DEFAULT_PLACEMENTS[pickerSlot] != null;
   const pickerGroup = pickerSlot
     ? SLOT_GROUPS.find((group) => group.slots.includes(pickerSlot))
@@ -172,36 +133,6 @@ export default function Desk({
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      {showroom && (
-        <Panel title={tr("DEV · 전체 아이템 쇼룸", "DEV · All-item showroom")}>
-          <Text style={styles.giftCopy}>
-            {tr(
-              "소유 조건을 무시하고 모든 아이템을 배치할 수 있어요. 실제 소장 상태는 바뀌지 않습니다.",
-              "Place any item without ownership checks. Your real collection is unchanged."
-            )}
-          </Text>
-          {onExitShowroom && (
-            <AmberButton
-              label={tr("쇼룸 종료", "Exit showroom")}
-              onPress={onExitShowroom}
-            />
-          )}
-        </Panel>
-      )}
-      {pendingBox && (
-        <Panel title={tr("새 선물상자가 도착했어요", "A new gift box arrived")}>
-          <Text style={styles.giftCopy}>
-            {tr(
-              `누적 챙김 보상 ${pendingBox.itemIds.length}개가 들어 있어요. 내용은 이미 저장되어 다시 열어도 바뀌지 않아요.`,
-              `It contains ${pendingBox.itemIds.length} cumulative-break reward${pendingBox.itemIds.length === 1 ? "" : "s"}. The saved contents won’t reroll.`
-            )}
-          </Text>
-          <AmberButton
-            label={tr("선물상자 열기 · 슈류류륭", "Open gift box · Shrrring")}
-            onPress={() => setGiftOpen(true)}
-          />
-        </Panel>
-      )}
       <Panel title={tr("나의 책상", "My desk")}>
         <View style={styles.sceneWrap}>
           <PixelScene
@@ -313,8 +244,7 @@ export default function Desk({
         {collectionOpen && (
           <View style={[styles.itemGrid, styles.collectionGrid]}>
             {decorCatalog.map((item) => {
-              const owned =
-                showroom || isOwned(item, desk.cumulativeDone, desk.ownedItemIds);
+              const owned = isOwned(item, desk.cumulativeDone);
               if (!owned) {
                 return (
                   <View
@@ -340,15 +270,6 @@ export default function Desk({
       </Panel>
 
       <PrimaryButton label={tr("홈으로 돌아가기", "Back to home")} onPress={onBack} />
-
-      <GiftBoxReveal
-        box={pendingBox}
-        visible={giftOpen}
-        onDismiss={() => {
-          if (pendingBox) onDismissRewardBox(pendingBox.id);
-          setGiftOpen(false);
-        }}
-      />
 
       {/* 슬롯 아이템 선택 시트 */}
       <Modal
@@ -412,7 +333,6 @@ export default function Desk({
 
 const styles = StyleSheet.create({
   content: { padding: 14, gap: 14 },
-  giftCopy: { color: colors.chromeIndigo, fontSize: 12, lineHeight: 18, marginBottom: 10 },
   sceneWrap: { alignItems: "center" },
   summary: { marginTop: 12, color: colors.carbon, fontSize: 14, fontWeight: "700" },
   decorButton: { marginTop: 12 },
