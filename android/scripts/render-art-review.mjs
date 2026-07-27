@@ -8,13 +8,18 @@ import {
   ITEM_CATALOG
 } from "../src/pixel/catalog.ts";
 import { EXPANSION_THEME_META } from "../src/pixel/themeExpansion109.ts";
+import {
+  THEME_BACKGROUND_PALETTES,
+  THEME_BACKGROUND_TOKEN_COLORS
+} from "../src/pixel/themePalette109.ts";
 
 const palette = {
   C: "#21242e", I: "#3d4f97", M: "#60619c", P: "#8ba1d4",
   K: "#9fbee7", E: "#c0d5e6", H: "#d7e9ff", W: "#ffffff",
   A: "#ecab37", S: "#e2954f", T: "#206479", L: "#dedede",
   B: "#4c91a6", Y: "#e6c77a", O: "#c56d3f", R: "#8f4438",
-  G: "#617b52", N: "#86624b"
+  G: "#617b52", N: "#86624b",
+  ...THEME_BACKGROUND_TOKEN_COLORS
 };
 
 const argValue = (name) => {
@@ -83,7 +88,7 @@ if (selectedTheme && themes.length === 0) {
 async function save(name, svg) {
   const svgPath = path.join(outputDir, `${filePrefix}-${name}.svg`);
   const pngPath = path.join(outputDir, `${filePrefix}-${name}.png`);
-  await writeFile(svgPath, svg, "utf8");
+  await writeFile(svgPath, svg.replace(/[ \t]+$/gm, ""), "utf8");
   try {
     execFileSync("rsvg-convert", [svgPath, "-o", pngPath], { stdio: "ignore" });
   } catch {
@@ -254,10 +259,52 @@ function petBoard() {
   </svg>`;
 }
 
+function paletteBoard() {
+  const entries = Object.entries(THEME_BACKGROUND_PALETTES).filter(
+    ([key]) => !selectedTheme || key === selectedTheme
+  );
+  const columns = 4;
+  const cellW = 300;
+  const cellH = 136;
+  const gap = 14;
+  const padding = 28;
+  const top = 94;
+  const rows = Math.ceil(entries.length / columns);
+  const width = padding * 2 + columns * cellW + (columns - 1) * gap;
+  const height = top + rows * cellH + Math.max(0, rows - 1) * gap + padding;
+  const cells = entries.map(([key, entry], index) => {
+    const x = padding + (index % columns) * (cellW + gap);
+    const y = top + Math.floor(index / columns) * (cellH + gap);
+    const rgb = [
+      Number.parseInt(entry.hex.slice(1, 3), 16),
+      Number.parseInt(entry.hex.slice(3, 5), 16),
+      Number.parseInt(entry.hex.slice(5, 7), 16)
+    ];
+    const luminance = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 255000;
+    const textColor = luminance < 0.48 ? "#ffffff" : "#21242e";
+    return `
+      <g>
+        <rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" rx="5" fill="${entry.hex}" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="${x + 16}" y="${y + 16}" width="34" height="34" fill="#21242e"/>
+        <rect x="${x + 58}" y="${y + 16}" width="34" height="34" fill="#ffffff"/>
+        <text x="${x + 16}" y="${y + 82}" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="${textColor}">${escapeXml(key)} · ${entry.token}</text>
+        <text x="${x + 16}" y="${y + 108}" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="${textColor}">${escapeXml(entry.nameKo)}</text>
+        <text x="${x + 190}" y="${y + 108}" font-family="monospace" font-size="15" fill="${textColor}">${entry.hex.toUpperCase()}</text>
+      </g>`;
+  }).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <rect width="100%" height="100%" fill="#21242e"/>
+    <text x="${padding}" y="42" font-family="Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff">TEUM ${escapeXml(artVersion)} · THEME BACKGROUND PALETTES</text>
+    <text x="${padding}" y="72" font-family="Arial, sans-serif" font-size="16" fill="#c0d5e6">${entries.length} UNIQUE THEME COLORS · 검정/흰색 대비칩 포함</text>
+    ${cells}
+  </svg>`;
+}
+
 const outputs = [
   await save("complete-catalog", catalogBoard()),
   await save("theme-scenes", themeSceneBoard()),
-  await save("pets", petBoard())
+  await save("pets", petBoard()),
+  await save("theme-palettes", paletteBoard())
 ];
 
 console.log(JSON.stringify({

@@ -9,6 +9,7 @@
 
 import { THEME_ITEMS } from "./themeItems";
 import { EXPANSION_THEME_ITEMS_109 } from "./themeExpansion109";
+import { applyThemeBackgroundPalette } from "./themePalette109";
 
 export type SlotId =
   | "wallpaper"
@@ -328,7 +329,7 @@ const BOX_STACK = [
   "MMMMMM"
 ];
 
-export const ITEM_CATALOG: PixelItem[] = [
+const RAW_ITEM_CATALOG: PixelItem[] = [
   // 방 구조 — 기본 지급, 교체형
   {
     id: "wallpaper-sky",
@@ -570,6 +571,10 @@ export const ITEM_CATALOG: PixelItem[] = [
   ...THEME_ITEMS,
   ...EXPANSION_THEME_ITEMS_109
 ];
+
+export const ITEM_CATALOG: PixelItem[] = RAW_ITEM_CATALOG.map(
+  applyThemeBackgroundPalette
+);
 
 export function itemById(id: string): PixelItem | undefined {
   return ITEM_CATALOG.find((item) => item.id === id);

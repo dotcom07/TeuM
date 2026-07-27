@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { View } from "react-native";
 import { colors } from "../theme";
+import { THEME_BACKGROUND_TOKEN_COLORS } from "./themePalette109";
 
 /**
  * 도트맵 문자 → 브랜드 팔레트 토큰.
@@ -24,7 +25,8 @@ export const PIXEL_COLORS: Record<string, string> = {
   O: colors.autumnOchre,
   R: colors.autumnRust,
   G: colors.leafGreen,
-  N: colors.woodWarm
+  N: colors.woodWarm,
+  ...THEME_BACKGROUND_TOKEN_COLORS
 };
 
 export interface PixelRun {

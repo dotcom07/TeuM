@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { DESK_SLOTS, ITEM_CATALOG } from "../src/pixel/catalog.ts";
+import {
+  THEME_BACKGROUND_PALETTES,
+  THEME_BACKGROUND_TOKEN_COLORS
+} from "../src/pixel/themePalette109.ts";
 
-const paletteTokens = new Set("CIMPK EHWASTLBYORG N".replaceAll(" ", ""));
+const paletteTokens = new Set([
+  ..."CIMPK EHWASTLBYORG N".replaceAll(" ", ""),
+  ...Object.keys(THEME_BACKGROUND_TOKEN_COLORS)
+]);
 const newItems = ITEM_CATALOG.filter((item) => item.addedIn === "1.0.9");
 
 const opaqueMask = (rows) =>
@@ -39,6 +46,15 @@ const boundaryPixels = (rows) => {
   return pixels;
 };
 
+const dominantOpaqueToken = (rows) => {
+  const counts = new Map();
+  for (const token of rows.join("")) {
+    if (token === "." || token === " ") continue;
+    counts.set(token, (counts.get(token) ?? 0) + 1);
+  }
+  return [...counts].sort((left, right) => right[1] - left[1])[0]?.[0];
+};
+
 test("전체 카탈로그는 행 너비·슬롯 크기·팔레트 규격을 지킨다", () => {
   for (const item of ITEM_CATALOG) {
     const rows = item.frames.base;
@@ -53,6 +69,27 @@ test("전체 카탈로그는 행 너비·슬롯 크기·팔레트 규격을 지�
     for (const token of new Set(rows.join("").replaceAll(".", ""))) {
       assert.ok(paletteTokens.has(token), `${item.id}: 팔레트 토큰 ${token}`);
     }
+  }
+});
+
+test("모든 테마 벽지는 서로 다른 전용 주 배경색을 사용한다", () => {
+  const palettes = Object.entries(THEME_BACKGROUND_PALETTES);
+  assert.equal(new Set(palettes.map(([, palette]) => palette.token)).size, palettes.length);
+  assert.equal(
+    new Set(palettes.map(([, palette]) => palette.hex.toLowerCase())).size,
+    palettes.length
+  );
+
+  for (const [themeKey, palette] of palettes) {
+    const wallpaper = ITEM_CATALOG.find(
+      (item) => item.themeKey === themeKey && item.slots.includes("wallpaper")
+    );
+    assert.ok(wallpaper, `${themeKey}: 벽지 존재`);
+    assert.equal(
+      dominantOpaqueToken(wallpaper.frames.base),
+      palette.token,
+      `${themeKey}: 전용 주 배경 토큰`
+    );
   }
 });
 
