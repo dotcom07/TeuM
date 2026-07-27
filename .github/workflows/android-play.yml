@@ -17,10 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
+          package-manager-cache: false
       - name: Enable pnpm
         run: |
           corepack enable
@@ -51,17 +52,18 @@ jobs:
       group: google-play-alpha
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
+          package-manager-cache: false
       - name: Enable pnpm
         run: |
           corepack enable
           corepack prepare pnpm@10.6.1 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
@@ -101,7 +103,7 @@ jobs:
             -PteumVersionName="${{ steps.version.outputs.version-name }}" \
             -PteumVersionCode="${{ steps.version.outputs.version-code }}"
           jarsigner -verify app/build/outputs/bundle/release/app-release.aab
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: teum-${{ steps.version.outputs.version-name }}-aab
           path: android/android/app/build/outputs/bundle/release/app-release.aab
