@@ -116,7 +116,7 @@ const CHRISTMAS_ART: LateThemeArtPack = {
   shelf: asset("양말 속 선물", "Stocking gift", [".IR..", "IRRR.", "IRWR.", ".III."]),
   frame: asset("루돌프 우편 포스터", "Rudolph mail poster", ["IIIIII", "IRRRRI", "IRNNRI", "INWNNI", "INARNI", "IRRRRI", "IIIIII"]),
   clock: asset("방울 리스 시계", "Bell-wreath clock", [".GG.", "GWWG", "GAAG", ".II."]),
-  pet: asset("루돌프 강아지", "Rudolph puppy", ["A.AA.A", "AA..AA", ".INNI.", "INWWNI", "INRNNI", "INNNNI", ".INNI.", ".I..I."]),
+  pet: asset("루돌프 강아지", "Rudolph puppy", ["A.AA.A", "AA..AA", ".INNI.", "INWNWI", "INRNNI", "INNNNI", ".INNI.", ".I..I."]),
   floorObject: asset("큰 리본 선물상자", "Big ribbon present", ["..AA..", "IIAAII", "IRRRRI", "IRARRI", "IAAAAI", "IRARRI", "IRRRRI", "IIIIII"])
 };
 
@@ -261,7 +261,7 @@ const FANTASY_ART: LateThemeArtPack = {
   shelf: asset("미니 마법솥", "Mini cauldron", ["M...M", "MTTTM", ".MTM.", "..M.."]),
   frame: asset("용의 계곡 지도", "Dragon-valley map", ["MMMMMM", "MYYYYM", "MYGGYM", "MGTTGM", "MYAGYM", "MYYYYM", "MMMMMM"]),
   clock: asset("별자리 룬 시계", "Constellation rune clock", [".YY.", "YWAY", "YTTY", ".MM."]),
-  pet: asset("별빛 토끼", "Starlight rabbit", ["M....M", "MY..YM", ".MYYM.", "MYYYYM", "MYWWYM", "MYAYYM", "MMYYMM", ".M..M."]),
+  pet: asset("별빛 토끼", "Starlight rabbit", ["M....M", "MY..YM", ".MYYM.", "MYYYYM", "MYWYWM", "MYAYYM", "MMYYMM", ".M..M."]),
   floorObject: asset("봉인된 보물서", "Sealed treasure tome", ["..AA..", ".AYYA.", "MYYYYM", "MYMMYM", "MYAAYM", "MYYYYM", "MMMMMM", ".NNNN."])
 };
 
@@ -332,7 +332,7 @@ const SCHOOL_ART: LateThemeArtPack = {
   shelf: asset("분필과 지우개", "Chalk and eraser", ["W.W.W", "WWWWW", ".NNN.", "TTTTT"]),
   frame: asset("오늘의 시간표", "Today's timetable", ["TTTTTT", "TWWWWT", "TWIWIT", "TWAWAT", "TWIWIT", "TWWWWT", "TTTTTT"]),
   clock: asset("교실 종 시계", "Class bell clock", [".AA.", "AWWA", "AIWA", ".TT."]),
-  pet: asset("책가방 강아지", "Backpack puppy", ["T.T...", "TYYT..", "TYWW..", "TYAT..", "TYYTT.", "TYIITT", ".T..T.", "..T..."]),
+  pet: asset("책가방 강아지", "Backpack puppy", ["T.T...", "TYYT..", "TWTW..", "TYAT..", "TYYTT.", "TYIITT", ".T..T.", "..T..."]),
   floorObject: asset("노란 통학가방", "Yellow school bag", ["..TT..", ".T..T.", "TYYYYT", "TYTTYT", "TYAAYT", "TYYYYT", "TTTTTT", ".IIII."])
 };
 
@@ -475,7 +475,7 @@ const LIBRARY_ART: LateThemeArtPack = {
   shelf: asset("세 권의 고서", "Three old books", [".IR..", "IYYYY", "IRRRR", "IIIII"]),
   frame: asset("도서관 평면도", "Library floor plan", ["IIIIII", "IYYYYI", "IYNNYI", "INYYNI", "IYNNYI", "IYYYYI", "IIIIII"]),
   clock: asset("책갈피 시계", "Bookmark clock", [".RR.", "RWWR", "RAAR", ".II."]),
-  pet: asset("책벌레 부엉이", "Bookworm owl", ["I....I", "IIYYII", "IYWWYI", "IYCCYI", "IYAYYI", "IIYYII", ".IYYI.", ".I..I."]),
+  pet: asset("책벌레 부엉이", "Bookworm owl", ["I....I", "IIYYII", "IWYYWI", "IYCCYI", "IYAYYI", "IIYYII", ".IYYI.", ".I..I."]),
   floorObject: asset("반납 도서 카트", "Book-return cart", ["..II..", ".I..I.", "IYYYYI", "IRRRRI", "IYYYYI", "IIIIII", ".N..N.", "I....I"])
 };
 
@@ -549,7 +549,7 @@ const CAFE_ART: LateThemeArtPack = {
   shelf: asset("원두 틴 세트", "Coffee bean tins", ["T.T.T", "TNTNT", "TRTRT", "TTTTT"]),
   frame: asset("오늘의 원두 메뉴", "Today's bean menu", ["TTTTTT", "TYYYYT", "TYNNYT", "TYRRYT", "TYNNYT", "TYYYYT", "TTTTTT"]),
   clock: asset("커피 필터 시계", "Coffee-filter clock", [".NN.", "NWWN", "NAAN", ".TT."]),
-  pet: asset("베레모 바리스타냥이", "Beret barista cat", [".TTT..", "TNNNT.", "TNWWT.", "TNAAT.", "TNNNTT", "TNWWTT", ".T..T.", "..T..."]),
+  pet: asset("베레모 바리스타냥이", "Beret barista cat", [".TTT..", "TNNNT.", "TWNWT.", "TNAAT.", "TNNNTT", "TNWWTT", ".T..T.", "..T..."]),
   floorObject: asset("생두 포대", "Green-bean sack", ["..TT..", ".T..T.", "TNNNNT", "TNYYNT", "TNRRNT", "TNNNNT", "TTTTTT", ".RRRR."])
 };
 
@@ -622,7 +622,7 @@ const BAKERY_ART: LateThemeArtPack = {
   shelf: asset("크루아상 바구니", "Croissant basket", [".IAA.", "IAAAI", "IYOYI", "IIIII"]),
   frame: asset("빵 굽기 순서표", "Bread-baking chart", ["IIIIII", "IYYYYI", "IYAAYI", "IYOOYI", "IYWWYI", "IYYYYI", "IIIIII"]),
   clock: asset("도넛 시계", "Doughnut clock", [".OO.", "OYYO", "OAYO", ".II."]),
-  pet: asset("셰프모자 빵집 곰", "Chef-hat bakery bear", [".WWW..", "WWWWW.", "I.I...", "IYIYI.", "IYWWYI", "IYAYYI", ".IYYI.", ".I..I."]),
+  pet: asset("셰프모자 빵집 곰", "Chef-hat bakery bear", [".WWW..", "WWWWW.", "I.I...", "IYIYI.", "IWYYWI", "IYAYYI", ".IYYI.", ".I..I."]),
   floorObject: asset("바게트 배달 바구니", "Baguette delivery basket", ["A.A.A.", "AAAAAA", "IYYYYI", "IYOOYI", "IYOOYI", "IYYYYI", "IIIIII", ".NNNN."])
 };
 
@@ -676,7 +676,7 @@ const CAMPING_ART: LateThemeArtPack = {
   shelf: asset("캠프 나침반", "Camp compass", [".MM..", "MWWM.", "MWAM.", ".MM.."]),
   frame: asset("국립공원 배지판", "National-park badge board", ["MMMMMM", "MGGGGM", "MGYNGM", "MYNNYM", "MGAGGM", "MGGGGM", "MMMMMM"]),
   clock: asset("통나무 나이테 시계", "Log-ring clock", [".NN.", "NYYN", "NAYN", ".MM."]),
-  pet: asset("텐트후드 강아지", "Tent-hood puppy", [".M.M..", "MO.MO.", "MOOOM.", "MOWOM.", "MOOOM.", "MOOOMM", "MOGGMM", ".M..M."]),
+  pet: asset("텐트후드 강아지", "Tent-hood puppy", [".M.M..", "MO.MO.", "MOOOM.", "MWOWM.", "MOOOM.", "MOOOMM", "MOGGMM", ".M..M."]),
   floorObject: asset("말아 둔 침낭", "Rolled sleeping bag", ["..MM..", ".MGGM.", "MGYYGM", "MGYYGM", "MGYYGM", ".MGGM.", "..MM..", ".NNNN."])
 };
 
@@ -720,7 +720,7 @@ const GREENHOUSE_ART: LateThemeArtPack = {
   shelf: asset("다육이 세 화분", "Three succulents", ["G.G.G", "GGGGG", "ININI", "IIIII"]),
   frame: asset("식물 생장표", "Plant growth chart", ["IIIIII", "IEEEEI", "IEGGEI", "IEGGGI", "IEGSEI", "IEEEEI", "IIIIII"]),
   clock: asset("해바라기 시계", "Sunflower clock", [".SS.", "SAYS", "SGGS", ".II."]),
-  pet: asset("새싹 토끼", "Sprout rabbit", [".GGG..", "IG..GI", "IG..GI", ".IGGI.", "IGWWGI", "IGAGGI", ".IGGI.", ".I..I."]),
+  pet: asset("새싹 토끼", "Sprout rabbit", [".GGG..", "IG..GI", "IG..GI", ".IGGI.", "IWGGWI", "IGAGGI", ".IGGI.", ".I..I."]),
   floorObject: asset("큰 몬스테라 화분", "Large monstera pot", ["G..G.G", "GGGGGG", ".GGGG.", "..NN..", ".INNI.", "INNNNI", "INNNNI", "IIIIII"])
 };
 
@@ -847,7 +847,7 @@ const HANOK_ART: LateThemeArtPack = {
   shelf: asset("청자 향로", "Celadon incense burner", ["..G..", ".GGG.", "IGGGI", "IIIII"]),
   frame: asset("산수화 족자", "Landscape scroll", ["IIIIII", "IWWWWI", "IWNNWI", "INGGNI", "IGWWGI", "IYYYYI", "IIIIII"]),
   clock: asset("단청 꽃 시계", "Dancheong flower clock", [".RR.", "RGGR", "RAAR", ".II."]),
-  pet: asset("갓 쓴 마당냥이", "Courtyard cat in gat", [".III..", "IIIIII", "I.I...", "INNI..", "INWW..", "INAN.I", "INNIII", ".I..I."]),
+  pet: asset("갓 쓴 마당냥이", "Courtyard cat in gat", [".III..", "IIIIII", "I.I...", "INNI..", "IWNW..", "INAN.I", "INNIII", ".I..I."]),
   floorObject: asset("장독대 항아리", "Courtyard crock", ["..II..", ".INNI.", "INNNNI", "INRNNI", "INNNNI", ".INNI.", "..II..", ".YYYY."])
 };
 

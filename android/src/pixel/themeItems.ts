@@ -393,8 +393,8 @@ const CAT_CLOCK = [".MMC", "MPPM", "MPWM", ".MM."];
 const SUMMER_CLOCK = [".C.C", "CWWC", "CWBC", ".CC."];
 const AUTUMN_CLOCK = [".O..", "ORRO", "ORGO", ".RR."];
 
-const TUXEDO_CAT = ["C.C...", "CCCI..", "CWWI..", "CWIW..", "CCCC.C", "CCCCCI", ".C..C.", "C....I"];
-const SUMMER_CAT = ["..NN..", ".NNNN.", "NNWWNN", "NNYNNN", ".NBBN.", "NBBBBN", ".N..N.", "N....N"];
+const TUXEDO_CAT = ["C.C...", "CCCI..", "CWCW..", "CCAI..", "CWWC.C", "CWWCCI", ".C..C.", "C....I"];
+const SUMMER_CAT = ["..NN..", ".NNNN.", "NWNWNN", "NNYNNN", ".NBBN.", "NBBBBN", ".N..N.", "N....N"];
 const AUTUMN_CAT = ["C...C.", "ORRRO.", "OWRWO.", "ORWWO.", ".RRRRO", "RRRROO", ".R..O.", "R...OO"];
 
 const CAT_CUSHION = ["......", "......", "..MM..", ".MHHM.", "MHIICM", "MCCCCM", ".MMMM.", "..CC.."];

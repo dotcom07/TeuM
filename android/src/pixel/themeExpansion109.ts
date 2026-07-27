@@ -1202,7 +1202,7 @@ const AQUARIUM_ART: ThemeArtPack = {
   pet: {
     nameKo: "아기 펭귄",
     nameEn: "Baby penguin",
-    rows: ["..MM..", ".MCCM.", "MCWWCM", "MCAACM", "MCCCCM", "MMWWMM", ".MWWM.", ".M..M."]
+    rows: ["..MM..", ".MCCM.", "MCWCWM", "MCAACM", "MCCCCM", "MMWWMM", ".MWWM.", ".M..M."]
   },
   floorObject: {
     nameKo: "투명 잠수 헬멧",
@@ -1320,7 +1320,7 @@ const UNDERSEA_ART: ThemeArtPack = {
   pet: {
     nameKo: "꼬마 해파리",
     nameEn: "Baby jellyfish",
-    rows: ["..BB..", ".TTTT.", "TTWWTT", "TTATTT", ".TTTT.", "T.T.T.", ".T.T.T", "T...T."]
+    rows: ["..BB..", ".TTTT.", "TTWTWT", "TTATTT", ".TTTT.", "T.T.T.", ".T.T.T", "T...T."]
   },
   floorObject: {
     nameKo: "침몰한 보물상자",
@@ -1407,7 +1407,7 @@ const ZOO_ART: ThemeArtPack = {
   shelf: { nameKo: "쌍안경", nameEn: "Safari binoculars", rows: ["C.C.C", "CCCCC", "CWCWC", ".C.C."] },
   frame: { nameKo: "사자 안내 포스터", nameEn: "Lion guide poster", rows: ["CCCCCC", "COOOOC", "CONNOC", "CONWOC", "CONNOC", "COOOOC", "CCCCCC"] },
   clock: { nameKo: "얼룩 기린 시계", nameEn: "Giraffe spot clock", rows: [".II.", "IOIC", "IAIC", ".CC."] },
-  pet: { nameKo: "아기 레서판다", nameEn: "Baby red panda", rows: ["R....R", "RCRRCR", "RCWWCR", "RCAARR", ".RRRR.", "RNNNNR", ".R..R.", "R....R"] },
+  pet: { nameKo: "아기 레서판다", nameEn: "Baby red panda", rows: ["R....R", "RCRRCR", "RCWCWR", "RCAARR", ".RRRR.", "RNNNNR", ".R..R.", "R....R"] },
   floorObject: { nameKo: "사파리 탐험가방", nameEn: "Safari explorer bag", rows: ["..CC..", ".C..C.", "CYYYYC", "CYCCYC", "CYAAYC", "INNNNI", "INNNNI", "CCCCCC"] }
 };
 
@@ -1438,7 +1438,7 @@ const SF_ART: ThemeArtPack = {
   shelf: { nameKo: "양자 칩", nameEn: "Quantum chip", rows: ["C.C.C", "CTGTC", "CGAGC", "C.C.C"] },
   frame: { nameKo: "안드로이드 설계도", nameEn: "Android blueprint", rows: ["CCCCCC", "CTTTTC", "CTCCTC", "CTWWTC", "CTCCTC", "CTTTTC", "CCCCCC"] },
   clock: { nameKo: "디지털 펄스 시계", nameEn: "Digital pulse clock", rows: ["CCCC", "CTTC", "CGAC", "CCCC"] },
-  pet: { nameKo: "회로 여우로봇", nameEn: "Circuit fox robot", rows: ["C.C.C.", ".CTTI.", "CTWWTC", "CTAGTC", ".TTTT.", "CTGGTC", ".T..T.", "I....I"] },
+  pet: { nameKo: "회로 여우로봇", nameEn: "Circuit fox robot", rows: ["C.C.C.", ".CTTI.", "CTWTWC", "CTAGTC", ".TTTT.", "CTGGTC", ".T..T.", "I....I"] },
   floorObject: { nameKo: "고밀도 에너지셀", nameEn: "High-density energy cell", rows: ["..CC..", ".CTTC.", "CTGGTC", "CTGGTC", "CTAGTC", "CIIIIC", "CIIIIC", "CCCCCC"] }
 };
 
