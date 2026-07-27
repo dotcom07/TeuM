@@ -115,45 +115,49 @@ test("1.0.9 신규 아이템은 1.0.6 슬롯과 팔레트 규격을 지킨다", 
   }
 });
 
-test("재설계가 끝난 테마 펫은 팔레트 교체용 실루엣을 재사용하지 않는다", () => {
-  const reviewedThemes = new Set(["spring", "winter", "calico"]);
-  const pets = newItems.filter(
-    (candidate) => candidate.id.endsWith("-pet") && reviewedThemes.has(candidate.themeKey)
+test("재설계한 26개 테마 펫은 같은 실루엣을 재사용하지 않는다", () => {
+  const reviewedThemes = new Set(Object.keys(THEME_BACKGROUND_PALETTES));
+  const pets = ITEM_CATALOG.filter(
+    (candidate) =>
+      candidate.slots.includes("floor-left") && reviewedThemes.has(candidate.themeKey)
   );
   const masks = pets.map((item) => opaqueMask(item.frames.base).join("\n"));
+  assert.equal(pets.length, reviewedThemes.size);
   assert.equal(new Set(masks).size, masks.length);
 });
 
-test("고양이와 생쥐 장면은 아이템·펫 경계가 뒤 배경과 같은 색으로 합쳐지지 않는다", () => {
-  const scene = Array.from({ length: 40 }, () => Array(64).fill("."));
-  const items = ITEM_CATALOG.filter((item) => item.themeKey === "cat");
-  const used = new Set();
-  const conflicts = [];
+test("재설계한 26개 테마 장면은 아이템 경계가 뒤 배경과 합쳐지지 않는다", () => {
+  for (const themeKey of Object.keys(THEME_BACKGROUND_PALETTES)) {
+    const scene = Array.from({ length: 40 }, () => Array(64).fill("."));
+    const items = ITEM_CATALOG.filter((item) => item.themeKey === themeKey);
+    const used = new Set();
+    const conflicts = [];
 
-  for (const [slot, box] of Object.entries(DESK_SLOTS)) {
-    const item = items.find((candidate) => candidate.slots.includes(slot));
-    if (!item || used.has(item.id)) continue;
-    used.add(item.id);
-    const rows = item.frames.base;
-    const originY = sceneY(slot, rows);
+    for (const [slot, box] of Object.entries(DESK_SLOTS)) {
+      const item = items.find((candidate) => candidate.slots.includes(slot));
+      if (!item || used.has(item.id)) continue;
+      used.add(item.id);
+      const rows = item.frames.base;
+      const originY = sceneY(slot, rows);
 
-    if (slot !== "wallpaper" && slot !== "flooring") {
-      for (const pixel of boundaryPixels(rows)) {
-        const sceneX = box.x + pixel.x;
-        const scenePixelY = originY + pixel.y;
-        const behind = scene[scenePixelY]?.[sceneX];
-        if (behind === pixel.token) {
-          conflicts.push(`${item.id}@${sceneX},${scenePixelY}:${pixel.token}`);
+      if (slot !== "wallpaper" && slot !== "flooring") {
+        for (const pixel of boundaryPixels(rows)) {
+          const sceneX = box.x + pixel.x;
+          const scenePixelY = originY + pixel.y;
+          const behind = scene[scenePixelY]?.[sceneX];
+          if (behind === pixel.token) {
+            conflicts.push(`${item.id}@${sceneX},${scenePixelY}:${pixel.token}`);
+          }
         }
       }
+
+      rows.forEach((row, y) => {
+        [...row].forEach((token, x) => {
+          if (token !== ".") scene[originY + y][box.x + x] = token;
+        });
+      });
     }
 
-    rows.forEach((row, y) => {
-      [...row].forEach((token, x) => {
-        if (token !== ".") scene[originY + y][box.x + x] = token;
-      });
-    });
+    assert.deepEqual(conflicts, [], themeKey);
   }
-
-  assert.deepEqual(conflicts, []);
 });

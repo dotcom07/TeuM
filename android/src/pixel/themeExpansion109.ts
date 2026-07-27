@@ -1,4 +1,5 @@
 import type { PixelItem, SlotId } from "./catalog";
+import { LATE_THEME_ART_109 } from "./lateThemeArt109";
 
 type PetKind = "cat" | "dog" | "rabbit" | "bear" | "ghost" | "bluebird";
 
@@ -1199,9 +1200,9 @@ const AQUARIUM_ART: ThemeArtPack = {
     rows: [".CC.", "CTTC", "CTAC", ".CC."]
   },
   pet: {
-    nameKo: "물고기 모자 검정냥이",
-    nameEn: "Fish-hat black cat",
-    rows: ["BBBY..", "C.C...", "CCCC..", "CWCW..", "CCCC..", "CCCC.C", "CCCCCC", ".C..C."]
+    nameKo: "아기 펭귄",
+    nameEn: "Baby penguin",
+    rows: ["..MM..", ".MCCM.", "MCWWCM", "MCAACM", "MCCCCM", "MMWWMM", ".MWWM.", ".M..M."]
   },
   floorObject: {
     nameKo: "투명 잠수 헬멧",
@@ -1481,7 +1482,8 @@ const CUSTOM_THEME_ART: Partial<Record<string, ThemeArtPack>> = {
   dream: DREAM_ART,
   zoo: ZOO_ART,
   sf: SF_ART,
-  space: SPACE_ART
+  space: SPACE_ART,
+  ...LATE_THEME_ART_109
 };
 
 function item(
