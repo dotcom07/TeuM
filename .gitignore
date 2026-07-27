@@ -13,6 +13,7 @@ android/android/keystore.properties
 android/android/app/*.jks
 android/android/app/*.keystore
 android/android/app/debug.keystore
+gha-creds-*.json
 windows/src-tauri/target/
 windows/src-tauri/gen/
 windows/src-tauri/icons/icon-rgba.png

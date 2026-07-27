@@ -12,6 +12,7 @@
     "art:audit-palettes": "node --experimental-strip-types --experimental-loader ./scripts/resolve-typescript.mjs ./scripts/audit-theme-palettes.mjs",
     "art:review": "node --experimental-strip-types --experimental-loader ./scripts/resolve-typescript.mjs ./scripts/render-art-review.mjs",
     "test:pixel": "node --experimental-strip-types --experimental-loader ./scripts/resolve-typescript.mjs --test tests/pixel-art-anchor.test.mjs tests/pixel-quality109.test.mjs tests/rewards109.test.mjs",
+    "test:play-deploy": "node --test tests/play-deploy.test.mjs tests/release-version.test.mjs",
     "test:time": "node --test tests/time.test.mjs"
   },
   "dependencies": {

@@ -1,0 +1,125 @@
+name: Android CI and Play Alpha CD
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Test pixel art and rewards
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.6.1 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run Android tests
+        run: |
+          pnpm --dir android run test:pixel
+          pnpm --dir android run test:time
+          pnpm --dir android run test:play-deploy
+      - name: Audit pixel art
+        run: |
+          pnpm --dir android run art:audit
+          pnpm --dir android run art:audit-palettes
+
+  deploy-alpha:
+    name: Build and deploy to Play Alpha
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: google-play-alpha
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: google-play-alpha
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.6.1 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+      - name: Install Android SDK components
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            "ndk;27.1.12297006" \
+            "cmake;3.22.1"
+      - name: Derive Android version from tag
+        id: version
+        run: node android/scripts/release-version.mjs "$GITHUB_REF_NAME"
+      - name: Configure upload signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/teum-upload.jks"
+          {
+            printf 'storeFile=%s\n' "$RUNNER_TEMP/teum-upload.jks"
+            printf 'storePassword=%s\n' "$STORE_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+          } > android/android/keystore.properties
+      - name: Build signed App Bundle
+        working-directory: android/android
+        env:
+          NODE_ENV: production
+        run: |
+          ./gradlew bundleRelease \
+            -PteumVersionName="${{ steps.version.outputs.version-name }}" \
+            -PteumVersionCode="${{ steps.version.outputs.version-code }}"
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab
+      - uses: actions/upload-artifact@v4
+        with:
+          name: teum-${{ steps.version.outputs.version-name }}-aab
+          path: android/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 30
+      - id: google-auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_PLAY_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/androidpublisher
+      - name: Deploy and commit Play Alpha release
+        env:
+          PLAY_ACCESS_TOKEN: ${{ steps.google-auth.outputs.access_token }}
+          PLAY_PACKAGE_NAME: com.teum.app
+          PLAY_TRACK: alpha
+          PLAY_AAB_PATH: android/android/app/build/outputs/bundle/release/app-release.aab
+          PLAY_RELEASE_NAME: ${{ steps.version.outputs.version-name }} automatic Alpha release
+          PLAY_RELEASE_NOTES_FILE: android/play/release-notes/ko-KR.txt
+        run: node android/scripts/deploy-google-play.mjs
