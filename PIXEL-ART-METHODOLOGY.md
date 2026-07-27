@@ -18,7 +18,8 @@ TeuM의 도트맵은 단순한 팔레트 교체가 아니라, 테마 이름을 �
   <https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Attribute/shape-rendering>
 
 참고 자료는 복사 원본이 아니라 실루엣과 픽셀 클러스터를 분석하는 용도로만
-사용한다. 실제 아트는 TeuM의 64×40 격자와 고정 팔레트에 맞춰 다시 설계한다.
+사용한다. 실제 아트는 TeuM의 64×40 격자, 공용 18색 팔레트와 테마 전용
+주 배경색에 맞춰 다시 설계한다.
 
 ## 테마별 작업 순서
 
@@ -55,6 +56,9 @@ const wallpaper = paintRows(64, 31, "E", [
 ### 색 분리
 
 - 벽지와 바닥에는 중간 명도의 넓은 면을 사용한다.
+- 기본을 제외한 각 테마의 벽지는 서로 다른 전용 주 배경색을 사용한다.
+- 전용색끼리는 동일 HEX를 쓰지 않고 CIE Lab ΔE76 거리를 15 이상으로 유지한다.
+- 전용 배경색은 넓은 벽면에만 쓰고, 가구·윤곽·소품은 공용 팔레트를 유지한다.
 - 소품은 배경에 없는 어두운 외곽선 또는 밝은 림을 사용한다.
 - 펫이 책상과 겹치는 위치는 전체 외곽선을 한 색으로 두지 않고, 실제로
   겹치는 픽셀만 대비되는 포인트색으로 바꾼다.
@@ -73,6 +77,7 @@ const wallpaper = paintRows(64, 31, "E", [
 
 ```bash
 npm run art:audit
+npm run art:audit-palettes
 npm run art:audit -- --theme cat
 npm run art:review -- --theme cat
 ```
@@ -83,4 +88,7 @@ npm run art:review -- --theme cat
 - 벽지의 짧은 가로·세로 반복 주기
 - 같은 불투명 마스크를 공유하는 펫 묶음
 
-테마 확정 조건은 경계색 충돌 0, 짧은 벽지 반복 없음, 육안 검토 통과다.
+`art:audit-palettes`는 전용색 중복과 테마 사이 최소 ΔE76을 검사한다.
+
+테마 확정 조건은 경계색 충돌 0, 짧은 벽지 반복 없음, 전용 배경색 최소
+ΔE76 15 이상, 육안 검토 2회 통과다.
