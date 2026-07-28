@@ -193,12 +193,6 @@ export default function Home({
             ]}
           />
         </View>
-        <Text style={styles.rewardHint}>
-          {tr(
-            "5번마다 랜덤 상자 · 10번마다 1P · 원하는 아이템은 5P",
-            "Random box every 5 · 1P every 10 · choose an item for 5P"
-          )}
-        </Text>
       </Panel>
 
       <Panel title="TODAY'S RHYTHM">
@@ -415,13 +409,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.carbon
   },
   rewardMeterFill: { height: "100%", backgroundColor: colors.amber },
-  rewardHint: {
-    marginTop: 8,
-    color: colors.chromeIndigo,
-    fontSize: 10,
-    lineHeight: 15,
-    fontWeight: "700"
-  },
   panelCopy: { color: colors.carbon, marginBottom: 12, fontSize: 12 },
   sheetBackdrop: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(17, 19, 26, 0.55)" },
   sheet: {
