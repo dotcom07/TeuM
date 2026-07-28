@@ -11,6 +11,40 @@ const paletteTokens = new Set([
   ...Object.keys(THEME_BACKGROUND_TOKEN_COLORS)
 ]);
 const newItems = ITEM_CATALOG.filter((item) => item.addedIn === "1.0.9");
+const PET_MOUTH_ROW_EXPECTATIONS = {
+  "cat-tuxedo": [3, "CCRI.."],
+  "summer-cat": [3, "NNCNNN"],
+  "autumn-cat": [3, "ORCRO."],
+  "spring-pet": [5, "IPPPPI"],
+  "winter-pet": [3, "NNCN.."],
+  "calico-pet": [3, "CORO.."],
+  "aquarium-pet": [3, "MCAACM"],
+  "undersea-pet": [3, "TTTTTT"],
+  "dream-pet": [3, "WWWWWW"],
+  "zoo-pet": [3, "RCWWRR"],
+  "sf-pet": [3, "CTIGTC"],
+  "space-pet": [5, "WBBBBW"],
+  "christmas-pet": [4, "INRNNI"],
+  "sky-pet": [3, "MBAABM"],
+  "fantasy-pet": [5, "MYYYYM"],
+  "school-pet": [3, "TYNT.."],
+  "rainy-pet": [3, "MBWCBM"],
+  "library-pet": [4, "IYAYYI"],
+  "cafe-pet": [3, "TNRNT."],
+  "bakery-pet": [5, "IYNYYI"],
+  "camping-pet": [4, "MOOOM."],
+  "greenhouse-pet": [5, "IGGGGI"],
+  "music-pet": [3, "TBAABT"],
+  "arcade-pet": [3, "GPPPPG"],
+  "hanok-pet": [5, "INRN.I"],
+  "night-city-pet": [3, "TPRP.."]
+};
+const YELLOW_BEAK_PETS = new Set([
+  "aquarium-pet",
+  "sky-pet",
+  "library-pet",
+  "music-pet"
+]);
 
 const opaqueMask = (rows) =>
   rows.map((row) => [...row].map((token) => (token === "." ? "." : "#")).join(""));
@@ -124,6 +158,43 @@ test("재설계한 26개 테마 펫은 같은 실루엣을 재사용하지 않�
   const masks = pets.map((item) => opaqueMask(item.frames.base).join("\n"));
   assert.equal(pets.length, reviewedThemes.size);
   assert.equal(new Set(masks).size, masks.length);
+});
+
+test("파랑새 2종과 픽셀 유령은 두 눈이 분명하게 보인다", () => {
+  for (const id of ["sky-pet", "music-pet", "arcade-pet"]) {
+    const pet = ITEM_CATALOG.find((item) => item.id === id);
+    assert.ok(pet, `${id}: 펫 존재`);
+    assert.equal(
+      [...pet.frames.base.join("")].filter((token) => token === "W").length,
+      2,
+      `${id}: 흰색 눈 두 개`
+    );
+  }
+});
+
+test("검정냥이와 기본 강아지 외 모든 펫은 종에 맞는 입·코·부리를 사용한다", () => {
+  const reviewedPets = ITEM_CATALOG.filter(
+    (item) =>
+      item.slots.includes("floor-left") &&
+      item.id !== "cat-basic" &&
+      item.id !== "dog-basic"
+  );
+  assert.deepEqual(
+    reviewedPets.map((item) => item.id).sort(),
+    Object.keys(PET_MOUTH_ROW_EXPECTATIONS).sort(),
+    "검수 대상 펫 전체가 입·코 규칙에 포함되어야 한다"
+  );
+
+  for (const pet of reviewedPets) {
+    const [rowIndex, expectedRow] = PET_MOUTH_ROW_EXPECTATIONS[pet.id];
+    const mouthRow = pet.frames.base[rowIndex];
+    assert.equal(mouthRow, expectedRow, `${pet.id}: 검수된 얼굴 행`);
+    assert.equal(
+      mouthRow.includes("A"),
+      YELLOW_BEAK_PETS.has(pet.id),
+      `${pet.id}: 노란색은 새의 부리에만 사용`
+    );
+  }
 });
 
 test("재설계한 26개 테마 장면은 아이템 경계가 뒤 배경과 합쳐지지 않는다", () => {

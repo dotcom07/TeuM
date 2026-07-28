@@ -393,9 +393,9 @@ const CAT_CLOCK = [".MMC", "MPPM", "MPWM", ".MM."];
 const SUMMER_CLOCK = [".C.C", "CWWC", "CWBC", ".CC."];
 const AUTUMN_CLOCK = [".O..", "ORRO", "ORGO", ".RR."];
 
-const TUXEDO_CAT = ["C.C...", "CCCI..", "CWCW..", "CCAI..", "CWWC.C", "CWWCCI", ".C..C.", "C....I"];
-const SUMMER_CAT = ["..NN..", ".NNNN.", "NWNWNN", "NNYNNN", ".NBBN.", "NBBBBN", ".N..N.", "N....N"];
-const AUTUMN_CAT = ["C...C.", "ORRRO.", "OWRWO.", "ORWWO.", ".RRRRO", "RRRROO", ".R..O.", "R...OO"];
+const TUXEDO_CAT = ["C.C...", "CCCI..", "CWCW..", "CCRI..", "CWWC.C", "CWWCCI", ".C..C.", "C....I"];
+const SUMMER_CAT = ["..NN..", ".NNNN.", "NWNWNN", "NNCNNN", ".NBBN.", "NBBBBN", ".N..N.", "N....N"];
+const AUTUMN_CAT = ["C...C.", "ORRRO.", "OWRWO.", "ORCRO.", ".RRRRO", "RRRROO", ".R..O.", "R...OO"];
 
 const CAT_CUSHION = ["......", "......", "..MM..", ".MHHM.", "MHIICM", "MCCCCM", ".MMMM.", "..CC.."];
 const SUMMER_BASKET = ["......", "..CC..", ".CYYC.", "CYYYYC", "CYNYNC", "CYYYYC", "CCCCCC", ".NNNN."];

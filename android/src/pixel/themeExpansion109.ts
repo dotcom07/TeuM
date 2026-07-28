@@ -798,7 +798,7 @@ const SPRING_ART: ThemeArtPack = {
   pet: {
     nameKo: "벚꽃 롭이어 토끼",
     nameEn: "Cherry lop rabbit",
-    rows: ["IP..PI", "IP..PI", ".IPPI.", "IPPPPI", "IPWPWI", "IPSPPI", ".IPPI.", ".C..C."]
+    rows: ["IP..PI", "IP..PI", ".IPPI.", "IPPPPI", "IPWPWI", "IPPPPI", ".IPPI.", ".C..C."]
   },
   floorObject: {
     nameKo: "봄 소풍 바구니",
@@ -942,7 +942,7 @@ const WINTER_ART: ThemeArtPack = {
   pet: {
     nameKo: "빨간 목도리 시바",
     nameEn: "Red-scarf shiba",
-    rows: [".N.N..", "NNNN..", "NWNW..", "NNAN..", "NNNN.N", "NRRRNN", ".N..N.", "N....N"]
+    rows: [".N.N..", "NNNN..", "NWNW..", "NNCN..", "NNNN.N", "NRRRNN", ".N..N.", "N....N"]
   },
   floorObject: {
     nameKo: "눈 묻은 털장화",
@@ -1079,7 +1079,7 @@ const CALICO_ART: ThemeArtPack = {
   pet: {
     nameKo: "둥근얼굴 삼색고양이",
     nameEn: "Round-face calico cat",
-    rows: ["I.C...", "CCCC..", "CWCW..", "COAO..", "COOC.C", "COCCCC", ".C..C.", "..C..."]
+    rows: ["I.C...", "CCCC..", "CWCW..", "CORO..", "COOC.C", "COCCCC", ".C..C.", "..C..."]
   },
   floorObject: {
     nameKo: "숨숨 골판지 상자",
@@ -1320,7 +1320,7 @@ const UNDERSEA_ART: ThemeArtPack = {
   pet: {
     nameKo: "꼬마 해파리",
     nameEn: "Baby jellyfish",
-    rows: ["..BB..", ".TTTT.", "TTWTWT", "TTATTT", ".TTTT.", "T.T.T.", ".T.T.T", "T...T."]
+    rows: ["..BB..", ".TTTT.", "TTWTWT", "TTTTTT", ".TTTT.", "T.T.T.", ".T.T.T", "T...T."]
   },
   floorObject: {
     nameKo: "침몰한 보물상자",
@@ -1379,7 +1379,7 @@ const DREAM_ART: ThemeArtPack = {
   shelf: { nameKo: "열쇠 달린 꿈병", nameEn: "Keyed dream vial", rows: [".CCC.", "CBAAC", ".CCC.", "..N.N"] },
   frame: { nameKo: "거꾸로 비 내리는 그림", nameEn: "Upside-down rain art", rows: ["CCCCCC", "CIIIIC", "CIWIIC", "CWWWWC", "CIBIIC", "CBIBIC", "CCCCCC"] },
   clock: { nameKo: "졸린 달 시계", nameEn: "Sleepy moon clock", rows: [".AA.", "AICA", "AIIA", ".AA."] },
-  pet: { nameKo: "베개구름 유령", nameEn: "Pillow-cloud ghost", rows: [".WWWW.", "WWWWWE", "WWIWIW", "WWAWWW", ".WWWW.", "W.W.W.", ".W.W..", "W...W."] },
+  pet: { nameKo: "베개구름 유령", nameEn: "Pillow-cloud ghost", rows: [".WWWW.", "WWWWWE", "WWIWIW", "WWWWWW", ".WWWW.", "W.W.W.", ".W.W..", "W...W."] },
   floorObject: { nameKo: "별무늬 수면 베개", nameEn: "Star sleep pillow", rows: ["......", ".CCCC.", "CIIAIC", "CIAAIC", "CIIAIC", ".CCCC.", "..NN..", "......"] }
 };
 
@@ -1407,7 +1407,7 @@ const ZOO_ART: ThemeArtPack = {
   shelf: { nameKo: "쌍안경", nameEn: "Safari binoculars", rows: ["C.C.C", "CCCCC", "CWCWC", ".C.C."] },
   frame: { nameKo: "사자 안내 포스터", nameEn: "Lion guide poster", rows: ["CCCCCC", "COOOOC", "CONNOC", "CONWOC", "CONNOC", "COOOOC", "CCCCCC"] },
   clock: { nameKo: "얼룩 기린 시계", nameEn: "Giraffe spot clock", rows: [".II.", "IOIC", "IAIC", ".CC."] },
-  pet: { nameKo: "아기 레서판다", nameEn: "Baby red panda", rows: ["R....R", "RCRRCR", "RCWCWR", "RCAARR", ".RRRR.", "RNNNNR", ".R..R.", "R....R"] },
+  pet: { nameKo: "아기 레서판다", nameEn: "Baby red panda", rows: ["R....R", "RCRRCR", "RCWCWR", "RCWWRR", ".RRRR.", "RNNNNR", ".R..R.", "R....R"] },
   floorObject: { nameKo: "사파리 탐험가방", nameEn: "Safari explorer bag", rows: ["..CC..", ".C..C.", "CYYYYC", "CYCCYC", "CYAAYC", "INNNNI", "INNNNI", "CCCCCC"] }
 };
 
@@ -1438,7 +1438,7 @@ const SF_ART: ThemeArtPack = {
   shelf: { nameKo: "양자 칩", nameEn: "Quantum chip", rows: ["C.C.C", "CTGTC", "CGAGC", "C.C.C"] },
   frame: { nameKo: "안드로이드 설계도", nameEn: "Android blueprint", rows: ["CCCCCC", "CTTTTC", "CTCCTC", "CTWWTC", "CTCCTC", "CTTTTC", "CCCCCC"] },
   clock: { nameKo: "디지털 펄스 시계", nameEn: "Digital pulse clock", rows: ["CCCC", "CTTC", "CGAC", "CCCC"] },
-  pet: { nameKo: "회로 여우로봇", nameEn: "Circuit fox robot", rows: ["C.C.C.", ".CTTI.", "CTWTWC", "CTAGTC", ".TTTT.", "CTGGTC", ".T..T.", "I....I"] },
+  pet: { nameKo: "회로 여우로봇", nameEn: "Circuit fox robot", rows: ["C.C.C.", ".CTTI.", "CTWTWC", "CTIGTC", ".TTTT.", "CTGGTC", ".T..T.", "I....I"] },
   floorObject: { nameKo: "고밀도 에너지셀", nameEn: "High-density energy cell", rows: ["..CC..", ".CTTC.", "CTGGTC", "CTGGTC", "CTAGTC", "CIIIIC", "CIIIIC", "CCCCCC"] }
 };
 
@@ -1469,7 +1469,7 @@ const SPACE_ART: ThemeArtPack = {
   shelf: { nameKo: "접이식 인공위성", nameEn: "Folded satellite", rows: ["B.C.B", "BBCBB", "..A..", "..C.."] },
   frame: { nameKo: "붉은 행성 포스터", nameEn: "Red planet poster", rows: ["CCCCCC", "CIIIIC", "CIRRIC", "CRARRC", "CIRRIC", "CIIIIC", "CCCCCC"] },
   clock: { nameKo: "공전 궤도 시계", nameEn: "Orbit clock", rows: ["B..B", ".AAC", "BAAB", ".CC."] },
-  pet: { nameKo: "달토끼 탐사대원", nameEn: "Moon rabbit explorer", rows: ["W....W", "WB..BW", ".WBBW.", "WBBBBW", "WBWBBW", "WBAABW", ".WBBW.", ".B..B."] },
+  pet: { nameKo: "달토끼 탐사대원", nameEn: "Moon rabbit explorer", rows: ["W....W", "WB..BW", ".WBBW.", "WBBBBW", "WBWBBW", "WBBBBW", ".WBBW.", ".B..B."] },
   floorObject: { nameKo: "착륙선 모듈", nameEn: "Lander module", rows: ["..AA..", ".AWWA.", "AWWWWA", "ABBBBA", ".CCCC.", "..EE..", ".E..E.", "I....I"] }
 };
 
