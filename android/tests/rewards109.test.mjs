@@ -131,7 +131,8 @@ test("기본 사용 패턴에서 전체 수집은 12개월이 걸린다", () => 
 
   const collectionDays = completions / averageDailyCompletions;
   const collectionMonths = collectionDays / (365 / 12);
-  assert.equal(rewardableItemCount, 381);
-  assert.equal(completions, 2345);
-  assert.ok(Math.abs(collectionMonths - 12) < 0.02);
+  // 1.0.13 온천 테마 14종 추가로 전체 수집은 약 12.4개월이 된다.
+  assert.equal(rewardableItemCount, 395);
+  assert.equal(completions, 2429);
+  assert.ok(Math.abs(collectionMonths - 12.4) < 0.05);
 });

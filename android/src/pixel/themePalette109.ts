@@ -30,7 +30,9 @@ export const THEME_BACKGROUND_PALETTES = {
   music: { token: "w", hex: "#7466a5", nameKo: "리듬 바이올렛" },
   arcade: { token: "x", hex: "#3d202d", nameKo: "아케이드 블랙체리" },
   hanok: { token: "y", hex: "#c5a878", nameKo: "한지 황토" },
-  "night-city": { token: "z", hex: "#552858", nameKo: "야경 플럼" }
+  "night-city": { token: "z", hex: "#552858", nameKo: "야경 플럼" },
+  // 소문자 토큰이 소진되어 1.0.13부터는 미사용 대문자를 쓴다 (D F J Q U V X Z 가용).
+  onsen: { token: "Q", hex: "#88a898", nameKo: "온천 세이지" }
 } as const;
 
 export type ThemePaletteKey = keyof typeof THEME_BACKGROUND_PALETTES;

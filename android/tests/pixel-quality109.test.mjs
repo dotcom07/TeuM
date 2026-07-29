@@ -37,7 +37,8 @@ const PET_MOUTH_ROW_EXPECTATIONS = {
   "music-pet": [3, "TBAABT"],
   "arcade-pet": [3, "GPPPPG"],
   "hanok-pet": [5, "INRN.I"],
-  "night-city-pet": [3, "TPRP.."]
+  "night-city-pet": [3, "TPRP.."],
+  "onsen-pet": [2, "NCNSC."]
 };
 const YELLOW_BEAK_PETS = new Set([
   "aquarium-pet",

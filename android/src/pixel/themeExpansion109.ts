@@ -41,7 +41,8 @@ export const EXPANSION_THEME_META = [
   ["music", "음악실", "Music room"],
   ["arcade", "오락실", "Arcade"],
   ["hanok", "한옥", "Hanok"],
-  ["night-city", "밤도시", "Night city"]
+  ["night-city", "밤도시", "Night city"],
+  ["onsen", "온천", "Onsen"]
 ] as const;
 
 const THEMES: Theme109[] = [
@@ -366,6 +367,20 @@ const THEMES: Theme109[] = [
     petKind: "cat",
     petNameKo: "네온 검정냥이",
     petNameEn: "Neon black cat"
+  },
+  {
+    key: "onsen",
+    labelKo: "온천",
+    labelEn: "Onsen",
+    background: "Q",
+    primary: "N",
+    secondary: "E",
+    accent: "A",
+    surface: "W",
+    motif: [".1.1.", "1.1.1", ".....", ".222.", "22222"],
+    petKind: "bear",
+    petNameKo: "수건 카피바라",
+    petNameEn: "Towel capybara"
   }
 ];
 
@@ -1502,9 +1517,14 @@ function item(
     frames: { base: rows, active: rows },
     acquire: { type: "gift" },
     themeKey: theme.key,
-    addedIn: "1.0.9"
+    addedIn: THEME_ADDED_IN[theme.key] ?? "1.0.9"
   };
 }
+
+/** 1.0.9 이후 추가된 테마의 도입 버전 */
+const THEME_ADDED_IN: Record<string, string> = {
+  onsen: "1.0.13"
+};
 
 function themeItems(theme: Theme109): PixelItem[] {
   const custom = CUSTOM_THEME_ART[theme.key];

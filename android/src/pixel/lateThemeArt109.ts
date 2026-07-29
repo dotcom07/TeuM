@@ -890,7 +890,148 @@ const NIGHT_CITY_ART: LateThemeArtPack = {
   floorObject: asset("도시 배달가방", "City delivery bag", ["..TT..", ".T..T.", "TBBBBT", "TBTTBT", "TBASBT", "TBBBBT", "TTTTTT", ".PPPP."])
 };
 
+// 1.0.13 온천 테마 — PIXEL-THEME-ONSEN-PLAN.md 기준.
+// 팔레트: Q(온천 세이지 벽) · N(히노키) · E(김·안개) · K(물) · W(우유병·수건·설산) · A(바가지·초롱).
+const ONSEN_ART: LateThemeArtPack = {
+  wallpaper: asset(
+    "안개 낀 욕장 벽지",
+    "Misty bathhouse wallpaper",
+    compose(64, 31, "Q", [
+      { x: 0, y: 0, rows: ["N".repeat(64)] },
+      // 허리 타일 밴드 — 책상 위로 보이는 하단 벽
+      { x: 0, y: 19, rows: ["H".repeat(64), "E".repeat(64), "E".repeat(64), "K".repeat(64), "E".repeat(64)] },
+      // 남색 노렌 — 선반(x26~38)과 액자(x44~) 사이 상단 벽에 늘어뜨린다
+      {
+        x: 39,
+        y: 1,
+        rows: ["IIIII", "IIIII", "II.II", "II.II", "IW.II", "II.II", "II.II"]
+      },
+      // 김 두 가닥 — 창문과 모니터 사이 좁은 벽
+      { x: 22, y: 11, rows: ["H.", "H.", ".H", ".H", "H."] },
+      { x: 23, y: 17, rows: [".H", "H.", "H."] },
+      // 대나무 스텐실
+      { x: 50, y: 12, rows: ["T.T", "T.T", "C.C", "T.T", "T.T", "C.C", "T.T"] }
+    ])
+  ),
+  flooring: asset(
+    "히노키 욕장 바닥",
+    "Hinoki bath floor",
+    compose(64, 9, "N", [
+      { x: 0, y: 0, rows: ["C".repeat(64)] },
+      { x: 0, y: 3, rows: ["R".repeat(64)] },
+      { x: 0, y: 6, rows: ["R".repeat(64)] },
+      { x: 20, y: 1, rows: ["R", "R"] },
+      { x: 44, y: 4, rows: ["R", "R"] },
+      // 흰 발수건 매트
+      { x: 8, y: 4, rows: ["WWWWWWWWWW", "EWWEWWEWWE", "WWWWWWWWWW"] },
+      { x: 0, y: 8, rows: ["C".repeat(64)] }
+    ])
+  ),
+  window: asset("김 서린 창", "Steamed-up window", [
+    "NNNNNNNNNNNNNNNN",
+    "NEEEEEEEEEEEEEEN",
+    "NEEEEEEEEEEEEEEN",
+    "NEEKKEEEEEEEEEEN",
+    "NEKKKKEEEEEEEEEN",
+    "NEEKKEEEEEEEEEEN",
+    "NEEEEEEEKKKEEEEN",
+    "NEEEEEEKKKKKEEEN",
+    "NEEEEEEEKKKEEEEN",
+    "NEEEEEEEEEEEEEEN",
+    "NNNNNNNNNNNNNNNN",
+    "..NN........NN.."
+  ]),
+  desk: asset(
+    "히노키 평상 책상",
+    "Hinoki bench desk",
+    compose(56, 8, ".", [
+      { x: 1, y: 0, rows: ["H".repeat(54)] },
+      { x: 0, y: 1, rows: ["N".repeat(56), "N".repeat(56)] },
+      { x: 3, y: 3, rows: ["C".repeat(50)] },
+      { x: 4, y: 4, rows: ["NNN", "NCN", "NCN", "NNN"] },
+      { x: 49, y: 4, rows: ["NNN", "NCN", "NCN", "NNN"] }
+    ])
+  ),
+  monitor: asset("탕 안내판 모니터", "Bath-sign monitor", [
+    ".NNNNNNNNNNNN.",
+    "NIIIIIIIIIIIIN",
+    "NIIIEIEIEIIIIN",
+    "NIIIEIEIEIIIIN",
+    "NIIEIIIIIEIIIN",
+    "NIIIEEEEEIIIIN",
+    "NIIIIIIIIIIIIN",
+    ".NNNNNNNNNNNN.",
+    "......NN......",
+    "....NNNNNN...."
+  ]),
+  mug: asset("목욕탕 우유병", "Bathhouse milk bottle", [
+    "..KK..",
+    "..WW..",
+    ".WWWW.",
+    ".WHWW.",
+    ".WWWW.",
+    ".WWWW."
+  ]),
+  ornament: asset("대나무 화분", "Bamboo planter", [
+    ".T..T..",
+    ".TC.TT.",
+    ".T..T..",
+    ".TT.TC.",
+    ".T..T..",
+    ".NNNNN.",
+    ".NNNNN.",
+    "..NNN.."
+  ]),
+  lamp: asset("종이 초롱 스탠드", "Paper-lantern lamp", [
+    "..C..",
+    ".EEE.",
+    "EAAAE",
+    "EAAAE",
+    ".EEE.",
+    "..C..",
+    "..C..",
+    "..C..",
+    "..C..",
+    "..C..",
+    ".CCC.",
+    "NNNNN"
+  ]),
+  mat: asset("대나무 발 매트", "Bamboo-blind mat", ["TTTTTTTT", "NNCNNCNN", "TTTTTTTT"]),
+  shelf: asset("노란 바가지와 수건", "Yellow basin and towel", [".AAA.", "AAAAA", "WWWWW", "CCCCC"]),
+  frame: asset("후지산 벽화", "Fuji mural", [
+    "CCCCCC",
+    "CKKKKC",
+    "CKWWKC",
+    "CIWWIC",
+    "CIIIIC",
+    "CIIIIC",
+    "CCCCCC"
+  ]),
+  clock: asset("탕 마크 시계", "Bath-mark clock", [".NN.", "NWWN", "NWCN", ".NN."]),
+  pet: asset("수건 카피바라", "Towel capybara", [
+    "WWWW..",
+    "NNNNC.",
+    "NCNSC.",
+    "ENNNNN",
+    "NNNNNN",
+    "NNNNNN",
+    "NNNNNN",
+    ".N..N."
+  ]),
+  floorObject: asset("나무 목욕통", "Wooden bath tub", [
+    ".E..E.",
+    "..E...",
+    "CKKKKC",
+    "CNNNNC",
+    "CNNNNC",
+    "CNNNNC",
+    "CNNNNC",
+    ".NNNN."
+  ])
+};
+
 export const LATE_THEME_ART_109: Record<string, LateThemeArtPack> = {
+  onsen: ONSEN_ART,
   christmas: CHRISTMAS_ART,
   sky: SKY_ART,
   fantasy: FANTASY_ART,

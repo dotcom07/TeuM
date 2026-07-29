@@ -1,0 +1,222 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1298" height="1158" viewBox="0 0 1298 1158">
+    <rect width="100%" height="100%" fill="#21242e"/>
+    <text x="28" y="42" font-family="Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff">TEUM 1.0.13 · THEME BACKGROUND PALETTES</text>
+    <text x="28" y="72" font-family="Arial, sans-serif" font-size="16" fill="#c0d5e6">27 UNIQUE THEME COLORS · 검정/흰색 대비칩 포함</text>
+
+      <g>
+        <rect x="28" y="94" width="300" height="136" rx="5" fill="#c8c2dc" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="44" y="110" width="34" height="34" fill="#21242e"/>
+        <rect x="86" y="110" width="34" height="34" fill="#ffffff"/>
+        <text x="44" y="176" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">cat · a</text>
+        <text x="44" y="202" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">라일락 그레이</text>
+        <text x="218" y="202" font-family="monospace" font-size="15" fill="#21242e">#C8C2DC</text>
+      </g>
+      <g>
+        <rect x="342" y="94" width="300" height="136" rx="5" fill="#89d8cf" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="358" y="110" width="34" height="34" fill="#21242e"/>
+        <rect x="400" y="110" width="34" height="34" fill="#ffffff"/>
+        <text x="358" y="176" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">summer · b</text>
+        <text x="358" y="202" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">청량 민트아쿠아</text>
+        <text x="532" y="202" font-family="monospace" font-size="15" fill="#21242e">#89D8CF</text>
+      </g>
+      <g>
+        <rect x="656" y="94" width="300" height="136" rx="5" fill="#cf6f3f" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="672" y="110" width="34" height="34" fill="#21242e"/>
+        <rect x="714" y="110" width="34" height="34" fill="#ffffff"/>
+        <text x="672" y="176" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">autumn · c</text>
+        <text x="672" y="202" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">단풍 번트오렌지</text>
+        <text x="846" y="202" font-family="monospace" font-size="15" fill="#21242e">#CF6F3F</text>
+      </g>
+      <g>
+        <rect x="970" y="94" width="300" height="136" rx="5" fill="#f3c7d2" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="986" y="110" width="34" height="34" fill="#21242e"/>
+        <rect x="1028" y="110" width="34" height="34" fill="#ffffff"/>
+        <text x="986" y="176" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">spring · d</text>
+        <text x="986" y="202" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">벚꽃 블러시</text>
+        <text x="1160" y="202" font-family="monospace" font-size="15" fill="#21242e">#F3C7D2</text>
+      </g>
+      <g>
+        <rect x="28" y="244" width="300" height="136" rx="5" fill="#49698f" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="44" y="260" width="34" height="34" fill="#21242e"/>
+        <rect x="86" y="260" width="34" height="34" fill="#ffffff"/>
+        <text x="44" y="326" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">winter · e</text>
+        <text x="44" y="352" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">설야 스틸블루</text>
+        <text x="218" y="352" font-family="monospace" font-size="15" fill="#ffffff">#49698F</text>
+      </g>
+      <g>
+        <rect x="342" y="244" width="300" height="136" rx="5" fill="#f1dfc3" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="358" y="260" width="34" height="34" fill="#21242e"/>
+        <rect x="400" y="260" width="34" height="34" fill="#ffffff"/>
+        <text x="358" y="326" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">calico · f</text>
+        <text x="358" y="352" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">삼색 크림</text>
+        <text x="532" y="352" font-family="monospace" font-size="15" fill="#21242e">#F1DFC3</text>
+      </g>
+      <g>
+        <rect x="656" y="244" width="300" height="136" rx="5" fill="#3b9fc1" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="672" y="260" width="34" height="34" fill="#21242e"/>
+        <rect x="714" y="260" width="34" height="34" fill="#ffffff"/>
+        <text x="672" y="326" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">aquarium · g</text>
+        <text x="672" y="352" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">라군 블루</text>
+        <text x="846" y="352" font-family="monospace" font-size="15" fill="#21242e">#3B9FC1</text>
+      </g>
+      <g>
+        <rect x="970" y="244" width="300" height="136" rx="5" fill="#15566a" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="986" y="260" width="34" height="34" fill="#21242e"/>
+        <rect x="1028" y="260" width="34" height="34" fill="#ffffff"/>
+        <text x="986" y="326" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">undersea · h</text>
+        <text x="986" y="352" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">심해 딥틸</text>
+        <text x="1160" y="352" font-family="monospace" font-size="15" fill="#ffffff">#15566A</text>
+      </g>
+      <g>
+        <rect x="28" y="394" width="300" height="136" rx="5" fill="#39457d" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="44" y="410" width="34" height="34" fill="#21242e"/>
+        <rect x="86" y="410" width="34" height="34" fill="#ffffff"/>
+        <text x="44" y="476" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">dream · i</text>
+        <text x="44" y="502" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">새벽 인디고</text>
+        <text x="218" y="502" font-family="monospace" font-size="15" fill="#ffffff">#39457D</text>
+      </g>
+      <g>
+        <rect x="342" y="394" width="300" height="136" rx="5" fill="#d8b72f" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="358" y="410" width="34" height="34" fill="#21242e"/>
+        <rect x="400" y="410" width="34" height="34" fill="#ffffff"/>
+        <text x="358" y="476" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">zoo · j</text>
+        <text x="358" y="502" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">사바나 옐로</text>
+        <text x="532" y="502" font-family="monospace" font-size="15" fill="#21242e">#D8B72F</text>
+      </g>
+      <g>
+        <rect x="656" y="394" width="300" height="136" rx="5" fill="#c8cccb" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="672" y="410" width="34" height="34" fill="#21242e"/>
+        <rect x="714" y="410" width="34" height="34" fill="#ffffff"/>
+        <text x="672" y="476" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">sf · k</text>
+        <text x="672" y="502" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">회로 실버그레이</text>
+        <text x="846" y="502" font-family="monospace" font-size="15" fill="#21242e">#C8CCCB</text>
+      </g>
+      <g>
+        <rect x="970" y="394" width="300" height="136" rx="5" fill="#101640" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="986" y="410" width="34" height="34" fill="#21242e"/>
+        <rect x="1028" y="410" width="34" height="34" fill="#ffffff"/>
+        <text x="986" y="476" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">space · l</text>
+        <text x="986" y="502" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">궤도 딥네이비</text>
+        <text x="1160" y="502" font-family="monospace" font-size="15" fill="#ffffff">#101640</text>
+      </g>
+      <g>
+        <rect x="28" y="544" width="300" height="136" rx="5" fill="#24563c" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="44" y="560" width="34" height="34" fill="#21242e"/>
+        <rect x="86" y="560" width="34" height="34" fill="#ffffff"/>
+        <text x="44" y="626" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">christmas · m</text>
+        <text x="44" y="652" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">전나무 딥그린</text>
+        <text x="218" y="652" font-family="monospace" font-size="15" fill="#ffffff">#24563C</text>
+      </g>
+      <g>
+        <rect x="342" y="544" width="300" height="136" rx="5" fill="#c9eaf8" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="358" y="560" width="34" height="34" fill="#21242e"/>
+        <rect x="400" y="560" width="34" height="34" fill="#ffffff"/>
+        <text x="358" y="626" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">sky · n</text>
+        <text x="358" y="652" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">맑은 하늘</text>
+        <text x="532" y="652" font-family="monospace" font-size="15" fill="#21242e">#C9EAF8</text>
+      </g>
+      <g>
+        <rect x="656" y="544" width="300" height="136" rx="5" fill="#16846d" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="672" y="560" width="34" height="34" fill="#21242e"/>
+        <rect x="714" y="560" width="34" height="34" fill="#ffffff"/>
+        <text x="672" y="626" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">fantasy · o</text>
+        <text x="672" y="652" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">마법 제이드</text>
+        <text x="846" y="652" font-family="monospace" font-size="15" fill="#ffffff">#16846D</text>
+      </g>
+      <g>
+        <rect x="970" y="544" width="300" height="136" rx="5" fill="#e3d98d" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="986" y="560" width="34" height="34" fill="#21242e"/>
+        <rect x="1028" y="560" width="34" height="34" fill="#ffffff"/>
+        <text x="986" y="626" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">school · p</text>
+        <text x="986" y="652" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">칠판 분필옐로</text>
+        <text x="1160" y="652" font-family="monospace" font-size="15" fill="#21242e">#E3D98D</text>
+      </g>
+      <g>
+        <rect x="28" y="694" width="300" height="136" rx="5" fill="#7398aa" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="44" y="710" width="34" height="34" fill="#21242e"/>
+        <rect x="86" y="710" width="34" height="34" fill="#ffffff"/>
+        <text x="44" y="776" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">rainy · q</text>
+        <text x="44" y="802" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">장마 스톰블루</text>
+        <text x="218" y="802" font-family="monospace" font-size="15" fill="#21242e">#7398AA</text>
+      </g>
+      <g>
+        <rect x="342" y="694" width="300" height="136" rx="5" fill="#704a3f" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="358" y="710" width="34" height="34" fill="#21242e"/>
+        <rect x="400" y="710" width="34" height="34" fill="#ffffff"/>
+        <text x="358" y="776" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">library · r</text>
+        <text x="358" y="802" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">서가 마호가니</text>
+        <text x="532" y="802" font-family="monospace" font-size="15" fill="#ffffff">#704A3F</text>
+      </g>
+      <g>
+        <rect x="656" y="694" width="300" height="136" rx="5" fill="#ad7b60" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="672" y="710" width="34" height="34" fill="#21242e"/>
+        <rect x="714" y="710" width="34" height="34" fill="#ffffff"/>
+        <text x="672" y="776" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">cafe · s</text>
+        <text x="672" y="802" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">로스팅 모카</text>
+        <text x="846" y="802" font-family="monospace" font-size="15" fill="#21242e">#AD7B60</text>
+      </g>
+      <g>
+        <rect x="970" y="694" width="300" height="136" rx="5" fill="#f2aa97" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="986" y="710" width="34" height="34" fill="#21242e"/>
+        <rect x="1028" y="710" width="34" height="34" fill="#ffffff"/>
+        <text x="986" y="776" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">bakery · t</text>
+        <text x="986" y="802" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">구운 코랄피치</text>
+        <text x="1160" y="802" font-family="monospace" font-size="15" fill="#21242e">#F2AA97</text>
+      </g>
+      <g>
+        <rect x="28" y="844" width="300" height="136" rx="5" fill="#6b6335" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="44" y="860" width="34" height="34" fill="#21242e"/>
+        <rect x="86" y="860" width="34" height="34" fill="#ffffff"/>
+        <text x="44" y="926" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">camping · u</text>
+        <text x="44" y="952" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">캠프 올리브</text>
+        <text x="218" y="952" font-family="monospace" font-size="15" fill="#ffffff">#6B6335</text>
+      </g>
+      <g>
+        <rect x="342" y="844" width="300" height="136" rx="5" fill="#b8d49b" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="358" y="860" width="34" height="34" fill="#21242e"/>
+        <rect x="400" y="860" width="34" height="34" fill="#ffffff"/>
+        <text x="358" y="926" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">greenhouse · v</text>
+        <text x="358" y="952" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">새잎 세이지</text>
+        <text x="532" y="952" font-family="monospace" font-size="15" fill="#21242e">#B8D49B</text>
+      </g>
+      <g>
+        <rect x="656" y="844" width="300" height="136" rx="5" fill="#7466a5" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="672" y="860" width="34" height="34" fill="#21242e"/>
+        <rect x="714" y="860" width="34" height="34" fill="#ffffff"/>
+        <text x="672" y="926" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">music · w</text>
+        <text x="672" y="952" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">리듬 바이올렛</text>
+        <text x="846" y="952" font-family="monospace" font-size="15" fill="#ffffff">#7466A5</text>
+      </g>
+      <g>
+        <rect x="970" y="844" width="300" height="136" rx="5" fill="#3d202d" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="986" y="860" width="34" height="34" fill="#21242e"/>
+        <rect x="1028" y="860" width="34" height="34" fill="#ffffff"/>
+        <text x="986" y="926" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">arcade · x</text>
+        <text x="986" y="952" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">아케이드 블랙체리</text>
+        <text x="1160" y="952" font-family="monospace" font-size="15" fill="#ffffff">#3D202D</text>
+      </g>
+      <g>
+        <rect x="28" y="994" width="300" height="136" rx="5" fill="#c5a878" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="44" y="1010" width="34" height="34" fill="#21242e"/>
+        <rect x="86" y="1010" width="34" height="34" fill="#ffffff"/>
+        <text x="44" y="1076" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">hanok · y</text>
+        <text x="44" y="1102" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">한지 황토</text>
+        <text x="218" y="1102" font-family="monospace" font-size="15" fill="#21242e">#C5A878</text>
+      </g>
+      <g>
+        <rect x="342" y="994" width="300" height="136" rx="5" fill="#552858" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="358" y="1010" width="34" height="34" fill="#21242e"/>
+        <rect x="400" y="1010" width="34" height="34" fill="#ffffff"/>
+        <text x="358" y="1076" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">night-city · z</text>
+        <text x="358" y="1102" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">야경 플럼</text>
+        <text x="532" y="1102" font-family="monospace" font-size="15" fill="#ffffff">#552858</text>
+      </g>
+      <g>
+        <rect x="656" y="994" width="300" height="136" rx="5" fill="#88a898" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="672" y="1010" width="34" height="34" fill="#21242e"/>
+        <rect x="714" y="1010" width="34" height="34" fill="#ffffff"/>
+        <text x="672" y="1076" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">onsen · Q</text>
+        <text x="672" y="1102" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">온천 세이지</text>
+        <text x="846" y="1102" font-family="monospace" font-size="15" fill="#21242e">#88A898</text>
+      </g>
+  </svg>
