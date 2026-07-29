@@ -1008,15 +1008,16 @@ const ONSEN_ART: LateThemeArtPack = {
     "CCCCCC"
   ]),
   clock: asset("탕 마크 시계", "Bath-mark clock", [".NN.", "NWWN", "NWCN", ".NN."]),
+  // 몸통은 O(오커) — 히노키 책상(N)과 한 덩어리로 보이지 않게 분리한다.
   pet: asset("수건 카피바라", "Towel capybara", [
     "WWWW..",
-    "NNNNC.",
-    "NCNSC.",
-    "ENNNNN",
-    "NNNNNN",
-    "NNNNNN",
-    "NNNNNN",
-    ".N..N."
+    "OOOOO.",
+    "OCOSO.",
+    "EOOOOO",
+    "OOOOOO",
+    "OOOOOO",
+    "OOOOOO",
+    ".O..O."
   ]),
   floorObject: asset("나무 목욕통", "Wooden bath tub", [
     ".E..E.",
