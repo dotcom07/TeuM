@@ -8,6 +8,10 @@ test("semantic release tag generates an increasing Android version", () => {
     versionName: "1.0.10",
     versionCode: 1_000_010
   });
+  assert.deepEqual(releaseVersionFromTag("v1.0.12"), {
+    versionName: "1.0.12",
+    versionCode: 1_000_012
+  });
   assert.deepEqual(releaseVersionFromTag("v2.3.4"), {
     versionName: "2.3.4",
     versionCode: 2_003_004

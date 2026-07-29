@@ -4,9 +4,11 @@ import {
 import type { PixelItem, SlotId } from "./catalog";
 import type { DeskState } from "./deskState";
 
-export const GIFT_INTERVAL = 5;
+export const LEGACY_GIFT_INTERVAL = 5;
+export const GIFT_INTERVAL = 7;
 export const POINT_INTERVAL = 10;
 export const CHOICE_COST = 5;
+export const CHOICE_INTERVAL = POINT_INTERVAL * CHOICE_COST;
 
 const alwaysOwned = (item: PixelItem) =>
   item.acquire.type === "default" || item.acquire.type === "daily";
@@ -24,12 +26,22 @@ export function ownedItemsForSlot109(
   );
 }
 
-export function earnedGiftCount(cumulativeDone: number): number {
-  return Math.floor(Math.max(0, cumulativeDone) / GIFT_INTERVAL);
+export function earnedGiftCount(
+  cumulativeDone: number,
+  giftProgressOffset = 0
+): number {
+  return Math.floor(
+    (Math.max(0, cumulativeDone) + Math.max(0, giftProgressOffset)) /
+      GIFT_INTERVAL
+  );
 }
 
 export function pendingGiftCount(state: DeskState): number {
-  return Math.max(0, earnedGiftCount(state.cumulativeDone) - state.openedGiftCount);
+  return Math.max(
+    0,
+    earnedGiftCount(state.cumulativeDone, state.giftProgressOffset) -
+      state.openedGiftCount
+  );
 }
 
 export function earnedChoicePoints(cumulativeDone: number): number {
@@ -43,13 +55,26 @@ export function availableChoicePoints(state: DeskState): number {
   );
 }
 
-export function nextGiftProgress(cumulativeDone: number): number {
-  return Math.max(0, cumulativeDone) % GIFT_INTERVAL;
+export function availableItemChoices(state: DeskState): number {
+  return Math.floor(availableChoicePoints(state) / CHOICE_COST);
 }
 
-export function completionsUntilNextPoint(cumulativeDone: number): number {
-  const remainder = Math.max(0, cumulativeDone) % POINT_INTERVAL;
-  return remainder === 0 ? POINT_INTERVAL : POINT_INTERVAL - remainder;
+export function nextGiftProgress(state: DeskState): number {
+  return (
+    (Math.max(0, state.cumulativeDone) +
+      Math.max(0, state.giftProgressOffset)) %
+    GIFT_INTERVAL
+  );
+}
+
+export function completionsUntilNextGift(state: DeskState): number {
+  const remainder = nextGiftProgress(state);
+  return remainder === 0 ? GIFT_INTERVAL : GIFT_INTERVAL - remainder;
+}
+
+export function completionsUntilNextChoice(cumulativeDone: number): number {
+  const remainder = Math.max(0, cumulativeDone) % CHOICE_INTERVAL;
+  return remainder === 0 ? CHOICE_INTERVAL : CHOICE_INTERVAL - remainder;
 }
 
 export function completeBreakReward109(state: DeskState): DeskState {

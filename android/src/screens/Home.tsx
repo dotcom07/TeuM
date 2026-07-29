@@ -18,7 +18,7 @@ import PixelScene from "../pixel/PixelScene";
 import PixelSlotMeter from "../pixel/PixelSlotMeter";
 import type { DeskState } from "../pixel/deskState";
 import {
-  availableChoicePoints,
+  availableItemChoices,
   GIFT_INTERVAL,
   nextGiftProgress,
   pendingGiftCount
@@ -71,9 +71,9 @@ export default function Home({
       : 0;
 
   const workHours = `${fmtHM(settings.startMin)}–${fmtHM(settings.endMin)}`;
-  const giftProgress = nextGiftProgress(desk.cumulativeDone);
+  const giftProgress = nextGiftProgress(desk);
   const waitingGifts = pendingGiftCount(desk);
-  const choicePoints = availableChoicePoints(desk);
+  const itemChoices = availableItemChoices(desk);
 
   const sceneLabel =
     doneToday != null && doneToday > 0
@@ -179,8 +179,11 @@ export default function Home({
           </View>
           <View style={styles.rewardDivider} />
           <View style={styles.rewardBlock}>
-            <Text style={styles.rewardLabel}>{tr("선택 포인트", "Choice points")}</Text>
-            <Text style={styles.rewardValue}>{choicePoints}P</Text>
+            <Text style={styles.rewardLabel}>{tr("아이템 선택권", "Item choices")}</Text>
+            <Text style={styles.rewardValue}>
+              {itemChoices}
+              {tr("개", "")}
+            </Text>
           </View>
         </View>
         <View style={styles.rewardMeter} accessibilityElementsHidden>

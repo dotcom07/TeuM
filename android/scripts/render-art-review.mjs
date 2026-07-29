@@ -245,7 +245,7 @@ function petBoard() {
           item.acquire.type === "milestone"
             ? `누적 ${item.acquire.at}회`
             : item.acquire.type === "gift"
-              ? "선물상자 또는 5P"
+              ? "선물상자 또는 선택권"
               : "기본 지급"
         }</text>
       </g>`;

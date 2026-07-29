@@ -17,8 +17,9 @@ import PixelScene from "../pixel/PixelScene";
 import { EXPANSION_THEME_META } from "../pixel/themeExpansion109";
 import {
   availableChoicePoints,
+  availableItemChoices,
   CHOICE_COST,
-  completionsUntilNextPoint,
+  completionsUntilNextChoice,
   isItemOwned,
   ownedItemsForSlot109
 } from "../pixel/rewards109";
@@ -150,6 +151,7 @@ export default function Desk({
   const activeCollectionOwned =
     activeCollectionTheme?.items.filter((item) => isItemOwned(desk, item)).length ?? 0;
   const choicePoints = availableChoicePoints(desk);
+  const itemChoices = availableItemChoices(desk);
 
   const summary =
     doneToday != null && doneToday > 0
@@ -277,9 +279,12 @@ export default function Desk({
         {collectionOpen && (
           <View style={styles.collectionThemes}>
             <View style={styles.pointsBar}>
-              <Text style={styles.pointsLabel}>{tr("선택 포인트", "Choice points")}</Text>
-              <Text style={styles.pointsValue}>{choicePoints}P</Text>
-              <Text style={styles.pointsCost}>{tr("확정 획득 5P", "Choose for 5P")}</Text>
+              <Text style={styles.pointsLabel}>{tr("아이템 선택권", "Item choices")}</Text>
+              <Text style={styles.pointsValue}>
+                {itemChoices}
+                {tr("개", "")}
+              </Text>
+              <Text style={styles.pointsCost}>{tr("원하는 아이템 선택", "Choose any item")}</Text>
             </View>
             <ScrollView
               horizontal
@@ -324,8 +329,8 @@ export default function Desk({
                           owned
                             ? itemName
                             : tr(
-                                `${itemName}, 아직 모으지 못함. 5포인트로 확정 획득`,
-                                `${itemName}, not collected. Choose for 5 points`
+                                `${itemName}, 아직 모으지 못함. 아이템 선택권으로 획득`,
+                                `${itemName}, not collected. Get with an item choice`
                               )
                         }
                         style={({ pressed }) => [
@@ -434,13 +439,13 @@ export default function Desk({
             </View>
             <Text style={styles.purchaseBalance}>
               {tr(
-                `보유 ${choicePoints}P · 필요 ${CHOICE_COST}P`,
-                `${choicePoints}P available · ${CHOICE_COST}P needed`
+                `아이템 선택권 ${itemChoices}개 보유`,
+                `${itemChoices} item choice${itemChoices === 1 ? "" : "s"} available`
               )}
             </Text>
             {choicePoints >= CHOICE_COST ? (
               <AmberButton
-                label={tr("5P로 확정 획득", "Choose for 5P")}
+                label={tr("아이템 선택권 사용", "Use item choice")}
                 onPress={() => {
                   if (purchaseCandidate && onChooseItem(purchaseCandidate.id)) {
                     setPurchaseCandidate(null);
@@ -450,8 +455,8 @@ export default function Desk({
             ) : (
               <Text style={styles.purchaseHint}>
                 {tr(
-                  `다음 1P까지 ${completionsUntilNextPoint(desk.cumulativeDone)}번 남았어요.`,
-                  `${completionsUntilNextPoint(desk.cumulativeDone)} completions until the next 1P.`
+                  `다음 아이템 선택권까지 ${completionsUntilNextChoice(desk.cumulativeDone)}번 남았어요.`,
+                  `${completionsUntilNextChoice(desk.cumulativeDone)} completions until the next item choice.`
                 )}
               </Text>
             )}

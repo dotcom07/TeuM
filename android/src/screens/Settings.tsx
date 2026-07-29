@@ -321,7 +321,7 @@ export default function SettingsScreen({
             accessibilityRole="button"
             style={styles.debugButton}
           >
-            <Text style={styles.debugButtonText}>{tr("선택 포인트 5P 추가", "Add 5 choice points")}</Text>
+            <Text style={styles.debugButtonText}>{tr("아이템 선택권 1개 추가", "Add one item choice")}</Text>
           </Pressable>
           <View style={styles.debugButtonGap} />
           <Pressable

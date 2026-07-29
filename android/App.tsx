@@ -47,8 +47,11 @@ import { ITEM_CATALOG } from "./src/pixel/catalog";
 import type { PixelItem, SlotId } from "./src/pixel/catalog";
 import { DeskState, EMPTY_DESK, loadDeskState, saveDeskState } from "./src/pixel/deskState";
 import {
+  CHOICE_INTERVAL,
   chooseItem109,
+  completionsUntilNextGift,
   completeBreakReward109,
+  earnedGiftCount,
   openGift109,
   pendingGiftCount
 } from "./src/pixel/rewards109";
@@ -138,7 +141,7 @@ function AppContent() {
       commitDesk(result.state);
       showToastRef.current?.(
         languageRef.current === "ko"
-          ? `${result.item.nameKo}을(를) 확정 획득했어요.`
+          ? `아이템 선택권으로 ${result.item.nameKo}을(를) 획득했어요.`
           : `You chose ${result.item.nameEn}.`
       );
       return true;
@@ -160,21 +163,32 @@ function AppContent() {
 
   const debugAddGift = useCallback(() => {
     const current = deskRef.current;
-    const nextGiftAt = (Math.floor(current.cumulativeDone / 5) + 1) * 5;
+    const nextGiftAt =
+      current.cumulativeDone + completionsUntilNextGift(current);
     commitDesk({ ...current, cumulativeDone: nextGiftAt });
   }, [commitDesk]);
 
   const debugAddChoicePoints = useCallback(() => {
     const current = deskRef.current;
+    const cumulativeDone = current.cumulativeDone + CHOICE_INTERVAL;
+    const earnedGiftsBefore = earnedGiftCount(
+      current.cumulativeDone,
+      current.giftProgressOffset
+    );
+    const earnedGiftsAfter = earnedGiftCount(
+      cumulativeDone,
+      current.giftProgressOffset
+    );
     commitDesk({
       ...current,
-      cumulativeDone: current.cumulativeDone + 50,
-      openedGiftCount: current.openedGiftCount + 10
+      cumulativeDone,
+      openedGiftCount:
+        current.openedGiftCount + earnedGiftsAfter - earnedGiftsBefore
     });
     showToastRef.current?.(
       languageRef.current === "ko"
-        ? "개발 테스트용 선택 포인트 5P를 추가했어요."
-        : "Added 5 choice points for developer testing."
+        ? "개발 테스트용 아이템 선택권 1개를 추가했어요."
+        : "Added one item choice for developer testing."
     );
   }, [commitDesk]);
 
