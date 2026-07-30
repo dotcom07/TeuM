@@ -3,7 +3,7 @@
     "name": "TeuM",
     "slug": "teum",
     "scheme": "teum",
-    "version": "1.0.12",
+    "version": "1.0.13",
     "icon": "./assets/teum-app-icon-512.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
