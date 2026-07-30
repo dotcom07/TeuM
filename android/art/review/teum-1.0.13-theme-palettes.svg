@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1298" height="1158" viewBox="0 0 1298 1158">
+<svg xmlns="http://www.w3.org/2000/svg" width="1298" height="1308" viewBox="0 0 1298 1308">
     <rect width="100%" height="100%" fill="#21242e"/>
     <text x="28" y="42" font-family="Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff">TEUM 1.0.13 · THEME BACKGROUND PALETTES</text>
-    <text x="28" y="72" font-family="Arial, sans-serif" font-size="16" fill="#c0d5e6">27 UNIQUE THEME COLORS · 검정/흰색 대비칩 포함</text>
+    <text x="28" y="72" font-family="Arial, sans-serif" font-size="16" fill="#c0d5e6">29 UNIQUE THEME COLORS · 검정/흰색 대비칩 포함</text>
 
       <g>
         <rect x="28" y="94" width="300" height="136" rx="5" fill="#c8c2dc" stroke="#d7e9ff" stroke-width="3"/>
@@ -218,5 +218,21 @@
         <text x="672" y="1076" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">onsen · Q</text>
         <text x="672" y="1102" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">온천 세이지</text>
         <text x="846" y="1102" font-family="monospace" font-size="15" fill="#21242e">#88A898</text>
+      </g>
+      <g>
+        <rect x="970" y="994" width="300" height="136" rx="5" fill="#8fc4d6" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="986" y="1010" width="34" height="34" fill="#21242e"/>
+        <rect x="1028" y="1010" width="34" height="34" fill="#ffffff"/>
+        <text x="986" y="1076" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#21242e">laundry · U</text>
+        <text x="986" y="1102" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#21242e">세탁 파우더블루</text>
+        <text x="1160" y="1102" font-family="monospace" font-size="15" fill="#21242e">#8FC4D6</text>
+      </g>
+      <g>
+        <rect x="28" y="1144" width="300" height="136" rx="5" fill="#6a3b52" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="44" y="1160" width="34" height="34" fill="#21242e"/>
+        <rect x="86" y="1160" width="34" height="34" fill="#ffffff"/>
+        <text x="44" y="1226" font-family="Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff">halloween · X</text>
+        <text x="44" y="1252" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#ffffff">마녀 자두빛</text>
+        <text x="218" y="1252" font-family="monospace" font-size="15" fill="#ffffff">#6A3B52</text>
       </g>
   </svg>

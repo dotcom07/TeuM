@@ -1031,8 +1031,288 @@ const ONSEN_ART: LateThemeArtPack = {
   ])
 };
 
+// 1.0.13 코인 런드리 테마 — 자취방 옆 세탁방의 리셋 감성.
+// 팔레트: U(세탁 파우더블루 벽) · W(세탁기·거품) · I(스틸) · K(물·세제) · E(타일) · A(러버덕·동전).
+const LAUNDRY_ART: LateThemeArtPack = {
+  wallpaper: asset(
+    "비눗방울 타일 벽지",
+    "Soap-bubble tile wallpaper",
+    compose(64, 31, "U", [
+      { x: 0, y: 0, rows: ["W".repeat(64)] },
+      // 옷걸이에 걸린 줄무늬 수건 — 선반과 액자 사이 상단 벽
+      { x: 39, y: 1, rows: ["..C..", ".CCC.", "WWWWW", "WWWWW", "KKKKK", "WWWWW"] },
+      // 떠다니는 비눗방울들
+      { x: 1, y: 2, rows: [".WW.", "W..H", "W..W", ".WW."] },
+      { x: 22, y: 3, rows: ["WW", "WH"] },
+      { x: 21, y: 6, rows: ["WW", "HW"] },
+      { x: 22, y: 12, rows: ["WW", "HW"] },
+      { x: 50, y: 13, rows: ["WW.", "WW."] },
+      { x: 51, y: 16, rows: [".WW", ".WW"] },
+      // 욕실 타일 밴드 — 파랑 보더와 체커 줄
+      {
+        x: 0,
+        y: 19,
+        rows: ["K".repeat(64), "E".repeat(64), "E".repeat(64), "KE".repeat(32), "E".repeat(64)]
+      }
+    ])
+  ),
+  flooring: asset(
+    "물빛 타일 바닥",
+    "Water-tile floor",
+    compose(64, 9, "E", [
+      { x: 0, y: 0, rows: ["C".repeat(64)] },
+      { x: 0, y: 3, rows: ["W".repeat(64)] },
+      { x: 0, y: 6, rows: ["W".repeat(64)] },
+      { x: 20, y: 1, rows: ["W", "W"] },
+      { x: 44, y: 4, rows: ["W", "W"] },
+      { x: 10, y: 7, rows: ["H"] },
+      { x: 50, y: 2, rows: ["H"] },
+      { x: 0, y: 8, rows: ["C".repeat(64)] }
+    ])
+  ),
+  window: asset("빨랫줄 창문", "Clothesline window", [
+    "IIIIIIIIIIIIIIII",
+    "IKKKKKKKKKKKKKKI",
+    "ICCCCCCCCCCCCCCI",
+    "IKWWKTTKSSKKKKKI",
+    "IKWWKTTKSSKKKKKI",
+    "IKKKKKKKKKKKKKKI",
+    "IKKKKKKKKKWWKKKI",
+    "IKKKKKKKKWWWWKKI",
+    "IKKKKKKKKKKKKKKI",
+    "IKKKKKKKKKKKKKKI",
+    "IIIIIIIIIIIIIIII",
+    "..II........II.."
+  ]),
+  desk: asset(
+    "스틸 접이 테이블",
+    "Steel folding table",
+    compose(56, 8, ".", [
+      { x: 1, y: 0, rows: ["H".repeat(54)] },
+      { x: 0, y: 1, rows: ["I".repeat(56), "I".repeat(56)] },
+      { x: 3, y: 3, rows: ["C".repeat(50)] },
+      { x: 4, y: 4, rows: ["III", "ICI", "ICI", "III"] },
+      { x: 49, y: 4, rows: ["III", "ICI", "ICI", "III"] }
+    ])
+  ),
+  monitor: asset("드럼 세탁기 모니터", "Drum-washer monitor", [
+    ".WWWWWWWWWWWW.",
+    "WEEEEEEEEEEKAW",
+    "WWWIIIIIIWWWWW",
+    "WWIKWKWKKIWWWW",
+    "WWIKKKKKKIWWWW",
+    "WWIKWKKWKIWWWW",
+    "WWWIIIIIIWWWWW",
+    ".WWWWWWWWWWWW.",
+    "......CC......",
+    "....CCCCCC...."
+  ]),
+  mug: asset("계량컵 세제", "Detergent measuring cup", [
+    ".W.W..",
+    "WKKKW.",
+    "WKKKW.",
+    "WIIIW.",
+    "WWWWW."
+  ]),
+  ornament: asset("빨래 바구니", "Laundry basket", [
+    "..T.S..",
+    ".TT.SS.",
+    "PPPPPPP",
+    "PCPCPCP",
+    "PPPPPPP",
+    "PCPCPCP",
+    "PPPPPPP"
+  ]),
+  lamp: asset("형광등 스탠드", "Fluorescent stand", [
+    "WWWWW",
+    "HHHHH",
+    "..I..",
+    "..I..",
+    "..I..",
+    "..I..",
+    "..I..",
+    "..I..",
+    "..I..",
+    "..I..",
+    ".III.",
+    "IIIII"
+  ]),
+  mat: asset("파랑 체크 발매트", "Blue check foot mat", ["KWKWKWKW", "WKWKWKWK", "KWKWKWKW"]),
+  shelf: asset("세제 콤비", "Detergent duo", ["WW.WW", "II.TT", "II.TT", "CCCCC"]),
+  frame: asset("세탁 안내 액자", "Washing-guide frame", [
+    "CCCCCC",
+    "CWWWWC",
+    "CTTTTC",
+    "CWTTWC",
+    "CWTTWC",
+    "CCCCCC"
+  ]),
+  clock: asset("세탁 타이머", "Wash timer", [".CC.", "CWWC", "CWAC", ".CC."]),
+  // 눈 행은 y26(책상 상판 I 위), 부리 행은 y27(그림자 C 위)라 C 눈·S 부리가 배경과 분리된다.
+  pet: asset("비눗방울 오리", "Bubble duck", [
+    ".W....",
+    "..AA..",
+    ".AACA.",
+    "SSAAA.",
+    ".AAAAA",
+    ".AAAAA",
+    "..AAA.",
+    "..A.A."
+  ]),
+  floorObject: asset("거품 빨래통", "Sudsy wash bucket", [
+    ".W..W.",
+    "WWWWWW",
+    "CCCCCC",
+    "IIIIII",
+    "IIIIII",
+    "IIIIII",
+    "IIIIII",
+    ".IIII."
+  ])
+};
+
+// 1.0.13 할로윈 테마 — 크리스마스와 짝을 이루는 시즈널 세트.
+// 팔레트: X(마녀 자두빛 벽) · C(실루엣) · R(고택 나무) · S(호박) · M(거미줄·보라) · A(달·촛불).
+const HALLOWEEN_ART: LateThemeArtPack = {
+  wallpaper: asset(
+    "박쥐 나는 밤 벽지",
+    "Bat-flight night wallpaper",
+    compose(64, 31, "X", [
+      { x: 0, y: 0, rows: ["C".repeat(64)] },
+      // 보름달 — 선반과 액자 사이 상단 벽
+      { x: 39, y: 1, rows: [".AAA.", "AAAAA", "AAWAA", "AAAAA", ".AAA."] },
+      // 박쥐들 — 창문 위와 좁은 벽
+      { x: 9, y: 1, rows: ["C...C", "CCCCC"] },
+      { x: 21, y: 5, rows: ["C.C", "CCC"] },
+      { x: 22, y: 12, rows: ["C.C", "CCC"] },
+      // 대롱대롱 거미 — 오른쪽 상단 벽
+      { x: 51, y: 1, rows: ["M.", "M.", "M.", "CC", "CC"] },
+      // 반짝이 별 스텐실
+      { x: 50, y: 13, rows: [".W.", "WWW", ".W."] },
+      // 고택 웨인스코팅 밴드
+      {
+        x: 0,
+        y: 19,
+        rows: ["C".repeat(64), "R".repeat(64), "R".repeat(64), "R".repeat(64), "C".repeat(64)]
+      }
+    ])
+  ),
+  flooring: asset(
+    "삐걱대는 마루",
+    "Creaky plank floor",
+    compose(64, 9, "R", [
+      { x: 0, y: 0, rows: ["C".repeat(64)] },
+      { x: 0, y: 3, rows: ["C".repeat(64)] },
+      { x: 0, y: 6, rows: ["C".repeat(64)] },
+      { x: 14, y: 1, rows: ["C", "C"] },
+      { x: 38, y: 4, rows: ["C", "C"] },
+      { x: 52, y: 7, rows: ["C"] },
+      { x: 0, y: 8, rows: ["C".repeat(64)] }
+    ])
+  ),
+  window: asset("보름달 밤 창문", "Full-moon night window", [
+    "NNNNNNNNNNNNNNNN",
+    "NIIIIIIIIIIIIIIN",
+    "NIIAAAIIIIIIWIIN",
+    "NIAAAAAIIIIIIIIN",
+    "NIAAWAAIIIIIIIIN",
+    "NIIAAAIIICICIIIN",
+    "NIIIIIIIICCCIIIN",
+    "NIWIIIIIIIIIIIIN",
+    "NIIIWIIIIIIIIIIN",
+    "NIIIIIIIIIIIIIIN",
+    "NNNNNNNNNNNNNNNN",
+    "..NN........NN.."
+  ]),
+  desk: asset(
+    "고택 나무 책상",
+    "Old-manor wooden desk",
+    compose(56, 8, ".", [
+      { x: 1, y: 0, rows: ["H".repeat(54)] },
+      { x: 0, y: 1, rows: ["R".repeat(56), "R".repeat(56)] },
+      { x: 3, y: 3, rows: ["C".repeat(50)] },
+      { x: 4, y: 4, rows: ["RRR", "RCR", "RCR", "RRR"] },
+      { x: 49, y: 4, rows: ["RRR", "RCR", "RCR", "RRR"] }
+    ])
+  ),
+  monitor: asset("유령 마법서 모니터", "Ghost-grimoire monitor", [
+    ".MMMMMMMMMMMM.",
+    "MIIIIIIIIIIIIM",
+    "MIIIWWWIIIIIIM",
+    "MIIWWWWWIIIIIM",
+    "MIIWCWCWIIIIIM",
+    "MIIWWWWWIIIIIM",
+    "MIIWIWIWIIIIIM",
+    ".MMMMMMMMMMMM.",
+    "......MM......",
+    "....MMMMMM...."
+  ]),
+  mug: asset("초록 물약 병", "Green potion flask", [
+    ".T....",
+    "..EE..",
+    "..EE..",
+    ".ETTE.",
+    "ETTTTE",
+    ".EEEE."
+  ]),
+  ornament: asset("잭오랜턴", "Jack-o'-lantern", [
+    "...G...",
+    ".SSSSS.",
+    "SSCSCSS",
+    "SSSSSSS",
+    "SCAAACS",
+    ".SSSSS."
+  ]),
+  lamp: asset("촛불 스탠드", "Candle stand", [
+    "..A..",
+    "..A..",
+    ".WWW.",
+    ".WWW.",
+    ".WWW.",
+    "..M..",
+    "..M..",
+    "..M..",
+    "..M..",
+    "..M..",
+    ".MMM.",
+    "MMMMM"
+  ]),
+  mat: asset("캔디콘 매트", "Candy-corn mat", ["WWWWWWWW", "SSSSSSSS", "WWWWWWWW"]),
+  shelf: asset("물약병 선반", "Potion-bottle shelf", ["N.N.N", "T.G.M", "T.G.M", "CCCCC"]),
+  frame: asset("묘비 그림", "Tombstone picture", [
+    "CCCCCC",
+    "CMMMMC",
+    "CMWWMC",
+    "CMWWMC",
+    "CWWWWC",
+    "CCCCCC"
+  ]),
+  clock: asset("박쥐 시계", "Bat clock", ["C..C", "CCCC", "CWWC", ".CC."]),
+  // 눈 행은 y26(책상 상판 R 위)라 C 눈이 그림자 행(y27)과 겹치지 않는다.
+  pet: asset("꼬마 유령", "Little ghost", [
+    ".WWW..",
+    "WWWWW.",
+    "WCWCW.",
+    "WWWWW.",
+    "WWCWW.",
+    "WWWWW.",
+    "WWWWW.",
+    "W.W.W."
+  ]),
+  floorObject: asset("사탕 호박 바구니", "Candy pumpkin pail", [
+    ".WPT..",
+    ".SSSS.",
+    "SSSSSS",
+    "SCSSCS",
+    "SSCCSS",
+    ".SSSS."
+  ])
+};
+
 export const LATE_THEME_ART_109: Record<string, LateThemeArtPack> = {
   onsen: ONSEN_ART,
+  laundry: LAUNDRY_ART,
+  halloween: HALLOWEEN_ART,
   christmas: CHRISTMAS_ART,
   sky: SKY_ART,
   fantasy: FANTASY_ART,

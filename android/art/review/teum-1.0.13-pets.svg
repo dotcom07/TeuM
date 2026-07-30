@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1842" height="1680" viewBox="0 0 1842 1680" shape-rendering="crispEdges">
+<svg xmlns="http://www.w3.org/2000/svg" width="1842" height="1994" viewBox="0 0 1842 1994" shape-rendering="crispEdges">
     <rect width="100%" height="100%" fill="#21242e"/>
     <text x="28" y="42" font-family="Arial, sans-serif" font-size="30" font-weight="900" fill="#ffffff">TEUM 1.0.13 · ALL PETS</text>
-    <text x="28" y="72" font-family="Arial, sans-serif" font-size="16" fill="#c0d5e6">floor-left 슬롯 전체 · 29 PETS</text>
+    <text x="28" y="72" font-family="Arial, sans-serif" font-size="16" fill="#c0d5e6">floor-left 슬롯 전체 · 31 PETS</text>
 
       <g>
         <rect x="28" y="96" width="286" height="300" rx="5" fill="#f7f2e8" stroke="#d7e9ff" stroke-width="3"/>
@@ -234,5 +234,21 @@
         <text x="1242" y="1592" font-family="Arial, sans-serif" font-size="19" font-weight="900" fill="#21242e">수건 카피바라</text>
         <text x="1242" y="1619" font-family="Arial, sans-serif" font-size="13" fill="#60619c">onsen-pet · 6×8</text>
         <text x="1242" y="1640" font-family="Arial, sans-serif" font-size="12" fill="#86624b">선물상자 또는 선택권</text>
+      </g>
+      <g>
+        <rect x="1528" y="1352" width="286" height="300" rx="5" fill="#f7f2e8" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="1538" y="1362" width="266" height="200" fill="#c0d5e6"/>
+        <rect x="1625" y="1372" width="23" height="23" fill="#ffffff"/><rect x="1648" y="1395" width="23" height="23" fill="#ecab37"/><rect x="1671" y="1395" width="23" height="23" fill="#ecab37"/><rect x="1625" y="1418" width="23" height="23" fill="#ecab37"/><rect x="1648" y="1418" width="23" height="23" fill="#ecab37"/><rect x="1671" y="1418" width="23" height="23" fill="#21242e"/><rect x="1694" y="1418" width="23" height="23" fill="#ecab37"/><rect x="1602" y="1441" width="23" height="23" fill="#e2954f"/><rect x="1625" y="1441" width="23" height="23" fill="#e2954f"/><rect x="1648" y="1441" width="23" height="23" fill="#ecab37"/><rect x="1671" y="1441" width="23" height="23" fill="#ecab37"/><rect x="1694" y="1441" width="23" height="23" fill="#ecab37"/><rect x="1625" y="1464" width="23" height="23" fill="#ecab37"/><rect x="1648" y="1464" width="23" height="23" fill="#ecab37"/><rect x="1671" y="1464" width="23" height="23" fill="#ecab37"/><rect x="1694" y="1464" width="23" height="23" fill="#ecab37"/><rect x="1717" y="1464" width="23" height="23" fill="#ecab37"/><rect x="1625" y="1487" width="23" height="23" fill="#ecab37"/><rect x="1648" y="1487" width="23" height="23" fill="#ecab37"/><rect x="1671" y="1487" width="23" height="23" fill="#ecab37"/><rect x="1694" y="1487" width="23" height="23" fill="#ecab37"/><rect x="1717" y="1487" width="23" height="23" fill="#ecab37"/><rect x="1648" y="1510" width="23" height="23" fill="#ecab37"/><rect x="1671" y="1510" width="23" height="23" fill="#ecab37"/><rect x="1694" y="1510" width="23" height="23" fill="#ecab37"/><rect x="1648" y="1533" width="23" height="23" fill="#ecab37"/><rect x="1694" y="1533" width="23" height="23" fill="#ecab37"/>
+        <text x="1542" y="1592" font-family="Arial, sans-serif" font-size="19" font-weight="900" fill="#21242e">비눗방울 오리</text>
+        <text x="1542" y="1619" font-family="Arial, sans-serif" font-size="13" fill="#60619c">laundry-pet · 6×8</text>
+        <text x="1542" y="1640" font-family="Arial, sans-serif" font-size="12" fill="#86624b">선물상자 또는 선택권</text>
+      </g>
+      <g>
+        <rect x="28" y="1666" width="286" height="300" rx="5" fill="#f7f2e8" stroke="#d7e9ff" stroke-width="3"/>
+        <rect x="38" y="1676" width="266" height="200" fill="#c0d5e6"/>
+        <rect x="125" y="1686" width="23" height="23" fill="#ffffff"/><rect x="148" y="1686" width="23" height="23" fill="#ffffff"/><rect x="171" y="1686" width="23" height="23" fill="#ffffff"/><rect x="102" y="1709" width="23" height="23" fill="#ffffff"/><rect x="125" y="1709" width="23" height="23" fill="#ffffff"/><rect x="148" y="1709" width="23" height="23" fill="#ffffff"/><rect x="171" y="1709" width="23" height="23" fill="#ffffff"/><rect x="194" y="1709" width="23" height="23" fill="#ffffff"/><rect x="102" y="1732" width="23" height="23" fill="#ffffff"/><rect x="125" y="1732" width="23" height="23" fill="#21242e"/><rect x="148" y="1732" width="23" height="23" fill="#ffffff"/><rect x="171" y="1732" width="23" height="23" fill="#21242e"/><rect x="194" y="1732" width="23" height="23" fill="#ffffff"/><rect x="102" y="1755" width="23" height="23" fill="#ffffff"/><rect x="125" y="1755" width="23" height="23" fill="#ffffff"/><rect x="148" y="1755" width="23" height="23" fill="#ffffff"/><rect x="171" y="1755" width="23" height="23" fill="#ffffff"/><rect x="194" y="1755" width="23" height="23" fill="#ffffff"/><rect x="102" y="1778" width="23" height="23" fill="#ffffff"/><rect x="125" y="1778" width="23" height="23" fill="#ffffff"/><rect x="148" y="1778" width="23" height="23" fill="#21242e"/><rect x="171" y="1778" width="23" height="23" fill="#ffffff"/><rect x="194" y="1778" width="23" height="23" fill="#ffffff"/><rect x="102" y="1801" width="23" height="23" fill="#ffffff"/><rect x="125" y="1801" width="23" height="23" fill="#ffffff"/><rect x="148" y="1801" width="23" height="23" fill="#ffffff"/><rect x="171" y="1801" width="23" height="23" fill="#ffffff"/><rect x="194" y="1801" width="23" height="23" fill="#ffffff"/><rect x="102" y="1824" width="23" height="23" fill="#ffffff"/><rect x="125" y="1824" width="23" height="23" fill="#ffffff"/><rect x="148" y="1824" width="23" height="23" fill="#ffffff"/><rect x="171" y="1824" width="23" height="23" fill="#ffffff"/><rect x="194" y="1824" width="23" height="23" fill="#ffffff"/><rect x="102" y="1847" width="23" height="23" fill="#ffffff"/><rect x="148" y="1847" width="23" height="23" fill="#ffffff"/><rect x="194" y="1847" width="23" height="23" fill="#ffffff"/>
+        <text x="42" y="1906" font-family="Arial, sans-serif" font-size="19" font-weight="900" fill="#21242e">꼬마 유령</text>
+        <text x="42" y="1933" font-family="Arial, sans-serif" font-size="13" fill="#60619c">halloween-pet · 6×8</text>
+        <text x="42" y="1954" font-family="Arial, sans-serif" font-size="12" fill="#86624b">선물상자 또는 선택권</text>
       </g>
   </svg>

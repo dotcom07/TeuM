@@ -42,7 +42,9 @@ export const EXPANSION_THEME_META = [
   ["arcade", "오락실", "Arcade"],
   ["hanok", "한옥", "Hanok"],
   ["night-city", "밤도시", "Night city"],
-  ["onsen", "온천", "Onsen"]
+  ["onsen", "온천", "Onsen"],
+  ["laundry", "코인 런드리", "Laundry"],
+  ["halloween", "할로윈", "Halloween"]
 ] as const;
 
 const THEMES: Theme109[] = [
@@ -381,6 +383,34 @@ const THEMES: Theme109[] = [
     petKind: "bear",
     petNameKo: "수건 카피바라",
     petNameEn: "Towel capybara"
+  },
+  {
+    key: "laundry",
+    labelKo: "코인 런드리",
+    labelEn: "Laundry",
+    background: "U",
+    primary: "I",
+    secondary: "W",
+    accent: "K",
+    surface: "E",
+    motif: [".11..", "1..1.", ".11..", "...2.", "..2.2"],
+    petKind: "bluebird",
+    petNameKo: "비눗방울 오리",
+    petNameEn: "Bubble duck"
+  },
+  {
+    key: "halloween",
+    labelKo: "할로윈",
+    labelEn: "Halloween",
+    background: "X",
+    primary: "C",
+    secondary: "M",
+    accent: "S",
+    surface: "W",
+    motif: ["1...1", "11111", ".1.1.", "..2..", ".222."],
+    petKind: "ghost",
+    petNameKo: "꼬마 유령",
+    petNameEn: "Little ghost"
   }
 ];
 
@@ -1523,7 +1553,9 @@ function item(
 
 /** 1.0.9 이후 추가된 테마의 도입 버전 */
 const THEME_ADDED_IN: Record<string, string> = {
-  onsen: "1.0.13"
+  onsen: "1.0.13",
+  laundry: "1.0.13",
+  halloween: "1.0.13"
 };
 
 function themeItems(theme: Theme109): PixelItem[] {

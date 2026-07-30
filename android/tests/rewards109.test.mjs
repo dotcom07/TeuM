@@ -109,7 +109,7 @@ test("v2의 미개봉 상자와 5회 주기 진행률을 v3의 7회 주기에 �
   );
 });
 
-test("기본 사용 패턴에서 전체 수집은 12개월이 걸린다", () => {
+test("기본 사용 패턴에서 전체 수집은 약 13.3개월이 걸린다", () => {
   const rewardableItemCount = ITEM_CATALOG.filter(
     (item) => item.acquire.type !== "default" && item.acquire.type !== "daily"
   ).length;
@@ -131,8 +131,8 @@ test("기본 사용 패턴에서 전체 수집은 12개월이 걸린다", () => 
 
   const collectionDays = completions / averageDailyCompletions;
   const collectionMonths = collectionDays / (365 / 12);
-  // 1.0.13 온천 테마 14종 추가로 전체 수집은 약 12.4개월이 된다.
-  assert.equal(rewardableItemCount, 395);
-  assert.equal(completions, 2429);
-  assert.ok(Math.abs(collectionMonths - 12.4) < 0.05);
+  // 1.0.13 온천·코인 런드리·할로윈 42종 추가로 전체 수집은 약 13.3개월이 된다.
+  assert.equal(rewardableItemCount, 423);
+  assert.equal(completions, 2600);
+  assert.ok(Math.abs(collectionMonths - 13.3) < 0.05);
 });
