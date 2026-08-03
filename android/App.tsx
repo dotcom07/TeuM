@@ -35,6 +35,7 @@ import {
   fmtDayTime,
   intervalMs,
   isWithinWork,
+  nextTickAfterResponse,
   nextTickFrom,
   nextTickFromWorkStart,
   SNOOZE_MS
@@ -407,7 +408,7 @@ function AppContent() {
   }, [toast]);
 
   // ── 1분 화면 선택 ─────────────────────────────────────────
-  // 챙김: 누른 시점부터 다음 간격을 계산한다.
+  // 챙김·넘김·무응답 모두 업무 시작 기준의 정규 슬롯으로 복귀한다.
   const respondDone = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
@@ -419,7 +420,7 @@ function AppContent() {
     patchRhythm({
       status: "running",
       pausedUntil: null,
-      nextTickAt: nextTickFrom(Date.now(), current.settings)
+      nextTickAt: nextTickAfterResponse(Date.now(), current.settings)
     });
   }, [commitDesk, patchRhythm, recordResponse]);
 
@@ -429,17 +430,13 @@ function AppContent() {
     }
   }, [desk, screen]);
 
-  // 넘김: 기존 정규 주기를 유지한다 (예정 시점 + 간격).
+  // 넘김: 업무 시작 기준의 정규 주기를 유지한다.
   const respondSkip = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
-    const base = breakScheduledAtRef.current ?? current.rhythm.nextTickAt ?? Date.now();
     recordResponse("skipped");
     patchRhythm({
-      nextTickAt: nextTickFrom(
-        Math.max(base, Date.now() - intervalMs(current.settings)),
-        current.settings
-      )
+      nextTickAt: nextTickAfterResponse(Date.now(), current.settings)
     });
     showToastRef.current?.(tr("괜찮아요. 다음 틈에 다시 만나요.", "That’s okay. We’ll meet at the next break."));
   }, [patchRhythm, recordResponse, tr]);
@@ -453,22 +450,18 @@ function AppContent() {
     const inFive = t + SNOOZE_MS;
     const nextTickAt = isWithinWork(inFive, current.settings)
       ? inFive
-      : nextTickFrom(t, current.settings);
+      : nextTickFromWorkStart(inFive, current.settings);
     patchRhythm({ nextTickAt });
     showToastRef.current?.(tr("5분 뒤에 한 번만 다시 알려드릴게요.", "We’ll remind you once more in 5 minutes."));
   }, [patchRhythm, tr]);
 
-  // 선택 없이 닫힘: 명시적으로 넘긴 경우와 구분해 저장하고, 정규 주기는 유지한다.
+  // 선택 없이 닫힘: 명시적 넘김과 구분해 저장하되 같은 정규 주기를 유지한다.
   const respondUnanswered = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
-    const base = breakScheduledAtRef.current ?? current.rhythm.nextTickAt ?? Date.now();
     recordResponse("unanswered");
     patchRhythm({
-      nextTickAt: nextTickFrom(
-        Math.max(base, Date.now() - intervalMs(current.settings)),
-        current.settings
-      )
+      nextTickAt: nextTickAfterResponse(Date.now(), current.settings)
     });
   }, [patchRhythm, recordResponse]);
 
@@ -485,7 +478,7 @@ function AppContent() {
     // 업무 시간 안이면 5분 뒤 한 번만. 업무가 끝났으면 다음 업무일로.
     const nextTickAt = isWithinWork(inFive, current.settings)
       ? inFive
-      : nextTickFrom(t, current.settings);
+      : nextTickFromWorkStart(inFive, current.settings);
     patchRhythm({ nextTickAt });
     showToast(tr("5분 뒤에 한 번만 다시 알려드릴게요.", "We’ll remind you once more in 5 minutes."));
   }, [patchRhythm, showToast, tr]);
@@ -493,9 +486,8 @@ function AppContent() {
   const skip = useCallback(() => {
     const current = persistedRef.current;
     if (!current) return;
-    const base = current.rhythm.nextTickAt ?? Date.now();
     patchRhythm({
-      nextTickAt: nextTickFrom(Math.max(base, Date.now() - intervalMs(current.settings)), current.settings)
+      nextTickAt: nextTickAfterResponse(Date.now(), current.settings)
     });
     showToast(tr("괜찮아요. 다음 틈에 다시 만나요.", "That’s okay. We’ll meet at the next break."));
   }, [patchRhythm, showToast, tr]);

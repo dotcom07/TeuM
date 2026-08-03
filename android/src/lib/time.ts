@@ -2,6 +2,7 @@ import type { Settings } from "../types";
 import type { AppLanguage } from "../i18n";
 
 export const SNOOZE_MS = 5 * 60 * 1000;
+export const RESPONSE_MIN_GAP_MS = 10 * 60 * 1000;
 
 /** 알림 간격 (ms) */
 export function intervalMs(s: Settings) {
@@ -129,6 +130,24 @@ export function nextTickFromWorkStart(nowMs: number, s: Settings): number | null
     startMs = nextWindowStart(end, s);
   }
   return null;
+}
+
+/**
+ * 응답 뒤에는 업무 시작 기준의 정규 슬롯으로 복귀한다.
+ * 다음 슬롯이 10분 안쪽이면 너무 연달아 울리지 않도록 다음 슬롯으로 넘긴다.
+ */
+export function nextTickAfterResponse(nowMs: number, s: Settings): number | null {
+  let nextTickAt = nextTickFromWorkStart(nowMs, s);
+  let guard = 0;
+  while (
+    nextTickAt != null &&
+    nextTickAt - nowMs < RESPONSE_MIN_GAP_MS &&
+    guard < 50
+  ) {
+    nextTickAt = nextTickFromWorkStart(nextTickAt, s);
+    guard += 1;
+  }
+  return nextTickAt;
 }
 
 /** 오늘 업무 종료 시각(epoch ms) */

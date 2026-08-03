@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   endOfWorkToday,
   isWithinWork,
+  nextTickAfterResponse,
   nextTickFrom,
   nextTickFromWorkStart
 } from "../src/lib/time.ts";
@@ -39,6 +40,35 @@ test("슬롯과 정확히 같은 시각에는 그 다음 슬롯을 고른다", (
   assert.equal(
     nextTickFromWorkStart(at(2024, 1, 1, 10), base),
     at(2024, 1, 1, 11)
+  );
+});
+
+test("늦게 응답해도 다음 알림은 업무 시작 기준 슬롯으로 복귀한다", () => {
+  assert.equal(
+    nextTickAfterResponse(at(2024, 1, 1, 10, 8), base),
+    at(2024, 1, 1, 11)
+  );
+});
+
+test("다음 정규 슬롯까지 10분 미만이면 한 슬롯 건너뛴다", () => {
+  assert.equal(
+    nextTickAfterResponse(at(2024, 1, 1, 10, 51), base),
+    at(2024, 1, 1, 12)
+  );
+});
+
+test("다음 정규 슬롯까지 정확히 10분이면 그대로 유지한다", () => {
+  assert.equal(
+    nextTickAfterResponse(at(2024, 1, 1, 10, 50), base),
+    at(2024, 1, 1, 11)
+  );
+});
+
+test("짧은 간격에서도 최소 10분이 될 때까지 정규 슬롯을 건너뛴다", () => {
+  const everyMinute = { ...base, intervalMin: 1 };
+  assert.equal(
+    nextTickAfterResponse(at(2024, 1, 1, 10), everyMinute),
+    at(2024, 1, 1, 10, 10)
   );
 });
 
