@@ -8,8 +8,8 @@ def keystoreProperties = new Properties()
 if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
-def teumVersionCode = (findProperty("teumVersionCode") ?: "14").toInteger()
-def teumVersionName = findProperty("teumVersionName") ?: "1.0.13"
+def teumVersionCode = (findProperty("teumVersionCode") ?: "15").toInteger()
+def teumVersionName = findProperty("teumVersionName") ?: "1.0.14"
 
 /**
  * This is the configuration block to customize your React Native Android app.
