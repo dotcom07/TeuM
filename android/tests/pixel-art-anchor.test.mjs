@@ -27,7 +27,10 @@ const legacyThemeKey = (item) => {
 test("1.0.6의 기본 26개 도트맵을 픽셀 단위로 보존한다", () => {
   const legacyItems = ITEM_CATALOG.filter(
     (item) =>
-      item.addedIn !== "1.0.9" && item.addedIn !== "1.0.13" && item.addedIn !== "1.0.14"
+      item.addedIn !== "1.0.9" &&
+      item.addedIn !== "1.0.13" &&
+      item.addedIn !== "1.0.14" &&
+      item.addedIn !== "1.0.15"
   );
   for (const [group, expected] of Object.entries(expectedGroups)) {
     const items = legacyItems.filter((item) => legacyThemeKey(item) === group);

@@ -131,8 +131,8 @@ test("기본 사용 패턴에서 전체 수집은 약 13.3개월이 걸린다", 
 
   const collectionDays = completions / averageDailyCompletions;
   const collectionMonths = collectionDays / (365 / 12);
-  // 1.0.14 목장·유원지·사막·정글·탐정 70종 추가로 전체 수집은 약 15.5개월이 된다.
-  assert.equal(rewardableItemCount, 493);
-  assert.equal(completions, 3031);
-  assert.ok(Math.abs(collectionMonths - 15.5) < 0.05);
+  // 1.0.15 우체국·천문대·광산·미용실·편의점 70종 추가로 전체 수집은 약 17.7개월이 된다.
+  assert.equal(rewardableItemCount, 563);
+  assert.equal(completions, 3458);
+  assert.ok(Math.abs(collectionMonths - 17.7) < 0.05);
 });

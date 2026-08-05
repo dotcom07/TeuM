@@ -45,7 +45,12 @@ const PET_MOUTH_ROW_EXPECTATIONS = {
   "fair-pet": [2, "PCPPP."],
   "desert-pet": [4, "YWCWY."],
   "jungle-pet": [2, "NCWCW."],
-  "detective-pet": [4, "NWCWN."]
+  "detective-pet": [4, "NWCWN."],
+  "post-pet": [2, ".LCLAA"],
+  "observatory-pet": [2, "CWCCWC"],
+  "mine-pet": [2, "MCMCM."],
+  "salon-pet": [2, "WCWWCW"],
+  "convenience-pet": [2, "OCOCO."]
 };
 const YELLOW_BEAK_PETS = new Set([
   "aquarium-pet",
@@ -53,7 +58,8 @@ const YELLOW_BEAK_PETS = new Set([
   "library-pet",
   "music-pet",
   "laundry-pet",
-  "farm-pet"
+  "farm-pet",
+  "post-pet"
 ]);
 
 const opaqueMask = (rows) =>

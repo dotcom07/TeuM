@@ -40,7 +40,13 @@ export const THEME_BACKGROUND_PALETTES = {
   fair: { token: "F", hex: "#df8ab5", nameKo: "솜사탕 핑크" },
   desert: { token: "J", hex: "#d6a95e", nameKo: "사막 샌드" },
   jungle: { token: "V", hex: "#448a58", nameKo: "정글 그린" },
-  detective: { token: "Z", hex: "#7f776a", nameKo: "탐정 웜그레이" }
+  detective: { token: "Z", hex: "#7f776a", nameKo: "탐정 웜그레이" },
+  // 1.0.15 — 영문자가 모두 소진되어 숫자 토큰을 쓴다 (0~9 가용, 0~4 사용).
+  post: { token: "0", hex: "#bf4646", nameKo: "우체통 레드" },
+  observatory: { token: "1", hex: "#1f3d5c", nameKo: "관측소 심야남색" },
+  mine: { token: "2", hex: "#524364", nameKo: "동굴 자수정빛" },
+  salon: { token: "3", hex: "#a5589a", nameKo: "살롱 라일락" },
+  convenience: { token: "4", hex: "#c9e8d3", nameKo: "새벽 민트" }
 } as const;
 
 export type ThemePaletteKey = keyof typeof THEME_BACKGROUND_PALETTES;

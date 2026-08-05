@@ -1,51 +1,12 @@
-interface ThemeArtAsset {
-  nameKo: string;
-  nameEn: string;
-  rows: string[];
-}
+import { asset, compose } from "./themeArtKit";
+import { POST_ART } from "./art1015/post";
+import { OBSERVATORY_ART } from "./art1015/observatory";
+import { MINE_ART } from "./art1015/mine";
+import { SALON_ART } from "./art1015/salon";
+import { CONVENIENCE_ART } from "./art1015/convenience";
 
-export interface LateThemeArtPack {
-  wallpaper: ThemeArtAsset;
-  flooring: ThemeArtAsset;
-  window: ThemeArtAsset;
-  desk: ThemeArtAsset;
-  monitor: ThemeArtAsset;
-  mug: ThemeArtAsset;
-  ornament: ThemeArtAsset;
-  lamp: ThemeArtAsset;
-  mat: ThemeArtAsset;
-  shelf: ThemeArtAsset;
-  frame: ThemeArtAsset;
-  clock: ThemeArtAsset;
-  pet: ThemeArtAsset;
-  floorObject: ThemeArtAsset;
-}
-
-const asset = (nameKo: string, nameEn: string, rows: string[]): ThemeArtAsset => ({
-  nameKo,
-  nameEn,
-  rows
-});
-
-const compose = (
-  width: number,
-  height: number,
-  fill: string,
-  layers: Array<{ x: number; y: number; rows: string[] }>
-): string[] => {
-  const pixels = Array.from({ length: height }, () => Array(width).fill(fill));
-  for (const layer of layers) {
-    layer.rows.forEach((row, offsetY) => {
-      [...row].forEach((token, offsetX) => {
-        if (token === ".") return;
-        const x = layer.x + offsetX;
-        const y = layer.y + offsetY;
-        if (pixels[y]?.[x] != null) pixels[y][x] = token;
-      });
-    });
-  }
-  return pixels.map((row) => row.join(""));
-};
+export type { LateThemeArtPack, ThemeArtAsset } from "./themeArtKit";
+import type { LateThemeArtPack } from "./themeArtKit";
 
 const CHRISTMAS_ART: LateThemeArtPack = {
   wallpaper: asset(
@@ -2009,6 +1970,11 @@ export const LATE_THEME_ART_109: Record<string, LateThemeArtPack> = {
   desert: DESERT_ART,
   jungle: JUNGLE_ART,
   detective: DETECTIVE_ART,
+  post: POST_ART,
+  observatory: OBSERVATORY_ART,
+  mine: MINE_ART,
+  salon: SALON_ART,
+  convenience: CONVENIENCE_ART,
   christmas: CHRISTMAS_ART,
   sky: SKY_ART,
   fantasy: FANTASY_ART,

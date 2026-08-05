@@ -49,7 +49,12 @@ export const EXPANSION_THEME_META = [
   ["fair", "유원지", "Fun fair"],
   ["desert", "사막", "Desert"],
   ["jungle", "정글", "Jungle"],
-  ["detective", "탐정", "Detective"]
+  ["detective", "탐정", "Detective"],
+  ["post", "우체국", "Post office"],
+  ["observatory", "천문대", "Observatory"],
+  ["mine", "광산", "Gem mine"],
+  ["salon", "미용실", "Hair salon"],
+  ["convenience", "편의점", "Convenience store"]
 ] as const;
 
 const THEMES: Theme109[] = [
@@ -486,6 +491,76 @@ const THEMES: Theme109[] = [
     petKind: "dog",
     petNameKo: "탐정 비글",
     petNameEn: "Detective beagle"
+  },
+  {
+    key: "post",
+    labelKo: "우체국",
+    labelEn: "Post office",
+    background: "0",
+    primary: "C",
+    secondary: "W",
+    accent: "A",
+    surface: "K",
+    motif: [".111.", "11111", "1.2.1", "1..21", "11111"],
+    petKind: "bluebird",
+    petNameKo: "비둘기 집배원",
+    petNameEn: "Pigeon courier"
+  },
+  {
+    key: "observatory",
+    labelKo: "천문대",
+    labelEn: "Observatory",
+    background: "1",
+    primary: "E",
+    secondary: "W",
+    accent: "A",
+    surface: "L",
+    motif: ["..1..", ".1.1.", "1.2.1", ".1.1.", "..1.."],
+    petKind: "bear",
+    petNameKo: "너구리 관측대원",
+    petNameEn: "Raccoon observer"
+  },
+  {
+    key: "mine",
+    labelKo: "광산",
+    labelEn: "Gem mine",
+    background: "2",
+    primary: "N",
+    secondary: "T",
+    accent: "A",
+    surface: "P",
+    motif: ["..1..", ".111.", "11211", ".111.", "..1.."],
+    petKind: "bear",
+    petNameKo: "두더지 광부",
+    petNameEn: "Miner mole"
+  },
+  {
+    key: "salon",
+    labelKo: "미용실",
+    labelEn: "Hair salon",
+    background: "3",
+    primary: "E",
+    secondary: "W",
+    accent: "A",
+    surface: "K",
+    motif: ["1.1..", ".1...", "1.1..", "...2.", "..2.2"],
+    petKind: "dog",
+    petNameKo: "복슬 푸들",
+    petNameEn: "Fluffy poodle"
+  },
+  {
+    key: "convenience",
+    labelKo: "편의점",
+    labelEn: "Convenience store",
+    background: "4",
+    primary: "T",
+    secondary: "C",
+    accent: "A",
+    surface: "W",
+    motif: ["111..", "1.1..", "111..", "..2..", ".222."],
+    petKind: "rabbit",
+    petNameKo: "야간 알바 햄스터",
+    petNameEn: "Night-shift hamster"
   }
 ];
 
@@ -1637,7 +1712,12 @@ const THEME_ADDED_IN: Record<string, string> = {
   fair: "1.0.14",
   desert: "1.0.14",
   jungle: "1.0.14",
-  detective: "1.0.14"
+  detective: "1.0.14",
+  post: "1.0.15",
+  observatory: "1.0.15",
+  mine: "1.0.15",
+  salon: "1.0.15",
+  convenience: "1.0.15"
 };
 
 function themeItems(theme: Theme109): PixelItem[] {
