@@ -864,12 +864,13 @@ const WINTER_ART: ThemeArtPack = {
         rows: [
           "EEEEEEEEEE................................",
           "....EEEEEEEEEEEEEEE.......................",
-          "..........SSSSSSSEEEEEEEEE................",
-          "................SSSSSSSEEEEEEEEEEEEE......"
+          "..........TTTTTTTEEEEEEEEE................",
+          "................TTTTTTTEEEEEEEEEEEEE......"
         ]
       },
       { x: 9, y: 10, rows: [".W.", "WWW", ".W."] },
-      { x: 31, y: 8, rows: ["W...W", ".W.W.", "..W..", ".W.W.", "W...W"] },
+      // 8방향 눈꽃 — 대각선만 있으면 X자로 읽혀서 중심 구멍과 십자 팔을 더한다
+      { x: 31, y: 9, rows: ["W.W.W", ".WWW.", "WW.WW", ".WWW.", "W.W.W"] },
       { x: 53, y: 13, rows: [".W.", "WWW", ".W."] },
       {
         x: 0,
@@ -896,9 +897,9 @@ const WINTER_ART: ThemeArtPack = {
       { x: 0, y: 2, rows: ["R".repeat(22) + "N".repeat(42)] },
       { x: 0, y: 4, rows: ["N".repeat(39) + "R".repeat(25)] },
       { x: 0, y: 6, rows: ["R".repeat(14) + "N".repeat(50)] },
-      { x: 21, y: 1, rows: ["C", "C", "C"] },
-      { x: 38, y: 4, rows: ["C", "C", "C"] },
-      { x: 13, y: 6, rows: ["C", "C"] },
+      { x: 21, y: 1, rows: ["R", "R"] },
+      { x: 38, y: 4, rows: ["R", "R"] },
+      { x: 13, y: 6, rows: ["R"] },
       { x: 0, y: 8, rows: ["C".repeat(64)] }
     ])
   },
@@ -1135,14 +1136,15 @@ const CALICO_ART: ThemeArtPack = {
 
 const AQUARIUM_ART: ThemeArtPack = {
   wallpaper: {
-    nameKo: "가오리 수조 벽지",
-    nameEn: "Manta tank wallpaper",
+    nameKo: "산호 수조 벽지",
+    nameEn: "Coral tank wallpaper",
     rows: compose(64, 31, "E", [
       { x: 0, y: 0, rows: ["T".repeat(64)] },
       { x: 0, y: 27, rows: ["B".repeat(64), "B".repeat(64), "Y".repeat(64), "C".repeat(64)] },
-      { x: 7, y: 5, rows: ["....BBBB....", ".BBBBBBBBBB.", "BBBWBBBBWBBB", "...B....B..."] },
-      { x: 35, y: 8, rows: ["BB....Y", "BBBBYYY", "BB....Y"] },
-      { x: 50, y: 15, rows: ["Y...BB", "YYYBBBB", "Y...BB"] },
+      // 헤엄치는 물고기들 — 꼬리와 몸을 붙여서 뼈다귀로 읽히지 않게 한다
+      { x: 35, y: 8, rows: [".B.YYY.", "BBYYYYW", ".B.YYY."] },
+      { x: 50, y: 15, rows: [".YYY.B.", "WYYYYBB", ".YYY.B."] },
+      { x: 21, y: 11, rows: [".B.YY", "BBYYW", ".B.YY"] },
       { x: 23, y: 3, rows: [".W.", "...", ".W.", "...", ".W."] },
       { x: 58, y: 4, rows: [".W.", "...", ".W.", "...", ".W.", "...", ".W."] },
       { x: 3, y: 22, rows: ["G...G", "GG.GG", ".GGG.", "..G..", "..G.."] },
@@ -1168,13 +1170,13 @@ const AQUARIUM_ART: ThemeArtPack = {
     rows: [
       "....CCCCCCCC....",
       "..CCBBBBBBBBCC..",
-      ".CBBBTBBBBTBBBC.",
-      "CBBBBBBBBBBBBBBC",
-      "CBBYBBBBBBBBYBBC",
-      "CYYYYBBBBYYYYBBC",
-      "CBBYBBBBBBBBYBBC",
-      "CBBBBBBBBBBBBBBC",
-      ".CBBBBBBBBBBBBC.",
+      ".CBBBBBBWBBBBBC.",
+      "CBBSSSSWBBBBBBBC",
+      "CBBBBBBBBBWBBBBC",
+      "CBBBBBBBBSSSSWBC",
+      "CBBWBBBBBBBBBBBC",
+      "CBBBBBSSSWBBBBBC",
+      ".CBBGBBBBBBGBBC.",
       "..CCBBBBBBBBCC..",
       "....CCCCCCCC....",
       "......CCCC......"
@@ -1416,7 +1418,7 @@ const DREAM_ART: ThemeArtPack = {
       { x: 45, y: 3, rows: ["CIC", "CIC", "CIC", "CIC", "CIC"] }
     ])
   },
-  monitor: { nameKo: "꿈 일기 열린책", nameEn: "Open dream journal", rows: ["......CC......", "....CCCCCC....", "CCCCCCCCCCCCCC", "CWWWWCCWWWWWWC", "CWAWWCCWWAWWWC", "CWWBWCCWBWWWWC", "CWWWWCCWWWWWWC", ".CCCC..CCCCCC.", ".....CNN......", "...CCCCCCCC..."] },
+  monitor: { nameKo: "잠든 달 화면", nameEn: "Sleeping-moon screen", rows: [".CCCCCCCCCCCC.", "CIIIIIIIIIIIIC", "CIIAAAIIIIIWIC", "CIAAAIIIIIIIIC", "CIAAAIIIWIIIIC", "CIIAAAIIIIIIIC", "CIIIIIIIIIIIIC", ".CCCCCCCCCCCC.", "......CC......", "....CCCCCC...."] },
   mug: { nameKo: "별잠 우유잔", nameEn: "Star-sleep milk cup", rows: ["..A...", ".AAA..", "CWWWWC", "CWAAWC", "CWWWWC", ".CCCC."] },
   ornament: { nameKo: "병 속 작은 꿈섬", nameEn: "Dream island in a jar", rows: ["..CCC..", ".CIIIC.", ".CIWIC.", ".CWWWC.", ".CNNNC.", ".CGGGC.", "..CCC..", ".CCCCC."] },
   lamp: { nameKo: "반달 스탠드", nameEn: "Half-moon lamp", rows: ["..AA.", ".AA..", "AAA..", ".AA..", "..A..", "..N..", "..N..", "..N..", "..N..", ".CNC.", "CNNNC", "CCCCC"] },
@@ -1447,12 +1449,12 @@ const ZOO_ART: ThemeArtPack = {
   monitor: { nameKo: "동물 발자국 도감", nameEn: "Animal track field guide", rows: ["..CCCCCCCCCC..", ".CYYYYYYYYYC..", ".CYYCYYCYYYC..", ".CYYYCCYYYYC..", ".CYYOOOYYYYC..", ".CYOOWOOYYYC..", ".CYYYOOYYYYC..", "..CCCCCCCCCC..", "....CNNNC.....", "..CCCCCCCCCC.."] },
   mug: { nameKo: "기린 목 컵", nameEn: "Giraffe-neck cup", rows: ["...O..", "..O...", "..O.C.", "COYOOC", "COYOYC", ".CCCC."] },
   ornament: { nameKo: "코끼리 물뿌리개", nameEn: "Elephant watering can", rows: [".......", ".CCCCC.", "CWWWWCC", "CWWAWWC", "CWWWWWC", ".CCCCCC", "..C.C.."] },
-  lamp: { nameKo: "홍학 스탠드", nameEn: "Flamingo lamp", rows: ["..RR.", ".RWR.", "..RR.", "...R.", "..RR.", ".RR..", ".R...", ".R...", ".R...", ".R...", "C.R.C", "CCCCC"] },
+  lamp: { nameKo: "홍학 스탠드", nameEn: "Flamingo lamp", rows: [".AA..", "SAA..", "S....", "SS...", ".S...", ".SS..", ".SSS.", "SSSS.", "SSS..", ".S...", ".C...", "CCCCC"] },
   mat: { nameKo: "얼룩말 줄무늬 매트", nameEn: "Zebra stripe mat", rows: ["IWIWWIWI", "WIWIIWIW", "OOOOOOOO"] },
-  shelf: { nameKo: "쌍안경", nameEn: "Safari binoculars", rows: ["C.C.C", "CCCCC", "CWCWC", ".C.C."] },
+  shelf: { nameKo: "사파리 모자", nameEn: "Safari hat", rows: [".YYY.", "YOOOY", "NNNNN"] },
   frame: { nameKo: "사자 안내 포스터", nameEn: "Lion guide poster", rows: ["CCCCCC", "COOOOC", "CONNOC", "CONWOC", "CONNOC", "COOOOC", "CCCCCC"] },
-  clock: { nameKo: "얼룩 기린 시계", nameEn: "Giraffe spot clock", rows: [".II.", "IOIC", "IAIC", ".CC."] },
-  pet: { nameKo: "아기 레서판다", nameEn: "Baby red panda", rows: ["R....R", "RCRRCR", "RCWCWR", "RCWWRR", ".RRRR.", "RNNNNR", ".R..R.", "R....R"] },
+  clock: { nameKo: "얼룩 기린 시계", nameEn: "Giraffe spot clock", rows: [".CC.", "CYOC", "COYC", ".CC."] },
+  pet: { nameKo: "아기 레서판다", nameEn: "Baby red panda", rows: [".R..R.", "RRRRRR", "RCRRCR", "RWCCWR", "RRRRRR", "RRRRRR", "RNRNRN", ".R..R."] },
   floorObject: { nameKo: "사파리 탐험가방", nameEn: "Safari explorer bag", rows: ["..CC..", ".C..C.", "CYYYYC", "CYCCYC", "CYAAYC", "INNNNI", "INNNNI", "CCCCCC"] }
 };
 

@@ -72,17 +72,17 @@ const CHRISTMAS_ART: LateThemeArtPack = {
     ])
   ),
   window: asset("눈꽃 아치창", "Snowflake arch window", [
-    ".....IIIIII.....",
-    "...IIWWWWWWII...",
-    "..IWWWWWWWWWWI..",
-    ".IWWGWWWWGWWWWI.",
-    "IWWWWWWWWWWWWWWI",
-    "IWWWWAWWAWWWWWWI",
-    "IWWAWWAAWWAWWWWI",
-    "IWWWWAWWAWWWWWWI",
-    ".IWWWWWWWWWWWWI.",
-    "..IIWWWWWWWWII..",
-    "....IIIIIIII....",
+    ".....NNNNNN.....",
+    "...NNIIIIIINN...",
+    "..NIIIIIIIIIIN..",
+    ".NIIIWIWIWIIIIN.",
+    "NIIIIIWWWIIIIIIN",
+    "NIIIIWWIWWIIIIIN",
+    "NIIIIIWWWIIIIIIN",
+    "NIIIWIWIWIIIWIIN",
+    ".NIIWWWWWWWIIIN.",
+    "..NNWWWWWWWWNN..",
+    "....NNNNNNNN....",
     "......NNNN......"
   ]),
   desk: asset(
@@ -109,7 +109,8 @@ const CHRISTMAS_ART: LateThemeArtPack = {
     ".IIIIIIIIIIII.",
     ".............."
   ]),
-  mug: asset("사탕지팡이 코코아", "Candy-cane cocoa", [".I.A..", ".IAA..", "IWWWII", "IWRWII", "IWWWI.", ".IIII."]),
+  // 지팡이는 오른쪽 기둥 — 뒤 벽지의 사탕집(R)과 겹치지 않는 열이다.
+  mug: asset("사탕지팡이 코코아", "Candy-cane cocoa", ["....RW", "....WR", ".WWWW.", ".WGWW.", ".WWWW.", ".IIII."]),
   ornament: asset("탁상 꼬마 트리", "Tiny desk tree", ["...A...", "..GGG..", ".GGRGG.", "GGGGGGG", "..GNG..", "...N...", ".IIIII.", "..III.."]),
   lamp: asset("별 꼭대기 트리등", "Tree-top star lamp", ["..A..", ".AAA.", "AAGAA", ".GGG.", "GGGGG", "..N..", "..N..", "..N..", "..N..", ".INI.", "INNNI", "IIIII"]),
   mat: asset("포장지 리본 매트", "Wrapping-ribbon mat", ["RRRAARRR", "IWWAAWWI", "IIIIIIII"]),
@@ -183,7 +184,7 @@ const SKY_ART: LateThemeArtPack = {
     "...MMMMMMMM..."
   ]),
   mug: asset("구름 거품잔", "Cloud-foam cup", ["..WW..", ".WWWW.", "MBBBBM", "MBWWMM", "MBBBBM", ".MMMM."]),
-  ornament: asset("종이비행기 모빌", "Paper-plane mobile", ["W.....W", ".WW.WW.", "..WWW..", "...Y...", "...Y...", ".M.Y.M.", ".M...M.", "MMM.MMM"]),
+  ornament: asset("종이비행기 모빌", "Paper-plane mobile", ["..MMMMM", "..Y...M", ".WWWW.M", "..WWW.M", "...W..M", "......M", "......M", "....MMM"]),
   lamp: asset("햇살 기상등", "Sunbeam weather lamp", ["..A..", ".AAA.", "AAWAA", ".AAA.", "..Y..", "..Y..", "..Y..", "..Y..", "..Y..", ".MYM.", "MYYYM", "MMMMM"]),
   mat: asset("상승기류 매트", "Updraft mat", ["BWBBWBBW", "WBBWWBBW", "MMMMMMMM"]),
   shelf: asset("미니 열기구", "Mini hot-air balloon", [".AAA.", "AWWWA", ".AYA.", "..Y.."]),
@@ -242,15 +243,15 @@ const FANTASY_ART: LateThemeArtPack = {
       { x: 47, y: 4, rows: ["MGM", "MGM", "MGM", "MGM"] }
     ])
   ),
-  monitor: asset("펼쳐진 마법서", "Open spellbook", [
-    "......MM......",
-    "....MMMMMM....",
-    "MMMMMMMMMMMMMM",
-    "MYYYYMMYYYYYYM",
-    "MYAWYMMYWAYYYM",
-    "MYTWYMMYWTYYYM",
-    "MYYYYMMYYYYYYM",
-    ".MMMM..MMMMMM.",
+  monitor: asset("마법진 화면", "Magic-circle screen", [
+    ".MMMMMMMMMMMM.",
+    "MCCCCCCCCCCCCM",
+    "MCCCAAAACCCWCM",
+    "MCCACWCCACCCCM",
+    "MCCACCCCACCCCM",
+    "MCCCAAAACCCCCM",
+    "MCCCCCCCCCCCCM",
+    ".MMMMMMMMMMMM.",
     ".....MNM......",
     "...MMMMMMMM..."
   ]),
@@ -386,14 +387,14 @@ const RAINY_ART: LateThemeArtPack = {
       { x: 18, y: 3, rows: ["..SSSSSSSS....", "SSSSSSSSSSSS..", "....SSSSSSSSSS"] }
     ])
   ),
-  monitor: asset("강수 레이더", "Rainfall radar", [
+  monitor: asset("갬 예보 화면", "Clearing-forecast screen", [
     "...MMMMMMMM...",
     ".MMBBBBBBBBMM.",
-    "MBBBTBBBBTBBBM",
-    "MBBBBTTTTBBBBM",
-    "MBBTTTSTTTBBBM",
-    "MBBBBTTTTBBBBM",
-    "MBBBTBBBBTBBBM",
+    "MBBBWWWWBBAABM",
+    "MBBWWWWWWBAABM",
+    "MBBBKBKBKBBBBM",
+    "MBBKBKBKBBBBBM",
+    "MBBBKBKBKBBBBM",
     ".MMBBBBBBBBMM.",
     "...MMMMMMMM...",
     ".....MNM......"
@@ -634,7 +635,10 @@ const CAMPING_ART: LateThemeArtPack = {
       { x: 0, y: 0, rows: ["C".repeat(64)] },
       { x: 7, y: 4, rows: ["W", "...W", "......W", "..A"] },
       { x: 46, y: 3, rows: ["..AAA..", ".AAAAA.", "AAAAAAA", ".AAAAA.", "..AAA.."] },
-      { x: 0, y: 22, rows: ["G".repeat(64), "G".repeat(64), "N".repeat(64), "N".repeat(64), "B".repeat(64), "B".repeat(64), "C".repeat(64), "C".repeat(64), "C".repeat(64)] },
+      // 잔디→모래톱→호수 — 검은 띠 대신 호수가 바닥까지 이어진다
+      { x: 0, y: 22, rows: ["G".repeat(64), "G".repeat(64), "N".repeat(64), "N".repeat(64), "B".repeat(64), "B".repeat(64), "B".repeat(64), "B".repeat(64), "G".repeat(64)] },
+      { x: 10, y: 27, rows: ["WW"] },
+      { x: 44, y: 28, rows: ["WW"] },
       { x: 8, y: 12, rows: ["....G....", "...GGG...", "..GGGGG..", ".GGGGGGG.", "....N....", "....N...."] },
       { x: 27, y: 16, rows: [".....O.....", "...OOOOO...", ".OOOOOOOOO.", "OOOYYYYYOOO", "NNNNNNNNNNN"] },
       { x: 51, y: 17, rows: ["..A..", ".ASA.", "SSSSS", ".NNN.", "N...N"] }
@@ -668,7 +672,8 @@ const CAMPING_ART: LateThemeArtPack = {
     { x: 8, y: 3, rows: ["T.N", ".TN", "..T", ".NT", "N.T"] },
     { x: 45, y: 3, rows: ["N.T", ".NT", "..T", "TN.", "T.N"] }
   ])),
-  monitor: asset("캠프 지도 보드", "Camp map board", ["..MMMMMMMMMM..", ".MGGGGGGGGGM..", "MGGNNGGNNGGGM.", "MGYYYYGGGGGGM.", "MGGGOOGGGGGGM.", "MGGGGGGGGGGGM.", "MGGNNGGYYYYGM.", "..MMMMMMMMMM..", "....MNNNM.....", "..MMMMMMMMMM.."]),
+  // 중앙 하단에 밝은 덩어리를 두면 얼굴로 읽혀서, 달과 능선의 밤 풍경으로 그린다
+  monitor: asset("밤 능선 화면", "Night-ridge screen", [".NNNNNNNNNNNN.", "NCCCCCCCCCCCCN", "NCCWCCCCCAACCN", "NCCCCCCCCAACCN", "NCCCCCCCCCCCCN", "NCCGGGCCCCGGCN", "NCGGGGGCCGGGGN", "NGGGGGGGGGGGGN", ".NNNNNNNNNNNN.", "....NNNNNN...."]),
   mug: asset("법랑 캠프컵", "Enamel camp mug", [".M.A..", ".MAA..", "MYYYYM", "MYOGMM", "MYYYYM", ".MMMM."]),
   ornament: asset("미니 모닥불", "Mini campfire", ["...A...", "..ASA..", ".ASSSA.", "..NNN..", ".MNNNM.", "MNNNNNM", ".M.M.M.", "M.....M"]),
   lamp: asset("가스 랜턴", "Gas lantern", ["..M..", ".MNM.", "M...M", "MAAWM", "MAAWM", "MWWWM", ".MMM.", "..N..", "..N..", ".MNM.", "MNNNM", "MMMMM"]),
@@ -676,7 +681,8 @@ const CAMPING_ART: LateThemeArtPack = {
   shelf: asset("캠프 나침반", "Camp compass", [".MM..", "MWWM.", "MWAM.", ".MM.."]),
   frame: asset("국립공원 배지판", "National-park badge board", ["MMMMMM", "MGGGGM", "MGYNGM", "MYNNYM", "MGAGGM", "MGGGGM", "MMMMMM"]),
   clock: asset("통나무 나이테 시계", "Log-ring clock", [".NN.", "NYYN", "NAYN", ".MM."]),
-  pet: asset("텐트후드 강아지", "Tent-hood puppy", [".M.M..", "MO.MO.", "MOOOM.", "MWOWM.", "MOOOM.", "MOOOMM", "MOGGMM", ".M..M."]),
+  // 눈 행은 y26(책상 상판 Y 위), 주둥이 행은 y27(호수 B 위)라 배경과 분리된다.
+  pet: asset("모닥불 여우", "Campfire fox", [".S..S.", "SSSSSS", "SCSSCS", "SWCCWS", "SSSSSS", "SSSSSS", "SSSSWW", ".S.S.."]),
   floorObject: asset("말아 둔 침낭", "Rolled sleeping bag", ["..MM..", ".MGGM.", "MGYYGM", "MGYYGM", "MGYYGM", ".MGGM.", "..MM..", ".NNNN."])
 };
 
@@ -789,7 +795,8 @@ const ARCADE_ART: LateThemeArtPack = {
     { x: 55, y: 7, rows: ["B"] },
     { x: 0, y: 8, rows: ["P".repeat(64)] }
   ])),
-  window: asset("게임 포털 스크린", "Game portal screen", ["....NNNNNNNN....", "..NNPPPPPPPPNN..", ".NPPBBBBBBBBPPN.", "NPPBSSSSSSSSBPPN", "NPBSSGGGGGGSSBPN", "NPBSGGAWWAGGSSPN", "NPBSSGGGGGGSSBPN", "NPPBSSSSSSSSBPPN", ".NPPBBBBBBBBPPN.", "..NNPPPPPPPPNN..", "....NNNNNNNN....", "......BBBB......"]),
+  // 인베이더 다섯 무리 + 점수바 + 함선 — 마크가 드문드문하면 얼굴로 읽힌다
+  window: asset("인베이더 스크린", "Invader screen", ["....NNNNNNNN....", "..NNCCCCCCCCNN..", ".NCAACCCCCCCCCN.", "NCGCGCGCGCGCGCCN", "NCGGGCGGGCGGGCCN", "NCCCCCCCCCCCCCCN", "NCCCGCGCGCGCCCCN", "NCCCGGGCGGGCCCCN", ".NCCACCCCCCCCCN.", "..NNAAACCCCCNN..", "....NNNNNNNN....", "......BBBB......"]),
   desk: asset("아케이드 조작 패널 책상", "Arcade control-panel desk", compose(56, 8, ".", [
     { x: 1, y: 0, rows: ["N".repeat(54)] },
     { x: 0, y: 1, rows: ["B".repeat(56)] },
@@ -805,7 +812,8 @@ const ARCADE_ART: LateThemeArtPack = {
   shelf: asset("골드 코인 스택", "Gold coin stack", [".GAG.", "GIIIG", ".GAG.", "GGGGG"]),
   frame: asset("최고점수 포스터", "High-score poster", ["GGGGGG", "GPPPPG", "GPAAPG", "GPAAPG", "GPBBPG", "GPPPPG", "GGGGGG"]),
   clock: asset("타이머 게이지 시계", "Timer-gauge clock", [".BB.", "BWWB", "BAAB", ".GG."]),
-  pet: asset("픽셀 유령", "Pixel ghost", ["..GG..", ".GPPG.", "GWPPWG", "GPPPPG", "GPPPPG", "GGBBGG", "G.G.G.", ".G.G.."]),
+  // 아랫단은 B 스커트 — 벽지 하단 P 밴드(y29~30)와 겹치지 않는다.
+  pet: asset("픽셀 유령", "Pixel ghost", [".PPPP.", "PPPPPP", "PWPPWP", "PPPPPP", "BPPPPB", "BBBBBB", "B.BB.B"]),
   floorObject: asset("코인 교환기", "Token changer", ["..GG..", ".GPPG.", "GPIIPG", "GPAAPG", "GPIIPG", "GBBBBG", "GBBBBG", "GGGGGG"])
 };
 
@@ -818,7 +826,8 @@ const HANOK_ART: LateThemeArtPack = {
       { x: 45, y: 3, rows: ["..WWW..", ".WWWWW.", "WWWWWWW", ".WWWWW.", "..WWW.."] },
       { x: 2, y: 7, rows: [".....RRRRRRRRRRRRRRRRRRRRRRRR.....", "...RRRRRRRRRRRRRRRRRRRRRRRRRRRR...", "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", "NWWWWNWWWWNWWWWNWWWWNWWWWNWWWWN", "NGGGGNGGGGNGGGGNGGGGNGGGGNGGGGN", "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"] },
       { x: 39, y: 17, rows: ["..G..", ".GGG.", "GGGGG", "..N..", "..N.."] },
-      { x: 6, y: 20, rows: ["....W....", ".WWWWWWW.", "WWWWWWWWW", "...GGG..."] },
+      // 장독대 — 흰 덩어리 대신 옹기 두 개로, 찻잔(x12~) 열과 겹치지 않게 x5~11에 둔다
+      { x: 5, y: 19, rows: [".NN..N.", "RRRR.RR", "RRRR.RR", "RRRR.RR", ".RR..RR"] },
       { x: 0, y: 27, rows: ["G".repeat(64), "G".repeat(64), "R".repeat(64), "C".repeat(64)] }
     ])
   ),
@@ -839,8 +848,8 @@ const HANOK_ART: LateThemeArtPack = {
     { x: 10, y: 3, rows: ["TNT", "TNT", "TNT", "TNT", "TTT"] },
     { x: 43, y: 3, rows: ["TNT", "TNT", "TNT", "TNT", "TTT"] }
   ])),
-  monitor: asset("펼친 서책 받침", "Open scroll stand", ["......II......", "....IIIIII....", "IIIIIIIIIIIIII", "IWWWWIIWWWWWWI", "IWNNWIIWNNWWWI", "IWRRWIIWRRWWWI", "IWWWWIIWWWWWWI", ".IIII..IIIIII.", ".....INI......", "...IIIIIIII..."]),
-  mug: asset("백자 찻잔", "White porcelain cup", [".I.W..", ".IWW..", "IWWWWI", "IWGWII", "IWWWWI", ".IIII."]),
+  monitor: asset("산수화 화면", "Ink-landscape screen", [".IIIIIIIIIIII.", "IWWWWWWWWWWWWI", "IWWWWWWWWWRRWI", "IWWWWNWWWWWWWI", "IWWWNNNWWNWWWI", "IWWNNNNNWNNWWI", "IWNNNNNNNNNNWI", ".IIIIIIIIIIII.", ".....INI......", "...IIIIIIII..."]),
+  mug: asset("백자 찻잔", "White porcelain cup", [".E.E..", ".WWW..", "WWWWW.", "WWGWW.", "WWWWW.", ".NNN.."]),
   ornament: asset("매화 백자 화병", "Plum-blossom vase", [".R...R.", "RWR.RWR", ".G...G.", "..NNN..", "...N...", ".IWWWI.", ".IWGWI.", "..III.."]),
   lamp: asset("한지 사각등", "Hanji square lamp", ["IIIII", "IWWWI", "IWRWI", "IWWWI", "IIIII", "..N..", "..N..", "..N..", "..N..", ".INI.", "INNNI", "IIIII"]),
   mat: asset("보자기 조각 매트", "Patchwork bojagi mat", ["IGIIYIIG", "IGWWGWGI", "IIIIIIII"]),
