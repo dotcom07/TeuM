@@ -44,7 +44,12 @@ export const EXPANSION_THEME_META = [
   ["night-city", "밤도시", "Night city"],
   ["onsen", "온천", "Onsen"],
   ["laundry", "코인 런드리", "Laundry"],
-  ["halloween", "할로윈", "Halloween"]
+  ["halloween", "할로윈", "Halloween"],
+  ["farm", "목장", "Farm"],
+  ["fair", "유원지", "Fun fair"],
+  ["desert", "사막", "Desert"],
+  ["jungle", "정글", "Jungle"],
+  ["detective", "탐정", "Detective"]
 ] as const;
 
 const THEMES: Theme109[] = [
@@ -411,6 +416,76 @@ const THEMES: Theme109[] = [
     petKind: "ghost",
     petNameKo: "꼬마 유령",
     petNameEn: "Little ghost"
+  },
+  {
+    key: "farm",
+    labelKo: "목장",
+    labelEn: "Farm",
+    background: "D",
+    primary: "N",
+    secondary: "W",
+    accent: "A",
+    surface: "Y",
+    motif: [".111.", "11111", ".....", "2...2", ".222."],
+    petKind: "bluebird",
+    petNameKo: "노랑 병아리",
+    petNameEn: "Yellow chick"
+  },
+  {
+    key: "fair",
+    labelKo: "유원지",
+    labelEn: "Fun fair",
+    background: "F",
+    primary: "M",
+    secondary: "W",
+    accent: "A",
+    surface: "Y",
+    motif: ["..1..", ".111.", "11111", "..2..", "..2.."],
+    petKind: "dog",
+    petNameKo: "풍선 강아지",
+    petNameEn: "Balloon puppy"
+  },
+  {
+    key: "desert",
+    labelKo: "사막",
+    labelEn: "Desert",
+    background: "J",
+    primary: "N",
+    secondary: "Y",
+    accent: "A",
+    surface: "W",
+    motif: ["..1..", ".111.", "..1..", "2.1.2", "22122"],
+    petKind: "dog",
+    petNameKo: "사막여우",
+    petNameEn: "Fennec fox"
+  },
+  {
+    key: "jungle",
+    labelKo: "정글",
+    labelEn: "Jungle",
+    background: "V",
+    primary: "G",
+    secondary: "N",
+    accent: "A",
+    surface: "W",
+    motif: [".1.1.", "11111", ".111.", "..2..", "..2.."],
+    petKind: "bear",
+    petNameKo: "아기 나무늘보",
+    petNameEn: "Baby sloth"
+  },
+  {
+    key: "detective",
+    labelKo: "탐정",
+    labelEn: "Detective",
+    background: "Z",
+    primary: "C",
+    secondary: "N",
+    accent: "A",
+    surface: "W",
+    motif: [".111.", "1...1", "1.2.1", ".111.", "...2."],
+    petKind: "dog",
+    petNameKo: "탐정 비글",
+    petNameEn: "Detective beagle"
   }
 ];
 
@@ -1557,7 +1632,12 @@ function item(
 const THEME_ADDED_IN: Record<string, string> = {
   onsen: "1.0.13",
   laundry: "1.0.13",
-  halloween: "1.0.13"
+  halloween: "1.0.13",
+  farm: "1.0.14",
+  fair: "1.0.14",
+  desert: "1.0.14",
+  jungle: "1.0.14",
+  detective: "1.0.14"
 };
 
 function themeItems(theme: Theme109): PixelItem[] {

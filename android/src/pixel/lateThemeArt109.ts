@@ -1318,10 +1318,697 @@ const HALLOWEEN_ART: LateThemeArtPack = {
   ])
 };
 
+// 1.0.14 목장 테마 — 아침 목초지와 헛간.
+// 팔레트: D(목장 라임 벽) · N(나무) · R(헛간 레드) · W(울타리·우유) · A(병아리·해바라기) · Y(건초) · G(풀).
+const FARM_ART: LateThemeArtPack = {
+  wallpaper: asset(
+    "아침 목초지 벽지",
+    "Morning meadow wallpaper",
+    compose(64, 31, "D", [
+      { x: 0, y: 0, rows: ["N".repeat(64)] },
+      // 노른자 해 — 선반과 액자 사이 상단 벽
+      { x: 39, y: 1, rows: [".AAA.", "AAAAA", "AAAAA", ".AAA."] },
+      // 구름들
+      { x: 1, y: 2, rows: [".WWW", "WWWW"] },
+      { x: 21, y: 4, rows: ["WW.", "WWW"] },
+      { x: 22, y: 12, rows: ["W.", "WW"] },
+      // 해바라기 한 송이 — 오른쪽 벽
+      { x: 50, y: 12, rows: [".A.", "ANA", ".A.", ".G.", ".G."] },
+      // 흰 울타리 밴드와 풀밭
+      { x: 0, y: 19, rows: ["W".repeat(64), "W..".repeat(21) + "W", "W".repeat(64), "G".repeat(64), "G".repeat(64)] }
+    ])
+  ),
+  flooring: asset(
+    "마당 흙길",
+    "Farmyard dirt path",
+    compose(64, 9, "Y", [
+      { x: 0, y: 0, rows: ["G".repeat(64)] },
+      { x: 0, y: 3, rows: ["N".repeat(64)] },
+      { x: 0, y: 6, rows: ["N".repeat(64)] },
+      { x: 18, y: 1, rows: ["N", "N"] },
+      { x: 42, y: 4, rows: ["N", "N"] },
+      { x: 0, y: 8, rows: ["C".repeat(64)] }
+    ])
+  ),
+  window: asset("목초지 헛간 창", "Barn meadow window", [
+    "RRRRRRRRRRRRRRRR",
+    "RKKKKKKKKKKKKKKR",
+    "RKKKWWKKKKKKKKKR",
+    "RKKKKKKKKKWWKKKR",
+    "RKKKKKKKKKKKKKKR",
+    "RKKGGKKKKKKKKKKR",
+    "RGGGGGGKKGGGGGGR",
+    "RGGGGGGGGGGGGGGR",
+    "RGGWGGGGGGGWGGGR",
+    "RGGGGGGGGGGGGGGR",
+    "RRRRRRRRRRRRRRRR",
+    "..RR........RR.."
+  ]),
+  desk: asset(
+    "농장 작업대",
+    "Farm workbench",
+    compose(56, 8, ".", [
+      { x: 1, y: 0, rows: ["H".repeat(54)] },
+      { x: 0, y: 1, rows: ["N".repeat(56), "N".repeat(56)] },
+      { x: 3, y: 3, rows: ["C".repeat(50)] },
+      { x: 4, y: 4, rows: ["NNN", "NCN", "NCN", "NNN"] },
+      { x: 49, y: 4, rows: ["NNN", "NCN", "NCN", "NNN"] }
+    ])
+  ),
+  monitor: asset("해바라기 화면", "Sunflower screen", [
+    ".NNNNNNNNNNNN.",
+    "NIIIIIIIIIIIIN",
+    "NIIIAAIIIIIIIN",
+    "NIIAANAAIIWIIN",
+    "NIIIAAIIIIIIIN",
+    "NIIIIGIIIIIIIN",
+    "NIIIGGGIIIIIIN",
+    ".NNNNNNNNNNNN.",
+    "......NN......",
+    "....NNNNNN...."
+  ]),
+  mug: asset("법랑 우유컵", "Enamel milk cup", [
+    "EEEEE.",
+    "EWWWE.",
+    "EWWWEE",
+    "EWWWE.",
+    "EEEEE."
+  ]),
+  ornament: asset("건초 롤", "Hay roll", [
+    ".YYYY.",
+    "YYYYYY",
+    "YYNNYY",
+    "YYNNYY",
+    "YYYYYY",
+    ".YYYY."
+  ]),
+  lamp: asset("수탉 풍향계", "Rooster weathervane", [
+    "..S..",
+    ".AAA.",
+    "AAAAA",
+    "..N..",
+    "..N..",
+    "..N..",
+    "..N..",
+    "..N..",
+    "..N..",
+    "..N..",
+    ".NNN.",
+    "NNNNN"
+  ]),
+  mat: asset("깅엄 소풍보", "Gingham picnic cloth", ["RWRWRWRW", "WRWRWRWR", "RWRWRWRW"]),
+  shelf: asset("달걀 바구니", "Egg basket", [".WWW.", "NWWWN", ".NNN."]),
+  frame: asset("젖소 그림", "Cow picture", [
+    "CCCCCC",
+    "CWWWWC",
+    "CCWWCC",
+    "CWWWWC",
+    "CPPPPC",
+    "CCCCCC"
+  ]),
+  clock: asset("달걀 시계", "Egg clock", [".WW.", "WAAW", "WCAW", ".WW."]),
+  // 눈 행은 y26(작업대 상판 N 위), 부리 행은 y27(그림자 C 위)라 배경과 분리된다.
+  pet: asset("노랑 병아리", "Yellow chick", [
+    ".AAA..",
+    "AAAAA.",
+    "ACACA.",
+    "AASAA.",
+    "AAAAA.",
+    "AAAAA.",
+    ".AAA..",
+    ".S.S.."
+  ]),
+  floorObject: asset("우유 캔", "Milk churn", [
+    "..EE..",
+    ".EEEE.",
+    "EEEEEE",
+    "CEEEEC",
+    "EWWWWE",
+    "EEEEEE",
+    "EEEEEE",
+    ".EEEE."
+  ])
+};
+
+// 1.0.14 유원지 테마 — 솜사탕빛 축제 저녁.
+// 팔레트: F(솜사탕 핑크 벽) · M(보라 텐트) · S/W(스트라이프) · A(전구·별) · Y(크림) · P(솜사탕).
+const FAIR_ART: LateThemeArtPack = {
+  wallpaper: asset(
+    "풍선 축제 벽지",
+    "Balloon festival wallpaper",
+    compose(64, 31, "F", [
+      { x: 0, y: 0, rows: ["M".repeat(64)] },
+      // 풍선 두 개 — 선반과 액자 사이 상단 벽
+      { x: 39, y: 1, rows: ["WW.AA", "WW.AA", ".C.C.", "..C..", "..C.."] },
+      // 깃발 가랜드 — 왼쪽 위와 좁은 벽
+      { x: 1, y: 2, rows: ["CCCC", "MSMS"] },
+      { x: 21, y: 3, rows: ["CCCC", "SMSM"] },
+      // 솜사탕 구름 — 오른쪽 벽
+      { x: 50, y: 12, rows: [".WW", "WWW", "WW.", ".C.", ".C."] },
+      { x: 22, y: 12, rows: ["A.", ".A"] },
+      // 서커스 텐트 자락 밴드
+      {
+        x: 0,
+        y: 19,
+        rows: ["C".repeat(64), "SSWW".repeat(16), "SSWW".repeat(16), "SSWW".repeat(16), "SSWW".repeat(16)]
+      }
+    ])
+  ),
+  flooring: asset(
+    "축제 광장 바닥",
+    "Fairground floor",
+    compose(64, 9, "Y", [
+      { x: 0, y: 0, rows: ["M".repeat(64)] },
+      { x: 10, y: 2, rows: ["S"] },
+      { x: 26, y: 5, rows: ["M"] },
+      { x: 40, y: 3, rows: ["A"] },
+      { x: 54, y: 6, rows: ["S"] },
+      { x: 5, y: 6, rows: ["M"] },
+      { x: 0, y: 8, rows: ["C".repeat(64)] }
+    ])
+  ),
+  window: asset("회전목마 창", "Carousel window", [
+    "MMMMMMMMMMMMMMMM",
+    "MKKKKKKKKKKKKKKM",
+    "MKKSWSWSWSKKKKKM",
+    "MKKKSWSWSKKKKKKM",
+    "MKKKWKWKWKKKKKKM",
+    "MKKKWKWKWKKKKKKM",
+    "MKKKYYYYYKKKKKKM",
+    "MKKKKKKKKKKKKKKM",
+    "MKKAKKKKKKKAKKKM",
+    "MKKKKKKKKKKKKKKM",
+    "MMMMMMMMMMMMMMMM",
+    "..MM........MM.."
+  ]),
+  desk: asset(
+    "매표소 카운터",
+    "Ticket-booth counter",
+    compose(56, 8, ".", [
+      { x: 1, y: 0, rows: ["H".repeat(54)] },
+      { x: 0, y: 1, rows: ["W".repeat(56), "S".repeat(56)] },
+      { x: 3, y: 3, rows: ["C".repeat(50)] },
+      { x: 4, y: 4, rows: ["WWW", "WCW", "WCW", "WWW"] },
+      { x: 49, y: 4, rows: ["WWW", "WCW", "WCW", "WWW"] }
+    ])
+  ),
+  monitor: asset("축제 전광판", "Fair marquee screen", [
+    ".MMMMMMMMMMMM.",
+    "MCCCCCCCCCCCCM",
+    "MCCCCACCCCCCCM",
+    "MCCCAAACCCWCCM",
+    "MCAAAAAAACCCCM",
+    "MCCCAAACCCCCCM",
+    "MCCACCCACCCCCM",
+    ".MMMMMMMMMMMM.",
+    "......MM......",
+    "....MMMMMM...."
+  ]),
+  mug: asset("솜사탕", "Cotton candy", [
+    ".PPP..",
+    "PPPPP.",
+    "PPPPP.",
+    ".PPP..",
+    "..Y..."
+  ]),
+  ornament: asset("회전목마 오르골", "Carousel music box", [
+    "...A...",
+    ".SSSSS.",
+    ".SWSWS.",
+    ".Y.Y.Y.",
+    ".Y.Y.Y.",
+    ".YYYYY.",
+    ".MMMMM.",
+    ".MMMMM."
+  ]),
+  lamp: asset("풍선 조명", "Balloon lamp", [
+    ".AAA.",
+    "AWAAA",
+    "AAAAA",
+    ".AAA.",
+    "..M..",
+    "..M..",
+    "..M..",
+    "..M..",
+    "..M..",
+    "..M..",
+    ".MMM.",
+    "MMMMM"
+  ]),
+  mat: asset("티켓 매트", "Ticket mat", ["YYYYYYYY", "YCCYYCCY", "YYYYYYYY"]),
+  shelf: asset("곰인형 트로피", "Teddy trophy", [".N.N.", ".NNN.", ".NNN.", "CCCCC"]),
+  frame: asset("서커스 포스터", "Circus poster", [
+    "MMMMMM",
+    "MYYYYM",
+    "MYSSYM",
+    "MSSSSM",
+    "MYYYYM",
+    "MMMMMM"
+  ]),
+  clock: asset("과녁 시계", "Bullseye clock", [".SS.", "SWWS", "SWCS", ".SS."]),
+  // 눈 행은 y26(카운터 상판 S 위), 목 행은 y27(그림자 C 위)라 배경과 분리된다.
+  pet: asset("풍선 강아지", "Balloon puppy", [
+    "PP.PP.",
+    "PPPPP.",
+    "PCPPP.",
+    ".PP...",
+    ".PPPPP",
+    ".PP.PP",
+    ".PP.PP",
+    ".P...P"
+  ]),
+  floorObject: asset("팝콘 카트", "Popcorn cart", [
+    "SWSWSW",
+    "SWSWSW",
+    ".KWWK.",
+    ".MMMM.",
+    ".MMMM.",
+    ".MMMM.",
+    ".MMMM.",
+    ".C..C."
+  ])
+};
+
+// 1.0.14 사막 테마 — 사구와 오아시스의 대상 캠프.
+// 팔레트: J(사막 샌드 벽) · Y(모래) · N(나무·낙타) · T(오아시스 청록) · S(테라코타) · A(해·램프) · G(야자).
+const DESERT_ART: LateThemeArtPack = {
+  wallpaper: asset(
+    "사구 대상 벽지",
+    "Dune caravan wallpaper",
+    compose(64, 31, "J", [
+      { x: 0, y: 0, rows: ["N".repeat(64)] },
+      // 조각보 가랜드 — 선반과 액자 사이 상단 벽
+      { x: 39, y: 1, rows: ["CCCCC", "TWTWT", "TWTWT", ".W.T."] },
+      // 태양 — 왼쪽 위
+      { x: 1, y: 1, rows: [".AA.", "AAAA", "AAAA", ".AA."] },
+      // 미니 선인장 — 좁은 벽
+      { x: 21, y: 12, rows: [".G.", ".GG", ".G.", "GG.", ".G."] },
+      // 물항아리 — 오른쪽 벽
+      { x: 50, y: 14, rows: [".T.", "TTT", "TTT", ".T."] },
+      // 사구 지층 밴드
+      {
+        x: 0,
+        y: 19,
+        rows: ["S".repeat(64), "Y".repeat(64), "S".repeat(64), "Y".repeat(64), "N".repeat(64)]
+      }
+    ])
+  ),
+  flooring: asset(
+    "물결 모래밭",
+    "Rippled sand floor",
+    compose(64, 9, "Y", [
+      { x: 0, y: 0, rows: ["N".repeat(64)] },
+      { x: 6, y: 2, rows: ["NNNNNNNN"] },
+      { x: 30, y: 4, rows: ["NNNNNNNNNN"] },
+      { x: 48, y: 6, rows: ["NNNNNNN"] },
+      { x: 14, y: 6, rows: ["NNNNNN"] },
+      { x: 0, y: 8, rows: ["C".repeat(64)] }
+    ])
+  ),
+  window: asset("오아시스 창", "Oasis window", [
+    "NNNNNNNNNNNNNNNN",
+    "NKKKKKKKKKKKKKKN",
+    "NKKKKKAKKKKKKKKN",
+    "NKKKKKKKKKGGGKKN",
+    "NKKKKKKKKKKNKKKN",
+    "NYYYYKKKKKKNKKKN",
+    "NYYYYYYKKYYYYYYN",
+    "NYYTTTTTYYYYYYYN",
+    "NYYYTTTYYYYYYYYN",
+    "NYYYYYYYYYYYYYYN",
+    "NNNNNNNNNNNNNNNN",
+    "..NN........NN.."
+  ]),
+  desk: asset(
+    "대상 나무 좌탁",
+    "Caravan low table",
+    compose(56, 8, ".", [
+      { x: 1, y: 0, rows: ["H".repeat(54)] },
+      { x: 0, y: 1, rows: ["N".repeat(56), "N".repeat(56)] },
+      { x: 3, y: 3, rows: ["C".repeat(50)] },
+      { x: 4, y: 4, rows: ["NNN", "NCN", "NCN", "CCC"] },
+      { x: 49, y: 4, rows: ["NNN", "NCN", "NCN", "CCC"] }
+    ])
+  ),
+  monitor: asset("대상 지도 화면", "Caravan map screen", [
+    ".TTTTTTTTTTTT.",
+    "TYYYYYYYYYYYYT",
+    "TYYYYYYYYSYYYT",
+    "TYNYNYNYYYYYYT",
+    "TYYYYYNYYYYYYT",
+    "TYYGYYYNYNYYYT",
+    "TYYYYYYYYYYYYT",
+    ".TTTTTTTTTTTT.",
+    "......TT......",
+    "....TTTTTT...."
+  ]),
+  mug: asset("선인장 화분", "Potted cactus", [
+    ".G.G..",
+    ".GGG..",
+    "..G...",
+    ".SSS..",
+    ".SSS.."
+  ]),
+  ornament: asset("낙타 인형", "Camel doll", [
+    "NN.N.N.",
+    "NWNNNNN",
+    ".NSSNN.",
+    ".NNNNN.",
+    ".C..C..",
+    ".C..C.."
+  ]),
+  lamp: asset("요술 램프", "Genie lamp", [
+    "..W..",
+    ".W...",
+    "..W..",
+    ".AAA.",
+    "AAAAA",
+    "AAAAA",
+    "AAAAA",
+    ".AAA.",
+    "..N..",
+    "..N..",
+    ".CCC.",
+    "CCCCC"
+  ]),
+  mat: asset("페르시안 미니 러그", "Mini persian rug", ["TTTTTTTT", "TSWSSWST", "TTTTTTTT"]),
+  shelf: asset("모래시계", "Hourglass", ["WWWWW", ".YYY.", "..Y..", "WWWWW"]),
+  frame: asset("피라미드 그림", "Pyramid picture", [
+    "CCCCCC",
+    "CKKKAC",
+    "CKYYKC",
+    "CYYYYC",
+    "CYYYYC",
+    "CCCCCC"
+  ]),
+  clock: asset("나침반 시계", "Compass clock", [".NN.", "NWWN", "NWSN", ".NN."]),
+  // 눈 행은 y26(좌탁 상판 N 위), 코 행은 y28이라 그림자(y27)와 겹치지 않는다.
+  pet: asset("사막여우", "Fennec fox", [
+    "YY.YY.",
+    "YYYYY.",
+    "YCYCY.",
+    "YWWWY.",
+    "YWCWY.",
+    "YYYYY.",
+    "YYYYWW",
+    ".Y.Y.."
+  ]),
+  floorObject: asset("오아시스 항아리", "Oasis water jar", [
+    ".G..G.",
+    ".GGGG.",
+    ".TTTT.",
+    "TTTTTT",
+    "TWTTTT",
+    "TTTTTT",
+    ".TTTT.",
+    "..CC.."
+  ])
+};
+
+// 1.0.14 정글 테마 — 폭포와 캐노피 그늘.
+// 팔레트: V(정글 그린 벽) · G(잎) · N(나무·늘보) · T(짙은 잎) · K(폭포) · A(바나나·불) · S(열대꽃).
+const JUNGLE_ART: LateThemeArtPack = {
+  wallpaper: asset(
+    "캐노피 덩굴 벽지",
+    "Canopy vine wallpaper",
+    compose(64, 31, "V", [
+      { x: 0, y: 0, rows: ["G".repeat(64)] },
+      // 늘어진 덩굴 — 선반과 액자 사이 상단 벽
+      { x: 39, y: 1, rows: ["G.G.G", "G.G.G", ".G.G.", ".S.G.", "...S."] },
+      // 앵무새 실루엣 — 왼쪽 위
+      { x: 1, y: 2, rows: [".SS", "SSS", ".S."] },
+      // 대나무 줄기 — 좁은 벽
+      { x: 22, y: 11, rows: ["G.", "G.", ".G", ".G", "G."] },
+      // 열대꽃 — 오른쪽 벽
+      { x: 50, y: 13, rows: [".S.", "SAS", ".S.", ".G.", ".G."] },
+      // 수풀 밴드
+      {
+        x: 0,
+        y: 19,
+        rows: ["G".repeat(64), "T".repeat(64), "G".repeat(64), "T".repeat(64), "G".repeat(64)]
+      }
+    ])
+  ),
+  flooring: asset(
+    "이끼 낀 흙바닥",
+    "Mossy jungle floor",
+    compose(64, 9, "N", [
+      { x: 0, y: 0, rows: ["G".repeat(64)] },
+      { x: 8, y: 2, rows: ["GG", ".G"] },
+      { x: 33, y: 5, rows: ["G.", "GG"] },
+      { x: 52, y: 2, rows: [".G", "GG"] },
+      { x: 0, y: 8, rows: ["C".repeat(64)] }
+    ])
+  ),
+  window: asset("폭포 캐노피 창", "Waterfall canopy window", [
+    "NNNNNNNNNNNNNNNN",
+    "NGGGKKGGGGGGGGGN",
+    "NGGGKKGGGGSGGGGN",
+    "NGGGKKGGGGGGGGGN",
+    "NGGGKKGGGGGGGGGN",
+    "NGGGKKGGSGGGGGGN",
+    "NGGGKKGGGGGGGGGN",
+    "NGGKKKKGGGGGGGGN",
+    "NGKKWKKKGGGGGGGN",
+    "NGKKKKKKGGGGGGGN",
+    "NNNNNNNNNNNNNNNN",
+    "..NN........NN.."
+  ]),
+  desk: asset(
+    "통나무 책상",
+    "Log desk",
+    compose(56, 8, ".", [
+      { x: 1, y: 0, rows: ["H".repeat(54)] },
+      { x: 0, y: 1, rows: ["N".repeat(56), "N".repeat(56)] },
+      { x: 3, y: 3, rows: ["C".repeat(50)] },
+      { x: 4, y: 4, rows: ["NNN", "NCN", "NCN", "NNN"] },
+      { x: 49, y: 4, rows: ["NNN", "NCN", "NCN", "NNN"] }
+    ])
+  ),
+  monitor: asset("열대 잎 화면", "Tropical-leaf screen", [
+    ".NNNNNNNNNNNN.",
+    "NCCCCCCCCCCCCN",
+    "NCCCGGCCCCCWCN",
+    "NCCGGGGCCCCCCN",
+    "NCGGGGGGCCCCCN",
+    "NCCCGNGCCCCCCN",
+    "NCCCCNCCCCCCCN",
+    ".NNNNNNNNNNNN.",
+    "......NN......",
+    "....NNNNNN...."
+  ]),
+  mug: asset("코코넛 컵", "Coconut cup", [
+    ".T....",
+    "..T...",
+    ".NNN..",
+    "NWWWN.",
+    "NWWWN.",
+    ".NNN.."
+  ]),
+  ornament: asset("히비스커스 화분", "Hibiscus pot", [
+    "..SSS..",
+    ".SSASS.",
+    "..SSS..",
+    "..NNN..",
+    ".NNNNN.",
+    ".NNNNN."
+  ]),
+  lamp: asset("티키 횃불", "Tiki torch", [
+    "..A..",
+    ".AAA.",
+    ".AAA.",
+    "..N..",
+    "..N..",
+    "..N..",
+    "..N..",
+    "..N..",
+    "..N..",
+    "..N..",
+    ".NNN.",
+    "NNNNN"
+  ]),
+  mat: asset("바나나잎 매트", "Banana-leaf mat", ["GGGGGGGG", "GYGGYGGY", "GGGGGGGG"]),
+  shelf: asset("바나나 송이", "Banana bunch", ["AA.AA", "AAAAA", ".AAA.", "..N.."]),
+  frame: asset("앵무새 그림", "Parrot picture", [
+    "CCCCCC",
+    "CSSGGC",
+    "CSSAGC",
+    "CSSGGC",
+    "CGSGGC",
+    "CCCCCC"
+  ]),
+  clock: asset("잎사귀 시계", "Leaf clock", [".GG.", "GWWG", "GWCG", ".GG."]),
+  // 눈 행은 y26(통나무 상판 N 위)이고 y27(그림자 C)에는 C를 쓰지 않는다.
+  pet: asset("아기 나무늘보", "Baby sloth", [
+    ".NNNN.",
+    "NWWWW.",
+    "NCWCW.",
+    "NWWWWN",
+    "NNNNNN",
+    "NNNNNN",
+    "NNNNNN",
+    ".N..N."
+  ]),
+  floorObject: asset("나무 드럼", "Wooden drum", [
+    "..YY..",
+    ".YYYY.",
+    ".YYYY.",
+    "NNNNNN",
+    "NCNNCN",
+    "NNNNNN",
+    "NCNNCN",
+    ".NNNN."
+  ])
+};
+
+// 1.0.14 탐정 테마 — 블라인드 너머 저녁의 사무소.
+// 팔레트: Z(탐정 웜그레이 벽) · C(실루엣) · N(원목) · R(가죽) · Y(서류) · W(종이) · A(회중시계·가스등) · K(유리) · E(금고).
+const DETECTIVE_ART: LateThemeArtPack = {
+  wallpaper: asset(
+    "단서 보드 벽지",
+    "Clue board wallpaper",
+    compose(64, 31, "Z", [
+      { x: 0, y: 0, rows: ["C".repeat(64)] },
+      // 단서 게시판 — 선반과 액자 사이 상단 벽
+      { x: 39, y: 1, rows: ["NNNNN", "NWYWN", "NYSWN", "NWYWN", "NNNNN"] },
+      // 지문 소용돌이 — 왼쪽 위
+      { x: 1, y: 2, rows: [".CCC", "CC.C", "C.CC", "CCC."] },
+      // 걸린 중절모 — 좁은 벽
+      { x: 21, y: 4, rows: [".CC.", "CCCC", "..N.", "..N."] },
+      // 벽 가스등 — 오른쪽 벽
+      { x: 50, y: 12, rows: [".A.", "AAA", ".A.", ".C.", ".C."] },
+      // 웨인스코팅 밴드
+      {
+        x: 0,
+        y: 19,
+        rows: ["C".repeat(64), "N".repeat(64), "N".repeat(64), "N".repeat(64), "C".repeat(64)]
+      }
+    ])
+  ),
+  flooring: asset(
+    "헤링본 마루",
+    "Herringbone floor",
+    compose(64, 9, "N", [
+      { x: 0, y: 0, rows: ["C".repeat(64)] },
+      { x: 0, y: 3, rows: ["R".repeat(64)] },
+      { x: 0, y: 6, rows: ["R".repeat(64)] },
+      { x: 16, y: 1, rows: ["R", "R"] },
+      { x: 40, y: 4, rows: ["N", "N"] },
+      { x: 0, y: 8, rows: ["C".repeat(64)] }
+    ])
+  ),
+  window: asset("블라인드 창", "Blinds window", [
+    "CCCCCCCCCCCCCCCC",
+    "CWWWWWWWWWWWWWWC",
+    "CEEEEEEEEEEEEEEC",
+    "CWWWWWWWWWWWWWWC",
+    "CEEEEEEEEEEEEEEC",
+    "CWWWWWWWWWWWWWWC",
+    "CEEEEEEEEEEEEEEC",
+    "CWWWWWWWWWWWWWWC",
+    "CEEEEEEEEEEEEEEC",
+    "CWWWWWWWWWWWWWWC",
+    "CCCCCCCCCCCCCCCC",
+    "..CC........CC.."
+  ]),
+  desk: asset(
+    "가죽 상판 책상",
+    "Leather-top desk",
+    compose(56, 8, ".", [
+      { x: 1, y: 0, rows: ["R".repeat(54)] },
+      { x: 0, y: 1, rows: ["N".repeat(56), "N".repeat(56)] },
+      { x: 3, y: 3, rows: ["C".repeat(50)] },
+      { x: 4, y: 4, rows: ["NNN", "NCN", "NCN", "NNN"] },
+      { x: 49, y: 4, rows: ["NNN", "NCN", "NCN", "NNN"] }
+    ])
+  ),
+  monitor: asset("단서 화면", "Evidence screen", [
+    ".RRRRRRRRRRRR.",
+    "RCCCCCCCCCCCCR",
+    "RCWWWWCCCCCCCR",
+    "RCWCCWCCCWWCCR",
+    "RCWWWWCCCWWCCR",
+    "RCCCCCYYYYCCCR",
+    "RCCCCCCCCCCCCR",
+    ".RRRRRRRRRRRR.",
+    "......RR......",
+    "....RRRRRR...."
+  ]),
+  mug: asset("홍차 잔", "Black-tea cup", [
+    "..E...",
+    ".E....",
+    ".WWWW.",
+    ".WNNWW",
+    ".WWWW.",
+    "WWWWWW"
+  ]),
+  ornament: asset("돋보기", "Magnifying glass", [
+    "..AAA..",
+    ".AKKKA.",
+    ".AKWKA.",
+    ".AKKKA.",
+    "..AAA..",
+    "....R..",
+    ".....R."
+  ]),
+  lamp: asset("가스등 스탠드", "Gas-lamp stand", [
+    "..C..",
+    ".KKK.",
+    ".KAK.",
+    ".KAK.",
+    ".KKK.",
+    "..C..",
+    "..R..",
+    "..R..",
+    "..R..",
+    "..R..",
+    ".RRR.",
+    "RRRRR"
+  ]),
+  mat: asset("사건 서류 매트", "Case-file mat", ["YYYYYYYY", "YCCYCCYY", "YYYYYYYY"]),
+  shelf: asset("사건 파일함", "Case file box", ["Y.Y.Y", "RRRRR", "RRRRR", "CCCCC"]),
+  frame: asset("미제 사건 전단", "Cold-case flyer", [
+    "CCCCCC",
+    "CYCCYC",
+    "CYYYCC",
+    "CYYCYC",
+    "CYYYYC",
+    "CYYCYC",
+    "CCCCCC"
+  ]),
+  clock: asset("회중시계", "Pocket watch", [".AA.", "AWWA", "AWCA", "..A."]),
+  // 눈 행은 y26(책상 상판 N 위 — 귀는 R), 코 행은 y28이라 그림자(y27)와 겹치지 않는다.
+  pet: asset("탐정 비글", "Detective beagle", [
+    ".CCC..",
+    "CCCCC.",
+    "RCWCR.",
+    "NWWWN.",
+    "NWCWN.",
+    "NNNNN.",
+    "NNNNNN",
+    ".N.N.."
+  ]),
+  floorObject: asset("미스터리 금고", "Mystery safe", [
+    "EEEEEE",
+    "EEEEEE",
+    "EECCEE",
+    "EECCEE",
+    "EEEEEE",
+    "EEAEEE",
+    "EEEEEE",
+    ".EEEE."
+  ])
+};
+
 export const LATE_THEME_ART_109: Record<string, LateThemeArtPack> = {
   onsen: ONSEN_ART,
   laundry: LAUNDRY_ART,
   halloween: HALLOWEEN_ART,
+  farm: FARM_ART,
+  fair: FAIR_ART,
+  desert: DESERT_ART,
+  jungle: JUNGLE_ART,
+  detective: DETECTIVE_ART,
   christmas: CHRISTMAS_ART,
   sky: SKY_ART,
   fantasy: FANTASY_ART,

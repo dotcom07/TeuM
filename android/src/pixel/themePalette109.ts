@@ -34,7 +34,13 @@ export const THEME_BACKGROUND_PALETTES = {
   // 소문자 토큰이 소진되어 1.0.13부터는 미사용 대문자를 쓴다 (D F J Q U V X Z 가용).
   onsen: { token: "Q", hex: "#88a898", nameKo: "온천 세이지" },
   laundry: { token: "U", hex: "#8fc4d6", nameKo: "세탁 파우더블루" },
-  halloween: { token: "X", hex: "#6a3b52", nameKo: "마녀 자두빛" }
+  halloween: { token: "X", hex: "#6a3b52", nameKo: "마녀 자두빛" },
+  // 1.0.14 — 마지막 미사용 대문자 토큰 5개(D F J V Z)를 모두 사용한다.
+  farm: { token: "D", hex: "#93b64e", nameKo: "목장 라임" },
+  fair: { token: "F", hex: "#df8ab5", nameKo: "솜사탕 핑크" },
+  desert: { token: "J", hex: "#d6a95e", nameKo: "사막 샌드" },
+  jungle: { token: "V", hex: "#448a58", nameKo: "정글 그린" },
+  detective: { token: "Z", hex: "#7f776a", nameKo: "탐정 웜그레이" }
 } as const;
 
 export type ThemePaletteKey = keyof typeof THEME_BACKGROUND_PALETTES;
