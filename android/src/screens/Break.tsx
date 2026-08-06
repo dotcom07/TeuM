@@ -79,8 +79,8 @@ export default function Break({
         )}
         <Text style={styles.copy}>
           {tr(
-            "물 한 모금 마시고,\n자리에서 일어나 가볍게 스트레칭해 보세요.",
-            "Take a sip of water,\nstand up, and stretch gently."
+            "물 한 모금 마시고,\n가볍게 스트레칭해 보세요.",
+            "Take a sip of water,\nand stretch gently."
           )}
         </Text>
         <Text style={styles.question}>

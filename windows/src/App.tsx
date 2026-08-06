@@ -144,7 +144,7 @@ function BreakScreen({ seconds, onFinish }: { seconds: number; onFinish: () => v
       <p className="eyebrow">ONE MINUTE PAUSE</p>
       <h1>1분의 틈</h1>
       <div className="break-clock">00:{String(seconds).padStart(2, "0")}</div>
-      <p>물 한 모금 마시고,<br />자리에서 일어나 몸을 가볍게 펴 보세요.</p>
+      <p>물 한 모금 마시고,<br />가볍게 스트레칭해 보세요.</p>
       <button className="rail-button stop-button" onClick={onFinish}>지금은 그만</button>
     </section>
   );

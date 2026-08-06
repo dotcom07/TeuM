@@ -29,6 +29,8 @@ import {
   setupCategories,
   setupChannels
 } from "./src/lib/notifications";
+import { screenAfterGift, shouldPresentGiftBox } from "./src/lib/presentation";
+import type { AppScreen } from "./src/lib/presentation";
 import { appendRecord, clearRecords, doneCountToday, loadRecords, replaceRecords } from "./src/lib/records";
 import { loadPersisted, savePersisted } from "./src/lib/storage";
 import {
@@ -61,8 +63,6 @@ import Records from "./src/screens/Records";
 import SettingsScreen from "./src/screens/Settings";
 import { colors } from "./src/theme";
 import { BreakRecord, BreakResult, Persisted, Rhythm, Settings } from "./src/types";
-
-type Screen = "home" | "break" | "settings" | "records" | "desk";
 
 /** 놓친 알림 시각을 다음 정규 슬롯으로 넘긴다. 1시간 안에는 제안 상태를 유지한다. */
 function rollForward(rhythm: Rhythm, settings: Settings, now: number): Rhythm {
@@ -100,12 +100,13 @@ export default function App() {
 function AppContent() {
   const { language, mode: languageMode, setMode, tr } = useI18n();
   const [persisted, setPersisted] = useState<Persisted | null>(null);
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<AppScreen>("home");
   const [now, setNow] = useState(Date.now());
   const [permissionOk, setPermissionOk] = useState(false);
   const [fullScreenAllowed, setFullScreenAllowed] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [giftBoxOpen, setGiftBoxOpen] = useState(false);
+  const [startupResolved, setStartupResolved] = useState(false);
 
   const [records, setRecords] = useState<BreakRecord[]>([]);
   const [desk, setDesk] = useState<DeskState>(EMPTY_DESK);
@@ -194,7 +195,7 @@ function AppContent() {
   }, [commitDesk]);
 
   const persistedRef = useRef<Persisted | null>(null);
-  const screenRef = useRef<Screen>("home");
+  const screenRef = useRef<AppScreen>("home");
   const wasSuggestingRef = useRef(false);
   const recordsRef = useRef<BreakRecord[]>([]);
   const languageRef = useRef(language);
@@ -222,6 +223,10 @@ function AppContent() {
       breakScheduledAtRef.current = firedTick;
       breakSnoozedRef.current = false;
     }
+    // 알림의 1분 화면은 선물상자보다 항상 우선한다. ref도 먼저 바꿔
+    // 같은 프레임의 선물 완료 콜백이 화면을 덮지 못하게 한다.
+    screenRef.current = "break";
+    setGiftBoxOpen(false);
     setScreen("break");
   }, []);
 
@@ -313,6 +318,7 @@ function AppContent() {
         openBreak();
         await Notifications.clearLastNotificationResponseAsync();
       }
+      setStartupResolved(true);
     })();
   }, [openBreak, openBreakFromUrl]);
 
@@ -425,10 +431,10 @@ function AppContent() {
   }, [commitDesk, patchRhythm, recordResponse]);
 
   useEffect(() => {
-    if (screen !== "break" && pendingGiftCount(desk) > 0) {
+    if (shouldPresentGiftBox(startupResolved, screen, pendingGiftCount(desk))) {
       setGiftBoxOpen(true);
     }
-  }, [desk, screen]);
+  }, [desk, screen, startupResolved]);
 
   // 넘김: 업무 시작 기준의 정규 주기를 유지한다.
   const respondSkip = useCallback(() => {
@@ -787,12 +793,16 @@ function AppContent() {
           />
         )}
         <GiftBox109
-          visible={giftBoxOpen}
+          visible={giftBoxOpen && screen !== "break"}
           pendingCount={pendingGiftCount(desk)}
           onOpen={openPixelGift}
           onDone={() => {
             setGiftBoxOpen(false);
-            setScreen("desk");
+            const nextScreen = screenAfterGift(screenRef.current);
+            if (nextScreen !== screenRef.current) {
+              screenRef.current = nextScreen;
+              setScreen(nextScreen);
+            }
           }}
         />
         <Footer />

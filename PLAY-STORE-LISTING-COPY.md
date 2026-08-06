@@ -74,7 +74,7 @@ Google Play 기준은 앱 이름 30자, 짧은 설명 80자, 자세한 설명 4,
 일하는 틈에 물 한 모금과 가벼운 스트레칭을 챙기게 돕는 직장인 건강 앱입니다.
 
 알람이 울리면 거창한 운동을 시작할 필요는 없습니다.
-물 한 모금을 마시거나 자리에서 가볍게 스트레칭해 보세요.
+물 한 모금을 마시거나 가볍게 스트레칭해 보세요.
 일하는 틈에 몸을 움직이는 1분은 그렇게 시작됩니다.
 
 건강한 틈을 놓치지 않도록
@@ -180,7 +180,7 @@ The first release uses the final workday-first version. Do not run an experiment
 ```text
 Your workday needs room for your health, too.
 
-When the day gets busy, it’s easy to stay at your desk and forget the small things: taking a sip of water, standing up, or stretching for a moment.
+When the day gets busy, it’s easy to stay at your desk and forget the small things: taking a sip of water or stretching for a moment.
 
 TeuM is a simple desk break reminder for people who work at a screen. Set your work hours, days, and reminder interval. When it’s time, TeuM gives you one minute to stretch, drink water, and then get back to your day.
 
@@ -195,7 +195,7 @@ A small break, on your schedule
 
 When a reminder appears
 
-You do not need to start a workout. Take a sip of water, stand up briefly, or stretch for a moment. Then choose what fits:
+You do not need to start a workout. Take a sip of water or stretch for a moment. Then choose what fits:
 
 • Remind me in 5 min
 • Yes, I did
