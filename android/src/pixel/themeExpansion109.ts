@@ -54,7 +54,9 @@ export const EXPANSION_THEME_META = [
   ["observatory", "천문대", "Observatory"],
   ["mine", "광산", "Gem mine"],
   ["salon", "미용실", "Hair salon"],
-  ["convenience", "편의점", "Convenience store"]
+  ["convenience", "편의점", "Convenience store"],
+  ["mushroom", "버섯숲", "Mushroom forest"],
+  ["lighthouse", "등대", "Lighthouse"]
 ] as const;
 
 const THEMES: Theme109[] = [
@@ -561,6 +563,34 @@ const THEMES: Theme109[] = [
     petKind: "rabbit",
     petNameKo: "야간 알바 햄스터",
     petNameEn: "Night-shift hamster"
+  },
+  {
+    key: "mushroom",
+    labelKo: "버섯숲",
+    labelEn: "Mushroom forest",
+    background: "5",
+    primary: "N",
+    secondary: "S",
+    accent: "A",
+    surface: "W",
+    motif: [".111.", "11111", "..2..", "..2..", ".222."],
+    petKind: "bear",
+    petNameKo: "버섯 모자 고슴도치",
+    petNameEn: "Mushroom-cap hedgehog"
+  },
+  {
+    key: "lighthouse",
+    labelKo: "등대",
+    labelEn: "Lighthouse",
+    background: "6",
+    primary: "W",
+    secondary: "S",
+    accent: "A",
+    surface: "K",
+    motif: ["..1..", ".121.", ".111.", ".121.", "11111"],
+    petKind: "bear",
+    petNameKo: "바다 물개",
+    petNameEn: "Lighthouse-keeper seal"
   }
 ];
 
@@ -1717,7 +1747,9 @@ const THEME_ADDED_IN: Record<string, string> = {
   observatory: "1.0.15",
   mine: "1.0.15",
   salon: "1.0.15",
-  convenience: "1.0.15"
+  convenience: "1.0.15",
+  mushroom: "1.0.15",
+  lighthouse: "1.0.15"
 };
 
 function themeItems(theme: Theme109): PixelItem[] {

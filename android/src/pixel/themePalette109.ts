@@ -46,7 +46,9 @@ export const THEME_BACKGROUND_PALETTES = {
   observatory: { token: "1", hex: "#1f3d5c", nameKo: "관측소 심야남색" },
   mine: { token: "2", hex: "#524364", nameKo: "동굴 자수정빛" },
   salon: { token: "3", hex: "#a5589a", nameKo: "살롱 라일락" },
-  convenience: { token: "4", hex: "#c9e8d3", nameKo: "새벽 민트" }
+  convenience: { token: "4", hex: "#c9e8d3", nameKo: "새벽 민트" },
+  mushroom: { token: "5", hex: "#5e7d62", nameKo: "안개 숲 그린" },
+  lighthouse: { token: "6", hex: "#3b6fd8", nameKo: "쨍한 바다 파랑" }
 } as const;
 
 export type ThemePaletteKey = keyof typeof THEME_BACKGROUND_PALETTES;

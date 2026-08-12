@@ -4,6 +4,8 @@ import { OBSERVATORY_ART } from "./art1015/observatory";
 import { MINE_ART } from "./art1015/mine";
 import { SALON_ART } from "./art1015/salon";
 import { CONVENIENCE_ART } from "./art1015/convenience";
+import { MUSHROOM_ART } from "./art1015/mushroom";
+import { LIGHTHOUSE_ART } from "./art1015/lighthouse";
 
 export type { LateThemeArtPack, ThemeArtAsset } from "./themeArtKit";
 import type { LateThemeArtPack } from "./themeArtKit";
@@ -1975,6 +1977,8 @@ export const LATE_THEME_ART_109: Record<string, LateThemeArtPack> = {
   mine: MINE_ART,
   salon: SALON_ART,
   convenience: CONVENIENCE_ART,
+  mushroom: MUSHROOM_ART,
+  lighthouse: LIGHTHOUSE_ART,
   christmas: CHRISTMAS_ART,
   sky: SKY_ART,
   fantasy: FANTASY_ART,

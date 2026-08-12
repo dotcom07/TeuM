@@ -50,7 +50,9 @@ const PET_MOUTH_ROW_EXPECTATIONS = {
   "observatory-pet": [2, "CWCCWC"],
   "mine-pet": [2, "MCMCM."],
   "salon-pet": [2, "WCWWCW"],
-  "convenience-pet": [2, "OCOCO."]
+  "convenience-pet": [2, "OCOCO."],
+  "mushroom-pet": [2, "WCWWCW"],
+  "lighthouse-pet": [2, "LCLLCL"]
 };
 const YELLOW_BEAK_PETS = new Set([
   "aquarium-pet",
