@@ -67,6 +67,13 @@ class ReminderReceiver : BroadcastReceiver() {
       .setOngoing(false)
       .build()
 
+    // 다음 회차는 네이티브가 즉시 이어서 예약한다. 이전에는 JS만 재예약했기 때문에
+    // 백그라운드에서 프로세스가 죽은 채로 알람이 울리면 체인이 끊겨, 앱을 다시 열 때까지
+    // 이후 알림이 전부 사라졌다. JS가 뒤에 같은 PendingIntent를 다시 잡아도 덮어쓰기만 된다.
+    if (!test) {
+      ReminderAlarmScheduler.restoreRegular(context.applicationContext, recalculate = true)
+    }
+
     NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
 
     // 채널 진동은 무음 모드에서 시스템이 막으므로, 알람 usage로 직접 진동시킨다.
